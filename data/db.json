@@ -1,0 +1,247 @@
+{
+  "quizes": [
+    {
+      "type": "boolean",
+      "difficulty": "easy",
+      "category": "Sports",
+      "question": "In association football, or soccer, a corner kick is when the game restarts after someone scores a goal.",
+      "correct_answer": "False",
+      "incorrect_answers": [
+        "True"
+      ],
+      "id": "4536"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "Entertainment: Video Games",
+      "question": "Which of the following Pokemon Types was present in the original games, Red and Blue?",
+      "correct_answer": "Ice",
+      "incorrect_answers": [
+        "Steel",
+        "Dark",
+        "Fairy"
+      ],
+      "id": "ca5c"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "General Knowledge",
+      "question": "Which one of the following rhythm games was made by Harmonix?",
+      "correct_answer": "Rock Band",
+      "incorrect_answers": [
+        "Meat Beat Mania",
+        "Guitar Hero Live",
+        "Dance Dance Revolution"
+      ],
+      "id": "7661"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "medium",
+      "category": "Science: Computers",
+      "question": "In programming, the ternary operator is mostly defined with what symbol(s)?",
+      "correct_answer": "?:",
+      "incorrect_answers": [
+        "??",
+        "if then",
+        "?"
+      ],
+      "id": "128a"
+    },
+    {
+      "type": "boolean",
+      "difficulty": "easy",
+      "category": "Animals",
+      "question": "A slug&rsquo;s blood is green.",
+      "correct_answer": "True",
+      "incorrect_answers": [
+        "False"
+      ],
+      "id": "eec7"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "medium",
+      "category": "Entertainment: Video Games",
+      "question": "In Team Fortress 2, which class wields a shotgun?",
+      "correct_answer": "Everyone Listed",
+      "incorrect_answers": [
+        "Heavy",
+        "Soldier",
+        "Engineer"
+      ],
+      "id": "4464"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "History",
+      "question": "In which year did the Invasion of Kuwait by Iraq occur?",
+      "correct_answer": "1990",
+      "incorrect_answers": [
+        "1992",
+        "1988",
+        "1986"
+      ],
+      "id": "1fde"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "medium",
+      "category": "Geography",
+      "question": "What European country is not a part of the EU?",
+      "correct_answer": "Norway",
+      "incorrect_answers": [
+        "Lithuania",
+        "Ireland",
+        "Czechia"
+      ],
+      "id": "1934"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "medium",
+      "category": "Entertainment: Cartoon &amp; Animations",
+      "question": "What is the name of the Alligator that The Simpsons &quot;killed&quot; in the episode &quot;Kill The Alligator and Run&quot;?",
+      "correct_answer": "Captain Jack",
+      "incorrect_answers": [
+        "Captain Jake",
+        "Captain Hector",
+        "Captain Flynn"
+      ],
+      "id": "32a9"
+    },
+    {
+      "type": "multiple",
+      "difficulty": "medium",
+      "category": "Entertainment: Television",
+      "question": "Which character does voice actress Tara Strong NOT voice?",
+      "correct_answer": "Bubbles (2016)",
+      "incorrect_answers": [
+        "Twilight Sparkle",
+        "Timmy Turner",
+        "Harley Quinn"
+      ],
+      "id": "5e5d"
+    },
+    {
+      "id": "7ac3",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "sad",
+      "question": "asd",
+      "correct_answer": "asd",
+      "incorrect_answers": [
+        "asd",
+        "sda",
+        "asd"
+      ]
+    },
+    {
+      "id": "9718",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "asd",
+      "question": "sad",
+      "correct_answer": "sad",
+      "incorrect_answers": [
+        "asd",
+        "sad",
+        "sda"
+      ]
+    },
+    {
+      "id": "f312",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "Animals",
+      "question": "Co to",
+      "correct_answer": "asdasd",
+      "incorrect_answers": [
+        "adsasd",
+        "adsasd",
+        "adsdas"
+      ]
+    },
+    {
+      "id": "490d",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "",
+      "question": "",
+      "correct_answer": "",
+      "incorrect_answers": [
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "ca69",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "Sports",
+      "question": "asd",
+      "correct_answer": "asdasd",
+      "incorrect_answers": [
+        "",
+        "asd",
+        "asd"
+      ]
+    },
+    {
+      "id": "5c47",
+      "type": "boolean",
+      "difficulty": "hard",
+      "category": "",
+      "question": "",
+      "correct_answer": "",
+      "incorrect_answers": [
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "355d",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "General Knowledge",
+      "question": "asd",
+      "correct_answer": "sda",
+      "incorrect_answers": [
+        "sa",
+        "asd",
+        "asd"
+      ]
+    },
+    {
+      "id": "0d4d",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "General Knowledge",
+      "question": "AS",
+      "correct_answer": "SAD",
+      "incorrect_answers": [
+        "SDA",
+        "SDA",
+        "SDA"
+      ]
+    },
+    {
+      "id": "d1ae",
+      "type": "multiple",
+      "difficulty": "easy",
+      "category": "32312132",
+      "question": "12333333333333333",
+      "correct_answer": "3211111111111111111",
+      "incorrect_answers": [
+        "123123",
+        "123213",
+        "231312"
+      ]
+    }
+  ]
+}
