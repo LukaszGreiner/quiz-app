@@ -22,5 +22,3 @@ npx json-server data/db.json
 ## Start App
 
 npm run dev
-
-Heyooooo
