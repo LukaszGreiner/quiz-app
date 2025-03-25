@@ -1,33 +1,17 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Header from "./Header";
+import Footer from "./Footer";
 
-export default function Layout({ children }) {
+function Layout() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-blue-600 text-white p-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Quiz App</h1>
-          <nav>
-            <Link to="/" className="mr-4 hover:underline">
-              Home
-            </Link>
-            <Link to="/quizes" className="mr-4 hover:underline">
-              Quizes
-            </Link>
-            <Link to="/add-quiz" className="hover:underline">
-              Add Quiz
-            </Link>
-          </nav>
-        </div>
-      </header>
-      <main className="flex-grow bg-gray-100 p-4">
-        <div className="max-w-4xl mx-auto">{children}</div>
+    <div className="bg-background font-lato mx-auto flex min-h-screen flex-col">
+      <Header />
+      <main className="container mx-auto flex-grow px-4 py-8">
+        <Outlet />
       </main>
-      <footer className="bg-blue-600 text-white p-4">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* &copy; {new Date().getFullYear()} Quiz App. All rights reserved. */}
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
+
+export default Layout;
