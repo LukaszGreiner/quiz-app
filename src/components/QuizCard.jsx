@@ -1,4 +1,5 @@
 import { FaStar, FaHeart, FaSignal } from "react-icons/fa";
+import { useState } from "react"; // Import useState for local toggle
 
 export default function QuizCard({
   imageSrc,
@@ -10,6 +11,9 @@ export default function QuizCard({
   likes,
   difficulty,
 }) {
+  // Local state to toggle "liked" status
+  const [isLiked, setIsLiked] = useState(false);
+
   // Function to determine difficulty color
   const getDifficultyColor = (diff) => {
     switch (diff?.toLowerCase()) {
@@ -24,8 +28,24 @@ export default function QuizCard({
     }
   };
 
+  // Toggle like state
+  const handleLikeToggle = () => {
+    setIsLiked((prev) => !prev);
+  };
+
   return (
-    <div className="flex w-full max-w-[500px] min-w-[300px] flex-col items-center rounded-xl bg-white p-4 shadow-md transition duration-300 hover:shadow-lg md:max-w-[600px] md:min-w-0 md:flex-row lg:w-[calc(50%-1rem)] lg:max-w-none">
+    <div className="relative flex w-full max-w-[500px] min-w-[300px] flex-col items-center rounded-xl bg-white p-4 shadow-md transition duration-300 hover:shadow-lg md:max-w-[600px] md:min-w-0 md:flex-row lg:w-[calc(50%-1rem)] lg:max-w-none">
+      {/* Like Button */}
+      <button
+        onClick={handleLikeToggle}
+        className="absolute top-2 right-2 p-1 focus:outline-none"
+        title="Like this quiz"
+      >
+        <FaHeart
+          className={`text-2xl ${isLiked ? "text-red-500" : "text-gray-300"} hover:text-red-400 transition-colors duration-200`}
+        />
+      </button>
+
       {/* Image */}
       <img
         src={imageSrc}
