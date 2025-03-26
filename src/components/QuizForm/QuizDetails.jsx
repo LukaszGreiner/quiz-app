@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaClock, FaTag, FaStar, FaEye, FaAngleDown } from "react-icons/fa";
+import { formatTotalTime } from "../../utils/quizUtils";
 import ImageUpload from "./ImageUpload";
 
 const QuizDetails = ({ quiz, onChange, questionCount }) => {
@@ -12,38 +13,18 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
     "Literatura",
     "Wiedza ogólna",
   ];
-
   const timeOptions = [5, 10, 15, 20, 30, 45, 60];
-
   const difficultyLabels = {
     easy: "Łatwy",
     normal: "Normalny",
     hard: "Trudny",
   };
-
-  const visibilityLabels = {
-    public: "Publiczny",
-    private: "Prywatny",
-  };
+  const visibilityLabels = { public: "Publiczny", private: "Prywatny" };
 
   const isFilled = !!quiz.category;
 
   const handleToggle = () => {
-    if (isFilled) {
-      setIsOpen(!isOpen);
-    }
-  };
-
-  const formatTotalTime = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    if (minutes > 0 && seconds === 0) {
-      return `${minutes} min`;
-    } else if (minutes > 0) {
-      return `${minutes} min ${seconds} s`;
-    } else {
-      return `${seconds} s`;
-    }
+    if (isFilled) setIsOpen((prev) => !prev); // Używamy funkcyjnej aktualizacji dla bezpieczeństwa
   };
 
   const handleImageChange = (file) => {
@@ -53,27 +34,28 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
   const renderSummary = () => {
     const {
       description,
-      expectedTime,
+      timeLimitPerQuestion,
       category,
       difficulty,
       visibility,
       image,
     } = quiz;
-    const totalTime = expectedTime ? expectedTime * questionCount : null;
+    const totalTime = timeLimitPerQuestion
+      ? timeLimitPerQuestion * questionCount
+      : null;
 
     return (
       <div className="flex flex-col gap-6 p-2 md:flex-row md:items-center">
-        {" "}
-        {/* Changed flex-row to flex-col md:flex-row */}
-        {/* First Column: Image */}
         <div className="mx-auto flex-shrink-0 md:mx-0">
-          {" "}
-          {/* Center on mobile, align left on desktop */}
           {image ? (
             <img
               src={URL.createObjectURL(image)}
               alt="Quiz preview"
               className="h-24 w-24 rounded-md object-cover"
+              onError={(e) =>
+                (e.target.src =
+                  "https://placehold.co/128x128.png?text=Brak%20obrazu")
+              }
             />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 text-sm text-gray-500">
@@ -81,16 +63,11 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
             </div>
           )}
         </div>
-        {/* Second Column: Text and Details */}
         <div className="flex-1 text-center text-sm text-gray-700 md:text-left">
-          {" "}
-          {/* Center text on mobile, left-align on desktop */}
           <p className="mb-2 line-clamp-3 break-all">
             {description || "Brak opisu"}
           </p>
           <div className="flex flex-wrap justify-center gap-3 md:justify-start">
-            {" "}
-            {/* Center items on mobile, left-align on desktop */}
             {category && (
               <span className="flex items-center gap-1">
                 <FaTag size={12} /> {category}
@@ -101,8 +78,8 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
             </span>
             <span className="flex items-center gap-1">
               <FaClock size={12} />
-              {expectedTime
-                ? `${expectedTime} s (${formatTotalTime(totalTime)})`
+              {timeLimitPerQuestion
+                ? `${timeLimitPerQuestion} s (${formatTotalTime(totalTime)})`
                 : "Bez limitu"}
             </span>
             <span className="flex items-center gap-1">
@@ -144,7 +121,7 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
               </label>
               <select
                 name="difficulty"
-                value={quiz.difficulty}
+                value={quiz.difficulty} // Poprawiono z quiz.details na quiz.difficulty
                 onChange={onChange}
                 className="w-full appearance-none rounded-md border border-gray-200 p-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               >
@@ -158,8 +135,12 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
                 <FaClock size={12} /> Czas na pytanie (sekundy)
               </label>
               <select
-                name="expectedTime"
-                value={quiz.expectedTime || ""}
+                name="timeLimitPerQuestion"
+                value={
+                  quiz.timeLimitPerQuestion === 0
+                    ? ""
+                    : quiz.timeLimitPerQuestion
+                }
                 onChange={onChange}
                 className="w-full appearance-none rounded-md border border-gray-200 p-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none"
               >
@@ -192,7 +173,7 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
               value={quiz.description}
               onChange={onChange}
               placeholder="Dodaj opis (opcjonalnie)"
-              className="min-h-[80px] w-full resize-y rounded-md border border-gray-200 p-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              className="min-h-[80px] w-full resize-y rounded-md p-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
           <ImageUpload

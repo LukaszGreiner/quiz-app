@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function Categories() {
   const categories = [
     {
@@ -50,11 +52,21 @@ function Categories() {
     },
   ];
 
-  // Handle category selection (you can customize this to navigate or filter)
+  // Dodajemy stan dla wybranej kategorii
+  const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
+
+  // Handle category selection
   const handleCategoryChange = (event) => {
     const selectedCategory = event.target.value;
+    setSelectedCategory(selectedCategory); // Aktualizujemy stan
     console.log("Selected category:", selectedCategory);
     // Add navigation logic here, e.g., redirect to a category page
+  };
+
+  const handleLinkClick = (categoryName) => {
+    setSelectedCategory(categoryName);
+    console.log("Selected category:", categoryName);
+    // Add navigation logic here
   };
 
   return (
@@ -64,10 +76,11 @@ function Categories() {
         <p className="mb-4 text-xl font-bold">Kategorie</p>
 
         <select
+          value={selectedCategory} // Używamy value zamiast selected
           onChange={handleCategoryChange}
           className="text-dark focus:border-primary focus:ring-primary/20 w-full appearance-none rounded-lg border border-gray-300 bg-white p-3 font-medium transition duration-300 focus:ring-2 focus:outline-none"
         >
-          <option value="Wszystkie" selected className="text-gray-500">
+          <option value="Wszystkie" className="text-gray-500">
             Wszystkie
           </option>
           {categories.map((category, index) => (
@@ -107,6 +120,7 @@ function Categories() {
           <a
             key={index}
             href="#"
+            onClick={() => handleLinkClick(category.name)}
             className={`${category.bg} ${category.text} block rounded-full px-4 py-3 text-center transition duration-300 ${category.hover}`}
           >
             {category.name}

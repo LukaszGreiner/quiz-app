@@ -1,3 +1,5 @@
+// components/Question.jsx
+import React, { useState } from "react"; // Dodajemy useState
 import { FaTrash, FaAngleDown } from "react-icons/fa";
 import ImageUpload from "./ImageUpload";
 
@@ -7,9 +9,10 @@ const Question = ({
   onChange,
   onDelete,
   onExpand,
-  onToggle,
   canDelete,
 }) => {
+  const [isOpen, setIsOpen] = useState(question.isOpen); // Lokalny stan isOpen z wartością początkową z props
+
   const isFilled =
     question.questionText.trim() &&
     question.correctAnswer.trim() &&
@@ -18,6 +21,11 @@ const Question = ({
   const handleImageChange = (file) => {
     onChange(index, "image", file);
   };
+
+  const handleToggle = () => {
+    setIsOpen((prev) => !prev); // Przełączanie lokalnego stanu
+  };
+
   return (
     <div className="rounded-md border border-gray-200 bg-gray-50 p-4 md:p-6">
       <div className="mb-1 flex items-center justify-between">
@@ -38,7 +46,7 @@ const Question = ({
       {/* Question Text and Image (in contracted state) */}
       <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center">
         {/* Image Preview (only in contracted state, no remove button) */}
-        {!question.isOpen && question.image && (
+        {!isOpen && question.image && (
           <div className="mx-auto flex-shrink-0 md:mx-0">
             <img
               src={URL.createObjectURL(question.image)}
@@ -61,7 +69,7 @@ const Question = ({
       </div>
 
       {/* Expanded Content (including Image Upload for changing/removing the image) */}
-      {question.isOpen && (
+      {isOpen && (
         <div className="mt-4">
           {/* Image Upload (visible when expanded, includes remove button) */}
           <ImageUpload
@@ -71,7 +79,7 @@ const Question = ({
           />
 
           {/* Answers Section */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             {/* Correct Answer */}
             <div>
               <label className="mb-2 block text-sm text-gray-600">
@@ -125,10 +133,10 @@ const Question = ({
           <FaAngleDown
             size={16}
             className={`cursor-pointer text-gray-400 transition-transform ${
-              question.isOpen ? "rotate-180" : ""
+              isOpen ? "rotate-180" : ""
             }`}
-            onClick={() => onToggle(index)}
-            title={question.isOpen ? "Pokaż mniej" : "Pokaż więcej"}
+            onClick={handleToggle} // Używamy lokalnej funkcji handleToggle
+            title={isOpen ? "Pokaż mniej" : "Pokaż więcej"}
           />
         </div>
       )}
