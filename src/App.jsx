@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import UserPage from "./pages/UserPage";
 import NotFound from "./pages/NotFound";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+        <ToastContainer />
       </Router>
     </AuthProvider>
   );

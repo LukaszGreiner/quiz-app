@@ -2,15 +2,46 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { auth, db, storage } from "../firebase";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref, updateMetadata } from "firebase/storage";
+import { quizFormConfig } from "../config/quizFormConfig";
 import {
   isQuizValid,
   isQuestionFilled,
   prepareQuizData,
   uploadImages,
   saveQuizToFirestore,
+  validateField,
 } from "../utils/quizUtils";
+import {
+  showError,
+  showSuccess,
+  showLoading,
+  updateLoadingToSuccess,
+  updateLoadingToError,
+} from "../utils/toastUtils";
 
-const QUIZ_QUESTIONS_LIMIT = 20;
+const toastMessages = {
+  saveQuiz: {
+    success: (id) => `Quiz zapisany! ID: ${id}`,
+    error: "Błąd zapisu quizu",
+  },
+  changeVisibility: {
+    success: "Widoczność zmieniona!",
+    error: "Błąd zmiany widoczności",
+  },
+  deleteQuiz: { success: "Quiz usunięty!", error: "Błąd usuwania quizu" },
+};
+
+const withToastHandling = async (callback, messageConfig) => {
+  const toastId = showLoading("Przetwarzanie...");
+  try {
+    const result = await callback();
+    updateLoadingToSuccess(toastId, messageConfig.success(result));
+    return result;
+  } catch (err) {
+    updateLoadingToError(toastId, messageConfig.error);
+    throw err;
+  }
+};
 
 export const useQuizForm = () => {
   const [quiz, setQuiz] = useState({
@@ -18,7 +49,7 @@ export const useQuizForm = () => {
     description: "",
     timeLimitPerQuestion: 0,
     category: "",
-    difficulty: "normal",
+    difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
     visibility: "public",
     image: null,
   });
@@ -28,42 +59,40 @@ export const useQuizForm = () => {
       questionText: "",
       correctAnswer: "",
       wrongAnswers: ["", "", ""],
-      isOpen: true, // Nadal ustawiamy początkowe isOpen, ale nie zarządzamy nim
+      isOpen: true,
       image: null,
     },
   ]);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const questionsContainerRef = useRef(null);
   const isMounted = useRef(false);
 
   useEffect(() => {
     isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
+    return () => (isMounted.current = false);
   }, []);
 
   const handleQuizChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "image") {
-      setQuiz((prev) => ({ ...prev, image: files[0] || null }));
-    } else {
-      const val =
-        name === "timeLimitPerQuestion"
-          ? value === ""
-            ? 0
-            : Number(value)
-          : value;
-      setQuiz((prev) => ({ ...prev, [name]: val }));
-    }
-  };
-
-  const handleNameChange = (name) => {
-    setQuiz((prev) => ({ ...prev, name }));
+    try {
+      setQuiz((prev) => ({
+        ...prev,
+        [name]: validateField(
+          files
+            ? files[0]
+            : name === "timeLimitPerQuestion"
+              ? value === ""
+                ? 0
+                : Number(value)
+              : value,
+          {
+            maxLength:
+              quizFormConfig[`MAX_${name.toUpperCase()}_LENGTH`] || Infinity,
+          },
+          name,
+        ),
+      }));
+    } catch (err) {}
   };
 
   const handleQuestionChange = (
@@ -72,17 +101,22 @@ export const useQuizForm = () => {
     value,
     wrongAnswerIndex = null,
   ) => {
-    setQuestions((prev) => {
-      const newQuestions = [...prev];
-      if (field === "wrongAnswers" && wrongAnswerIndex !== null) {
-        newQuestions[index][field][wrongAnswerIndex] = value;
-      } else if (field === "image") {
-        newQuestions[index][field] = value instanceof File ? value : null;
-      } else {
-        newQuestions[index][field] = value;
-      }
-      return newQuestions;
-    });
+    try {
+      const config = {
+        maxLength:
+          quizFormConfig[`MAX_${field.toUpperCase()}_LENGTH`] || Infinity,
+      };
+      const validatedValue = validateField(value, config, field);
+      setQuestions((prev) => {
+        const newQuestions = [...prev];
+        if (field === "wrongAnswers" && wrongAnswerIndex !== null) {
+          newQuestions[index][field][wrongAnswerIndex] = validatedValue;
+        } else {
+          newQuestions[index][field] = validatedValue;
+        }
+        return newQuestions;
+      });
+    } catch (err) {}
   };
 
   const handleExpandQuestion = useCallback((index) => {
@@ -100,7 +134,7 @@ export const useQuizForm = () => {
 
   const handleAddQuestion = () => {
     if (
-      questions.length < QUIZ_QUESTIONS_LIMIT &&
+      questions.length < quizFormConfig.QUIZ_QUESTIONS_LIMIT &&
       isQuestionFilled(questions[questions.length - 1])
     ) {
       setQuestions((prev) => [
@@ -113,198 +147,114 @@ export const useQuizForm = () => {
           image: null,
         },
       ]);
-      setTimeout(() => {
-        questionsContainerRef.current?.lastElementChild?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 0);
+      setTimeout(
+        () =>
+          questionsContainerRef.current?.lastElementChild?.scrollIntoView({
+            behavior: "smooth",
+          }),
+        0,
+      );
     }
   };
 
   const handleDeleteQuestion = (index) => {
-    if (questions.length > 1) {
+    if (questions.length > quizFormConfig.MIN_QUESTIONS_REQUIRED) {
       setQuestions((prev) => prev.filter((_, i) => i !== index));
     }
+  };
+
+  const resetForm = () => {
+    setQuiz({
+      name: "Quiz bez nazwy",
+      description: "",
+      timeLimitPerQuestion: 0,
+      category: "",
+      difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
+      visibility: "public",
+      image: null,
+    });
+    setQuestions([
+      {
+        questionText: "",
+        correctAnswer: "",
+        wrongAnswers: ["", "", ""],
+        isOpen: true,
+        image: null,
+      },
+    ]);
   };
 
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
-
-      if (!isMounted.current || isLoading) return;
-
-      setIsLoading(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      try {
-        if (!isQuizValid(quiz, questions)) {
-          throw new Error(
-            "Wypełnij wszystkie wymagane pola: nazwę quizu, kategorię i pytania!",
-          );
-        }
-
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-          throw new Error("Musisz być zalogowany, aby zapisać quiz!");
-        }
-
-        let quizData = prepareQuizData(quiz, questions, userId);
-        const questionsImages = questions.map((q) => q.image);
-        quizData = await uploadImages(quizData, quiz.image, questionsImages);
-        const quizId = await saveQuizToFirestore(quizData);
-
-        if (isMounted.current) {
-          setSuccessMessage(`Quiz zapisany pomyślnie! ID: ${quizId}`);
-          setQuiz({
-            name: "Quiz bez nazwy",
-            description: "",
-            timeLimitPerQuestion: 0,
-            category: "",
-            difficulty: "normal",
-            visibility: "public",
-            image: null,
-          });
-          setQuestions([
-            {
-              questionText: "",
-              correctAnswer: "",
-              wrongAnswers: ["", "", ""],
-              isOpen: true,
-              image: null,
-            },
-          ]);
-        }
-      } catch (err) {
-        if (isMounted.current) {
-          setError(err.message);
-        }
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
+      if (!isMounted.current || !isQuizValid(quiz, questions)) {
+        showError(
+          quiz.category.trim()
+            ? "Wypełnij wszystkie wymagane pola!"
+            : "Wybierz kategorię!",
+        );
+        return;
       }
+      await withToastHandling(async () => {
+        const userId =
+          auth.currentUser?.uid || throwError("Musisz być zalogowany!");
+        const quizData = prepareQuizData(quiz, questions, userId);
+        const uploadedData = await uploadImages(
+          quizData,
+          quiz.image,
+          questions.map((q) => q.image),
+        );
+        const quizId = await saveQuizToFirestore(uploadedData);
+        resetForm();
+        return quizId;
+      }, toastMessages.saveQuiz);
     },
-    [quiz, questions, isLoading],
+    [quiz, questions],
   );
 
   const handleChangeVisibility = useCallback(
     async (quizId, newVisibility, quizData) => {
-      if (!isMounted.current || isLoading) return;
-
-      setIsLoading(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-          throw new Error(
-            "Musisz być zalogowany, aby zmienić widoczność quizu!",
-          );
-        }
-
+      if (!isMounted.current) return;
+      await withToastHandling(async () => {
+        auth.currentUser?.uid || throwError("Musisz być zalogowany!");
         await updateDoc(doc(db, "quizzes", quizId), {
           visibility: newVisibility,
         });
-
-        const metadata = {
-          customMetadata: {
-            visibility: newVisibility,
-          },
-        };
-        if (quizData.imagePath) {
-          const quizImageRef = ref(storage, quizData.imagePath);
-          console.log("Aktualizacja metadanych obrazu quizu:", metadata);
-          await updateMetadata(quizImageRef, metadata);
+        const metadata = { customMetadata: { visibility: newVisibility } };
+        if (quizData.imagePath)
+          await updateMetadata(ref(storage, quizData.imagePath), metadata);
+        for (const q of quizData.questions) {
+          if (q.imagePath)
+            await updateMetadata(ref(storage, q.imagePath), metadata);
         }
-        for (const question of quizData.questions) {
-          if (question.imagePath) {
-            const questionImageRef = ref(storage, question.imagePath);
-            console.log("Aktualizacja metadanych obrazu pytania:", metadata);
-            await updateMetadata(questionImageRef, metadata);
-          }
-        }
-
-        if (isMounted.current) {
-          setQuiz((prev) => ({ ...prev, visibility: newVisibility }));
-          setSuccessMessage("Widoczność quizu zmieniona pomyślnie!");
-        }
-      } catch (err) {
-        if (isMounted.current) {
-          setError(err.message);
-        }
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
-      }
+        setQuiz((prev) => ({ ...prev, visibility: newVisibility }));
+      }, toastMessages.changeVisibility);
     },
-    [isLoading],
+    [],
   );
 
-  const deleteQuiz = useCallback(
-    async (quizId, quizData) => {
-      if (!isMounted.current || isLoading) return;
-
-      setIsLoading(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-          throw new Error("Musisz być zalogowany, aby usunąć quiz!");
-        }
-
-        // Sprawdź, czy użytkownik jest adminem
-        const idTokenResult = await auth.currentUser.getIdTokenResult();
-        const isAdmin = !!idTokenResult.claims.admin;
-
-        // Jeśli użytkownik nie jest adminem ani właścicielem, zablokuj
-        if (!isAdmin && quizData.createdBy !== userId) {
-          throw new Error("Nie masz uprawnień do usunięcia tego quizu!");
-        }
-
-        // Delete quiz image from Storage if it exists
-        if (quizData.imagePath) {
-          const quizImageRef = ref(storage, quizData.imagePath);
-          await deleteObject(quizImageRef);
-        }
-
-        // Delete question images from Storage if they exist
-        for (const question of quizData.questions) {
-          if (question.imagePath) {
-            const questionImageRef = ref(storage, question.imagePath);
-            await deleteObject(questionImageRef);
-          }
-        }
-
-        // Delete quiz document from Firestore
-        await deleteDoc(doc(db, "quizzes", quizId));
-
-        if (isMounted.current) {
-          setSuccessMessage("Quiz usunięty pomyślnie!");
-        }
-      } catch (err) {
-        if (isMounted.current) {
-          setError(`Błąd podczas usuwania quizu: ${err.message}`);
-        }
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
+  const deleteQuiz = useCallback(async (quizId, quizData) => {
+    if (!isMounted.current) return;
+    await withToastHandling(async () => {
+      const userId =
+        auth.currentUser?.uid || throwError("Musisz być zalogowany!");
+      const { claims } = await auth.currentUser.getIdTokenResult();
+      if (!claims.admin && quizData.createdBy !== userId)
+        throwError("Brak uprawnień!");
+      if (quizData.imagePath)
+        await deleteObject(ref(storage, quizData.imagePath));
+      for (const q of quizData.questions) {
+        if (q.imagePath) await deleteObject(ref(storage, q.imagePath));
       }
-    },
-    [isLoading],
-  );
+      await deleteDoc(doc(db, "quizzes", quizId));
+    }, toastMessages.deleteQuiz);
+  }, []);
+
   return {
     quiz,
     questions,
     questionsContainerRef,
     handleQuizChange,
-    handleNameChange,
     handleQuestionChange,
     handleExpandQuestion,
     handleAddQuestion,
@@ -312,9 +262,10 @@ export const useQuizForm = () => {
     handleSubmit,
     handleChangeVisibility,
     deleteQuiz,
-    questionLimit: QUIZ_QUESTIONS_LIMIT,
-    isLoading,
-    error,
-    successMessage,
+    questionLimit: quizFormConfig.QUIZ_QUESTIONS_LIMIT,
   };
+};
+
+const throwError = (message) => {
+  throw new Error(message);
 };
