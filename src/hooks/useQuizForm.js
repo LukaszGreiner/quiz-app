@@ -13,7 +13,6 @@ import {
 } from "../utils/quizUtils";
 import {
   showError,
-  showSuccess,
   showLoading,
   updateLoadingToSuccess,
   updateLoadingToError,
@@ -21,7 +20,7 @@ import {
 
 const toastMessages = {
   saveQuiz: {
-    success: (id) => `Quiz zapisany! ID: ${id}`,
+    success: (quizName) => `Quiz "${quizName}" został zapisany!`,
     error: "Błąd zapisu quizu",
   },
   changeVisibility: {
@@ -92,7 +91,9 @@ export const useQuizForm = () => {
           name,
         ),
       }));
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleQuestionChange = (
@@ -116,7 +117,9 @@ export const useQuizForm = () => {
         }
         return newQuestions;
       });
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleExpandQuestion = useCallback((index) => {
@@ -206,7 +209,7 @@ export const useQuizForm = () => {
         );
         const quizId = await saveQuizToFirestore(uploadedData);
         resetForm();
-        return quizId;
+        return quiz.name;
       }, toastMessages.saveQuiz);
     },
     [quiz, questions],

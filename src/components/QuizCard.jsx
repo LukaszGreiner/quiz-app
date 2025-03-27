@@ -1,56 +1,33 @@
-import { FaStar, FaHeart, FaSignal, FaEdit, FaTrash } from "react-icons/fa";
-import { useState, useEffect } from "react"; // Dodaj useEffect
-import { auth } from "../firebase"; // Upewnij się, że masz import auth
-
-// Actions Component
-const QuizActions = ({ quizId, isOwner, isAdmin, onEdit, onDelete }) => {
-  return (
-    <div className="flex gap-2">
-      {(isOwner || isAdmin) && (
-        <>
-          <button
-            onClick={() => onEdit(quizId)}
-            className="p-2 text-blue-500 transition-colors duration-200 hover:text-blue-700"
-            title="Edytuj quiz"
-          >
-            <FaEdit className="text-xl" />
-          </button>
-          <button
-            onClick={() => onDelete(quizId)}
-            className="p-2 text-red-500 transition-colors duration-200 hover:text-red-700"
-            title="Usuń quiz"
-          >
-            <FaTrash className="text-xl" />
-          </button>
-        </>
-      )}
-    </div>
-  );
-};
+import { FaStar, FaHeart, FaSignal } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { auth } from "../firebase";
+import QuizActions from "./QuizActions";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function QuizCard({
   id,
   image,
   name,
-  visibility,
+  visibility: initialVisibility,
   createdBy,
   questions = [],
   currentUserId,
-  onEdit,
-  onDelete,
 }) {
   const [isLiked, setIsLiked] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // Nowa zmienna stanu dla roli admina
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [creatorName, setCreatorName] = useState(createdBy); // Default to ID until name is fetched
+  const [visibility, setVisibility] = useState(initialVisibility); // Lifted state for visibility
 
   const isOwner = currentUserId && createdBy === currentUserId;
 
-  // Sprawdzenie roli admina po załadowaniu komponentu
+  // Check admin role and fetch creator's displayName
   useEffect(() => {
     if (currentUserId) {
+      // Check admin status
       auth.currentUser
         .getIdTokenResult()
         .then((idTokenResult) => {
-          const adminStatus = !!idTokenResult.claims.admin; // Sprawdza, czy admin: true istnieje
+          const adminStatus = !!idTokenResult.claims.admin;
           setIsAdmin(adminStatus);
         })
         .catch((error) => {
@@ -58,7 +35,29 @@ export default function QuizCard({
           setIsAdmin(false);
         });
     }
-  }, [currentUserId]);
+
+    // Fetch creator's displayName
+    const fetchCreatorName = async () => {
+      try {
+        const user = await new Promise((resolve) => {
+          const unsubscribe = onAuthStateChanged(getAuth(), (u) => {
+            if (u && u.uid === createdBy) resolve(u);
+            unsubscribe();
+          });
+        });
+        setCreatorName(user.displayName || "Anonymous");
+      } catch (error) {
+        console.error("Błąd podczas pobierania nazwy twórcy:", error);
+        setCreatorName("Unknown"); // Fallback if fetch fails
+      }
+    };
+
+    if (createdBy && createdBy !== currentUserId) {
+      fetchCreatorName();
+    } else if (createdBy === currentUserId) {
+      setCreatorName(auth.currentUser?.displayName || "Ty");
+    }
+  }, [currentUserId, createdBy]);
 
   const getDifficultyColor = (questionCount) => {
     if (questionCount <= 5) return "text-green-500";
@@ -71,6 +70,12 @@ export default function QuizCard({
   };
 
   const questionCount = Array.isArray(questions) ? questions.length : 0;
+
+  const quizData = {
+    visibility,
+    questions,
+    imagePath: image, // Adjust if image is a URL vs path
+  };
 
   return (
     <div className="relative flex w-full max-w-[500px] min-w-[300px] flex-col items-center rounded-xl bg-white p-4 shadow-md transition duration-300 hover:shadow-lg md:max-w-[600px] md:min-w-0 md:flex-row lg:w-[calc(50%-1rem)] lg:max-w-none">
@@ -87,14 +92,14 @@ export default function QuizCard({
       <div className="absolute top-2 right-10">
         <QuizActions
           quizId={id}
+          quizData={quizData}
           isOwner={isOwner}
-          isAdmin={isAdmin} // Przekazujemy isAdmin
-          onEdit={onEdit}
-          onDelete={onDelete}
+          isAdmin={isAdmin}
+          visibility={visibility}
+          setVisibility={setVisibility}
         />
       </div>
 
-      {/* Reszta kodu pozostaje bez zmian */}
       <img
         src={image || "https://placehold.co/128x128.png?text=Brak%20obrazu"}
         alt={`Obraz quizu ${name}`}
@@ -109,7 +114,7 @@ export default function QuizCard({
         <p className="text-secondary mb-4">
           Widoczność: {visibility === "public" ? "Publiczny" : "Prywatny"}
           <br />
-          Twórca: {createdBy === currentUserId ? "Ty" : createdBy}
+          Twórca: {creatorName}
         </p>
 
         <div className="mb-4 flex justify-center gap-4 md:justify-start">
