@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { auth, db, storage } from "../firebase";
-import { doc, updateDoc } from "firebase/firestore";
-import { ref, updateMetadata } from "firebase/storage";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { deleteObject, ref, updateMetadata } from "firebase/storage";
 import {
   isQuizValid,
   isQuestionFilled,
@@ -244,6 +244,61 @@ export const useQuizForm = () => {
     [isLoading],
   );
 
+  const deleteQuiz = useCallback(
+    async (quizId, quizData) => {
+      if (!isMounted.current || isLoading) return;
+
+      setIsLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      try {
+        const userId = auth.currentUser?.uid;
+        if (!userId) {
+          throw new Error("Musisz być zalogowany, aby usunąć quiz!");
+        }
+
+        // Sprawdź, czy użytkownik jest adminem
+        const idTokenResult = await auth.currentUser.getIdTokenResult();
+        const isAdmin = !!idTokenResult.claims.admin;
+
+        // Jeśli użytkownik nie jest adminem ani właścicielem, zablokuj
+        if (!isAdmin && quizData.createdBy !== userId) {
+          throw new Error("Nie masz uprawnień do usunięcia tego quizu!");
+        }
+
+        // Delete quiz image from Storage if it exists
+        if (quizData.imagePath) {
+          const quizImageRef = ref(storage, quizData.imagePath);
+          await deleteObject(quizImageRef);
+        }
+
+        // Delete question images from Storage if they exist
+        for (const question of quizData.questions) {
+          if (question.imagePath) {
+            const questionImageRef = ref(storage, question.imagePath);
+            await deleteObject(questionImageRef);
+          }
+        }
+
+        // Delete quiz document from Firestore
+        await deleteDoc(doc(db, "quizzes", quizId));
+
+        if (isMounted.current) {
+          setSuccessMessage("Quiz usunięty pomyślnie!");
+        }
+      } catch (err) {
+        if (isMounted.current) {
+          setError(`Błąd podczas usuwania quizu: ${err.message}`);
+        }
+      } finally {
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [isLoading],
+  );
   return {
     quiz,
     questions,
@@ -256,6 +311,7 @@ export const useQuizForm = () => {
     handleDeleteQuestion,
     handleSubmit,
     handleChangeVisibility,
+    deleteQuiz,
     questionLimit: QUIZ_QUESTIONS_LIMIT,
     isLoading,
     error,

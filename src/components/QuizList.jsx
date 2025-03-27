@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import QuizCard from "./QuizCard";
+import { useQuizForm } from "../hooks/useQuizForm"; // Import the hook
 
 const QuizList = () => {
   const [quizzes, setQuizzes] = useState([]);
@@ -8,13 +10,20 @@ const QuizList = () => {
   const [error, setError] = useState(null);
   const currentUserId = auth.currentUser?.uid || null;
 
+  // Use the hook just for deletion functionality
+  const {
+    deleteQuiz,
+    isLoading: deleteLoading,
+    error: deleteError,
+    successMessage,
+  } = useQuizForm();
+
   const fetchQuizzes = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
       let quizzesData = [];
-
       const publicQuery = query(
         collection(db, "quizzes"),
         where("visibility", "==", "public"),
@@ -48,64 +57,67 @@ const QuizList = () => {
     }
   }, [currentUserId]);
 
+  const handleDelete = async (quizId) => {
+    if (window.confirm("Czy na pewno chcesz usunąć ten quiz?")) {
+      const quizToDelete = quizzes.find((q) => q.id === quizId);
+      if (quizToDelete) {
+        await deleteQuiz(quizId, quizToDelete);
+        if (!deleteError) {
+          setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     fetchQuizzes();
   }, [fetchQuizzes]);
 
   return (
-    <div className="mx-auto max-w-3xl p-4">
-      <h2 className="mb-4 text-2xl font-bold">Lista Quizów</h2>
-      {loading && <div className="text-indigo-600">Ładowanie quizów...</div>}
-      {error && <div className="text-red-600">{error}</div>}
-      {!loading && !error && quizzes.length === 0 && (
-        <div className="text-gray-600">Brak quizów do wyświetlenia.</div>
+    <div className="mx-auto max-w-4xl p-4">
+      <h2 className="mb-6 text-center text-2xl font-bold">Lista Quizów</h2>
+      {loading && (
+        <div className="text-center text-indigo-600">Ładowanie quizów...</div>
       )}
-      <div className="space-y-4">
+      {error && <div className="text-center text-red-600">{error}</div>}
+      {deleteLoading && (
+        <div className="text-center text-indigo-600">Usuwanie quizu...</div>
+      )}
+      {deleteError && (
+        <div className="text-center text-red-600">{deleteError}</div>
+      )}
+      {successMessage && (
+        <div className="text-center text-green-600">{successMessage}</div>
+      )}
+      {!loading && !error && quizzes.length === 0 && (
+        <div className="text-center text-gray-600">
+          Brak quizów do wyświetlenia.
+        </div>
+      )}
+      <div className="flex flex-wrap justify-center gap-4">
         {quizzes.map((quiz) => (
-          <div
+          <QuizCard
             key={quiz.id}
-            className="rounded-md border border-gray-200 bg-gray-50 p-4"
-          >
-            <div className="flex items-center gap-4">
-              {quiz.image ? (
-                <img
-                  src={quiz.image}
-                  alt={`Obraz quizu ${quiz.name}`}
-                  className="h-16 w-16 rounded-md object-cover"
-                  onError={(e) =>
-                    (e.target.src =
-                      "https://placehold.co/128x128.png?text=Brak%20obrazu")
-                  }
-                />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-200 text-gray-500">
-                  Brak obrazu
-                </div>
-              )}
-              <div>
-                <h3 className="text-lg font-semibold">{quiz.name}</h3>
-                <p className="text-sm text-gray-600">
-                  Widoczność:{" "}
-                  {quiz.visibility === "public" ? "Publiczny" : "Prywatny"}
-                </p>
-                <p className="text-sm text-gray-600">
-                  Twórca:{" "}
-                  {quiz.createdBy === currentUserId ? "Ty" : quiz.createdBy}
-                </p>
-                <p className="text-sm text-gray-600">
-                  Liczba pytań: {quiz.questions.length}
-                </p>
-              </div>
-            </div>
-          </div>
+            id={quiz.id}
+            image={quiz.image}
+            name={quiz.name}
+            visibility={quiz.visibility}
+            createdBy={quiz.createdBy}
+            questions={quiz.questions}
+            currentUserId={currentUserId}
+            onEdit={() => console.log(`Edit quiz: ${quiz.id}`)}
+            onDelete={handleDelete}
+          />
         ))}
       </div>
-      <button
-        onClick={fetchQuizzes}
-        className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-      >
-        Odśwież listę
-      </button>
+      <div className="mt-6 text-center">
+        <button
+          onClick={fetchQuizzes}
+          className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+        >
+          Odśwież listę
+        </button>
+      </div>
     </div>
   );
 };
