@@ -75,7 +75,6 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
       isOpen={isOpen}
       onToggle={handleToggle}
       summary={renderSummary()}
-      label="Szczegóły quizu"
     >
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -92,7 +91,9 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
               value={quiz.category}
               onChange={onChange}
               required
-              className="w-full rounded-md border border-gray-200 p-2 text-sm focus:ring-1 focus:ring-indigo-500"
+              className={`w-full rounded-md border ${
+                !quiz.category ? "border-warning" : "border-gray-200"
+              } p-2 text-sm focus:ring-1 focus:ring-indigo-500`}
             >
               <option value="">Wybierz Kategorię</option>
               {quizFormConfig.CATEGORIES.map((cat) => (

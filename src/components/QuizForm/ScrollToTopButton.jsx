@@ -55,7 +55,7 @@ const ScrollToTopButton = () => {
   return (
     <button
       onClick={handleScroll}
-      className="fixed right-2 bottom-6 flex h-10 w-10 items-center justify-center rounded-md bg-indigo-600 text-white opacity-80 shadow-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none lg:right-[calc(50%-450px)] lg:bottom-20"
+      className="fixed right-2 bottom-6 flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-indigo-600 text-white opacity-80 shadow-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none lg:right-[calc(50%-450px)] lg:bottom-20"
       title={isAtTop ? "Przewiń na dół strony" : "Przewiń do góry strony"}
     >
       {isAtTop ? <FaArrowDown size={18} /> : <FaArrowUp size={18} />}

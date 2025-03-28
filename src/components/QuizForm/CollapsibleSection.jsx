@@ -1,6 +1,6 @@
 import { FaAngleDown } from "react-icons/fa";
 
-const CollapsibleSection = ({ isOpen, onToggle, summary, children, label }) => (
+const CollapsibleSection = ({ isOpen, onToggle, summary, children }) => (
   <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
     {isOpen ? children : summary}
     <div className="mt-2 flex justify-center">
@@ -12,7 +12,8 @@ const CollapsibleSection = ({ isOpen, onToggle, summary, children, label }) => (
         tabIndex={0}
         role="button"
         aria-expanded={isOpen}
-        aria-label={label || (isOpen ? "Zwiń" : "Rozwiń")}
+        aria-label={isOpen ? "Pokaż mniej" : "Pokaż więcej"}
+        title={isOpen ? "Pokaż mniej" : "Pokaż więcej"}
       />
     </div>
   </div>

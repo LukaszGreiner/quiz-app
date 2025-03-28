@@ -13,10 +13,6 @@ const Question = ({
   canDelete,
 }) => {
   const [isOpen, setIsOpen] = useState(question.isOpen);
-  const isFilled =
-    question.questionText.trim() &&
-    question.correctAnswer.trim() &&
-    question.wrongAnswers.every((answer) => answer.trim());
 
   const handleImageChange = (file) => onChange(index, "image", file);
   const handleToggle = () => setIsOpen((prev) => !prev);
@@ -73,7 +69,6 @@ const Question = ({
         isOpen={isOpen}
         onToggle={handleToggle}
         summary={renderSummary()}
-        label={`Pytanie ${index + 1}`}
       >
         <div className="mt-4 space-y-4">
           <div>
