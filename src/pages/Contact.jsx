@@ -1,4 +1,4 @@
-import QuizList from "../components/QuizList";
+import QuizList from "../components/Home/QuizList";
 
 function Contact() {
   return (

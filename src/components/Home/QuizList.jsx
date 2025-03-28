@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
-import { auth, db } from "../firebase";
+import { useParams } from "react-router-dom";
+import { auth, db } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import QuizCard from "./QuizCard";
-import { useQuizForm } from "../hooks/useQuizForm"; // Import the hook
+import { useQuizForm } from "../../hooks/useQuizForm";
 
 const QuizList = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const currentUserId = auth.currentUser?.uid || null;
+  const { category } = useParams();
 
-  // Use the hook just for deletion functionality
   const {
     deleteQuiz,
     isLoading: deleteLoading,
@@ -24,10 +25,25 @@ const QuizList = () => {
 
     try {
       let quizzesData = [];
-      const publicQuery = query(
-        collection(db, "quizzes"),
-        where("visibility", "==", "public"),
-      );
+      let publicQuery;
+
+      if (!category || category.toLowerCase() === "wszystkie") {
+        publicQuery = query(
+          collection(db, "quizzes"),
+          where("visibility", "==", "public"),
+        );
+      } else {
+        publicQuery = query(
+          collection(db, "quizzes"),
+          where("visibility", "==", "public"),
+          where(
+            "category",
+            "==",
+            category.charAt(0).toUpperCase() + category.slice(1).toLowerCase(),
+          ),
+        );
+      }
+
       const publicSnapshot = await getDocs(publicQuery);
       const publicQuizzes = publicSnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -36,11 +52,27 @@ const QuizList = () => {
       quizzesData = [...publicQuizzes];
 
       if (currentUserId) {
-        const privateQuery = query(
-          collection(db, "quizzes"),
-          where("createdBy", "==", currentUserId),
-          where("visibility", "==", "private"),
-        );
+        let privateQuery;
+        if (!category || category.toLowerCase() === "wszystkie") {
+          privateQuery = query(
+            collection(db, "quizzes"),
+            where("createdBy", "==", currentUserId),
+            where("visibility", "==", "private"),
+          );
+        } else {
+          privateQuery = query(
+            collection(db, "quizzes"),
+            where("createdBy", "==", currentUserId),
+            where("visibility", "==", "private"),
+            where(
+              "category",
+              "==",
+              category.charAt(0).toUpperCase() +
+                category.slice(1).toLowerCase(),
+            ),
+          );
+        }
+
         const privateSnapshot = await getDocs(privateQuery);
         const privateQuizzes = privateSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -55,7 +87,7 @@ const QuizList = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, category]);
 
   const handleDelete = async (quizId) => {
     if (window.confirm("Czy na pewno chcesz usunąć ten quiz?")) {
@@ -74,8 +106,11 @@ const QuizList = () => {
   }, [fetchQuizzes]);
 
   return (
-    <div className="mx-auto max-w-4xl p-4">
-      <h2 className="mb-6 text-center text-2xl font-bold">Lista Quizów</h2>
+    <div className="mx-auto max-w-5xl p-4">
+      <h2 className="mb-6 text-center text-2xl font-bold">
+        Lista Quizów
+        {category && category !== "wszystkie" ? `- ${category}` : ""}
+      </h2>
       {loading && (
         <div className="text-center text-indigo-600">Ładowanie quizów...</div>
       )}
@@ -94,16 +129,19 @@ const QuizList = () => {
           Brak quizów do wyświetlenia.
         </div>
       )}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="grid grid-cols-1 justify-items-center gap-6 md:grid-cols-2">
         {quizzes.map((quiz) => (
           <QuizCard
             key={quiz.id}
             id={quiz.id}
             image={quiz.image}
             name={quiz.name}
+            description={quiz.description}
             visibility={quiz.visibility}
             createdBy={quiz.createdBy}
+            category={quiz.category}
             questions={quiz.questions}
+            createdAt={quiz.createdAt}
             currentUserId={currentUserId}
             onEdit={() => console.log(`Edit quiz: ${quiz.id}`)}
             onDelete={handleDelete}

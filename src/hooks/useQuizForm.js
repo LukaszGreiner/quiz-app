@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { auth, db, storage } from "../firebase";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref, updateMetadata } from "firebase/storage";
@@ -65,6 +66,7 @@ export const useQuizForm = () => {
 
   const questionsContainerRef = useRef(null);
   const isMounted = useRef(false);
+  const navigate = useNavigate(); // Add useNavigate hook
 
   useEffect(() => {
     isMounted.current = true;
@@ -209,10 +211,11 @@ export const useQuizForm = () => {
         );
         const quizId = await saveQuizToFirestore(uploadedData);
         resetForm();
+        navigate(`/quiz/${quizId}`); // Redirect to /quizUUID
         return quiz.name;
       }, toastMessages.saveQuiz);
     },
-    [quiz, questions],
+    [quiz, questions, navigate], // Add navigate to dependencies
   );
 
   const handleChangeVisibility = useCallback(

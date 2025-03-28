@@ -96,7 +96,7 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
               } p-2 text-sm focus:ring-1 focus:ring-indigo-500`}
             >
               <option value="">Wybierz Kategorię</option>
-              {quizFormConfig.CATEGORIES.map((cat) => (
+              {quizFormConfig.QUIZ_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>

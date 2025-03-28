@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import Hamburger from "./Hamburger";
 
 // Navigation link data
 const navLinks = [
   { path: "/", label: "Home" },
-  { path: "/about", label: "About" },
-  { path: "/contact", label: "Contact" },
+  { path: "/newquiz", label: "Create Quiz" },
+  { path: "/user/library", label: "Dashboard" },
 ];
 
 const linkStyle = "text-white hover:text-gray-300";
