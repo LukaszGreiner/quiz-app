@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { auth, db } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import QuizCard from "./QuizCard";
+import QuizCard from "../QuizCard/QuizCard";
 import { useQuizForm } from "../../hooks/useQuizForm";
 
 const QuizList = () => {
@@ -109,7 +109,7 @@ const QuizList = () => {
     <div className="mx-auto max-w-5xl p-4">
       <h2 className="mb-6 text-center text-2xl font-bold">
         Lista Quizów
-        {category && category !== "wszystkie" ? `- ${category}` : ""}
+        {category && category !== "wszystkie" ? ` - ${category}` : ""}
       </h2>
       {loading && (
         <div className="text-center text-indigo-600">Ładowanie quizów...</div>
@@ -129,25 +129,29 @@ const QuizList = () => {
           Brak quizów do wyświetlenia.
         </div>
       )}
-      <div className="grid grid-cols-1 justify-items-center gap-6 md:grid-cols-2">
-        {quizzes.map((quiz) => (
-          <QuizCard
-            key={quiz.id}
-            id={quiz.id}
-            image={quiz.image}
-            name={quiz.name}
-            description={quiz.description}
-            visibility={quiz.visibility}
-            createdBy={quiz.createdBy}
-            category={quiz.category}
-            questions={quiz.questions}
-            createdAt={quiz.createdAt}
-            currentUserId={currentUserId}
-            onEdit={() => console.log(`Edit quiz: ${quiz.id}`)}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {!loading && !error && quizzes.length > 0 && (
+        <div className="grid grid-cols-1 justify-items-center gap-6 md:grid-cols-2">
+          {quizzes.map((quiz) => (
+            <QuizCard
+              key={quiz.id}
+              quiz={{
+                id: quiz.id,
+                image: quiz.image,
+                name: quiz.name,
+                description: quiz.description,
+                visibility: quiz.visibility,
+                createdBy: quiz.createdBy,
+                category: quiz.category,
+                questions: quiz.questions,
+                createdAt: quiz.createdAt,
+                imagePath: quiz.imagePath,
+              }}
+              onEdit={() => console.log(`Edit quiz: ${quiz.id}`)}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
       <div className="mt-6 text-center">
         <button
           onClick={fetchQuizzes}

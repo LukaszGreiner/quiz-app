@@ -1,61 +1,85 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase"; // Make sure to import db for Firestore access
+import ChangeUsername from "../components/ChangeUserName";
 
 function UserPage() {
   const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
+  const [username, setUsername] = useState(null); // State to store username
+  const [showUsernameForm, setShowUsernameForm] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (currentUser) {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          setUsername(userDoc.data().username); // Set the username from Firestore
+        } else {
+          console.error("Nie znaleziono takiego użytkownika!");
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [currentUser]);
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/");
-    } catch (err) {
-      console.error("Logout failed:", err);
+      // Redirect logic here if needed
+    } catch (error) {
+      console.error("Wystąpił błąd z wylogowaniem:", error);
     }
   };
 
-  if (!currentUser) {
-    return <p className="mt-8 text-center">Loading...</p>;
-  }
-
-  // Use Google profile picture with no-referrer, or local placeholder
-  const profileImage = currentUser.photoURL || "/profile_icon.jpg";
-
   return (
-    <div className="mx-auto mt-8 max-w-md">
+    <div className="mx-auto mt-8 max-w-2xl">
       <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
-        User Details
+        User Profile
       </h1>
+
       <div className="rounded-lg bg-white p-6 shadow-md">
-        <div className="mb-6 flex justify-center">
-          <img
-            src={profileImage}
-            alt="Profile"
-            className="h-24 w-24 rounded-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="mb-2 block font-medium text-gray-700">Name</label>
-          <p className="text-gray-900">
-            {currentUser.displayName || "Not provided"}
-          </p>
-        </div>
-        <div className="mb-4">
-          <label className="mb-2 block font-medium text-gray-700">Email</label>
-          <p className="text-gray-900">{currentUser.email}</p>
-        </div>
+        {/* User Info Section */}
         <div className="mb-6">
-          <label className="mb-2 block font-medium text-gray-700">Joined</label>
-          <p className="text-gray-900">
-            {currentUser.metadata.creationTime
-              ? new Date(currentUser.metadata.creationTime).toLocaleDateString()
-              : "Unknown"}
-          </p>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Account Details
+          </h2>
+          <div className="mt-4 space-y-2">
+            <p className="text-gray-600">
+              <span className="font-medium">Email:</span>{" "}
+              {currentUser?.email || "Not available"}
+            </p>
+            <p className="text-gray-600">
+              <span className="font-medium">Username:</span>{" "}
+              {username || "Not set"}{" "}
+              {/* Display the username from Firestore */}
+            </p>
+          </div>
         </div>
+
+        {/* Change Username Section */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowUsernameForm(!showUsernameForm)}
+            className="rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
+          >
+            {showUsernameForm ? "Cancel" : "Change Username"}
+          </button>
+
+          {showUsernameForm && (
+            <div className="mt-4">
+              <ChangeUsername toggleForm={setShowUsernameForm} />
+            </div>
+          )}
+        </div>
+
+        {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="bg-warning hover:bg-warning/90 w-full cursor-pointer rounded-md py-2 text-white transition-colors"
+          className="rounded-md bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600"
         >
           Logout
         </button>

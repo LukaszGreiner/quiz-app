@@ -1,8 +1,19 @@
+// src/components/Login.js
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider, db } from "../firebase";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  query,
+  collection,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { showError, showSuccess } from "../utils/toastUtils";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -18,17 +29,54 @@ function Login() {
       await login(email, password);
       navigate("/user/details");
     } catch (err) {
-      setError(err.message);
+      setError("Nieprawidłowa dane logowania");
     }
   };
 
   const handleGoogleLogin = async () => {
     setError("");
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Check if user document already exists
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // Generate a unique username for Google users
+        const adjectives = ["Cool", "Happy", "Smart", "Quick", "Brave"];
+        const nouns = ["Penguin", "Tiger", "Eagle", "Fox", "Wolf"];
+        let username;
+        let isUnique = false;
+
+        while (!isUnique) {
+          const randomAdj =
+            adjectives[Math.floor(Math.random() * adjectives.length)];
+          const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+          const randomNum = Math.floor(Math.random() * 1000);
+          username = `${randomAdj}${randomNoun}${randomNum}`;
+
+          const q = query(
+            collection(db, "users"),
+            where("username", "==", username),
+          );
+          const querySnapshot = await getDocs(q);
+          isUnique = querySnapshot.empty;
+        }
+
+        // Create user document
+        await setDoc(userDocRef, {
+          email: user.email,
+          username: username,
+          createdAt: new Date().toISOString(),
+          isAdmin: false,
+        });
+      }
+
       navigate("/user/details");
     } catch (err) {
-      setError(err.message);
+      setError("Logowanie się nie powiodło!");
     }
   };
 
