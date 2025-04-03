@@ -1,26 +1,32 @@
-// components/QuestionList.jsx
 import Question from "./Question";
+import { quizFormConfig } from "../../config/quizFormConfig";
 
-const QuestionList = ({
-  questions,
-  questionsContainerRef,
-  onQuestionChange,
-  onDelete,
-  onExpand,
-}) => {
+const QuestionList = ({ fields, append, remove }) => {
   return (
-    <div ref={questionsContainerRef} className="space-y-4">
-      {questions.map((question, index) => (
+    <div className="space-y-4">
+      {fields.map((field, index) => (
         <Question
-          key={index}
+          key={field.id} // Use field.id from useFieldArray for unique keys
           index={index}
-          question={question}
-          onChange={onQuestionChange}
-          onDelete={onDelete}
-          onExpand={onExpand}
-          canDelete={questions.length > 1}
+          onDelete={() => remove(index)}
+          canDelete={fields.length > 1}
         />
       ))}
+      <button
+        type="button"
+        onClick={() =>
+          append({
+            title: "",
+            correctAnswer: "",
+            wrongAnswers: ["", "", ""],
+            image: null,
+          })
+        }
+        disabled={fields.length >= quizFormConfig.QUIZ_QUESTIONS_LIMIT}
+        className="flex w-full items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+      >
+        Dodaj pytanie
+      </button>
     </div>
   );
 };

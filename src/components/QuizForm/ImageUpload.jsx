@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { FaImage, FaTrash } from "react-icons/fa";
-import { validateImage } from "../../utils/quizUtils";
 
 const ImageUpload = ({
   image,
@@ -15,9 +14,8 @@ const ImageUpload = ({
     if (!file) return;
 
     try {
-      const validatedFile = validateImage(file, "zdjęcia");
       setError("");
-      onChange(validatedFile);
+      onChange(file);
     } catch (err) {
       setError(err.message);
       if (fileInputRef.current) fileInputRef.current.value = "";

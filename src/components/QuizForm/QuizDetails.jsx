@@ -1,74 +1,73 @@
-import { useState } from "react";
-import { FaClock, FaTag, FaStar, FaEye } from "react-icons/fa";
-import { formatTotalTime } from "../../utils/quizUtils";
+import { useFormContext } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import ImageUpload from "./ImageUpload";
 import { quizFormConfig } from "../../config/quizFormConfig";
 import CollapsibleSection from "./CollapsibleSection";
+import { FaTag, FaStar, FaClock, FaEye } from "react-icons/fa";
+import { formatTotalTime } from "../../utils/quizUtils";
+import { useState } from "react";
 
-const QuizDetails = ({ quiz, onChange, questionCount }) => {
+const QuizDetails = ({ questionCount }) => {
+  const {
+    register,
+    control,
+    watch,
+    formState: { errors },
+  } = useFormContext();
   const [isOpen, setIsOpen] = useState(true);
-  const isFilled = !!quiz.category;
+  const category = watch("category");
+  const isFilled = !!category;
 
   const handleToggle = () => isFilled && setIsOpen((prev) => !prev);
-  const handleImageChange = (file) =>
-    onChange({ target: { name: "image", files: file ? [file] : [null] } });
 
-  const renderSummary = () => {
-    const {
-      description,
-      timeLimitPerQuestion,
-      category,
-      difficulty,
-      visibility,
-      image,
-    } = quiz;
-    const totalTime = timeLimitPerQuestion
-      ? timeLimitPerQuestion * questionCount
-      : null;
-    return (
-      <div className="flex flex-col gap-6 p-2 md:flex-row md:items-center">
-        <div className="mx-auto flex-shrink-0 md:mx-0">
-          {image ? (
-            <img
-              src={URL.createObjectURL(image)}
-              alt="Podgląd zdjęcia quizu"
-              className="h-24 w-24 rounded-md object-cover"
-            />
-          ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 text-sm text-gray-500">
-              Brak zdjęcia
-            </div>
-          )}
-        </div>
-        <div className="flex-1 text-center text-sm text-gray-700 md:text-left">
-          <p className="mb-2 line-clamp-3 break-all">
-            {description || "Brak opisu"}
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 md:justify-start">
-            {category && (
-              <span className="flex items-center gap-1">
-                <FaTag size={12} /> {category}
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <FaStar size={12} />{" "}
-              {quizFormConfig.DIFFICULTY_LEVELS[difficulty]}
-            </span>
-            <span className="flex items-center gap-1">
-              <FaClock size={12} />{" "}
-              {timeLimitPerQuestion
-                ? `${timeLimitPerQuestion} s (${formatTotalTime(totalTime)})`
-                : "Bez limitu"}
-            </span>
-            <span className="flex items-center gap-1">
-              <FaEye size={12} />{" "}
-              {quizFormConfig.VISIBILITY_OPTIONS[visibility]}
-            </span>
+  const description = watch("description") || "Brak opisu";
+  const timeLimitPerQuestion = watch("timeLimitPerQuestion");
+  const difficulty = watch("difficulty");
+  const visibility = watch("visibility");
+  const image = watch("image");
+  const totalTime = timeLimitPerQuestion
+    ? timeLimitPerQuestion * questionCount
+    : null;
+
+  const renderSummary = () => (
+    <div className="flex flex-col gap-6 p-2 md:flex-row md:items-center">
+      <div className="mx-auto flex-shrink-0 md:mx-0">
+        {image ? (
+          <img
+            src={URL.createObjectURL(image)}
+            alt="Podgląd zdjęcia quizu"
+            className="h-24 w-24 rounded-md object-cover"
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 text-sm text-gray-500">
+            Brak zdjęcia
           </div>
+        )}
+      </div>
+      <div className="flex-1 text-center text-sm text-gray-700 md:text-left">
+        <p className="mb-2 line-clamp-3 break-all">{description}</p>
+        <div className="flex flex-wrap justify-center gap-3 md:justify-start">
+          {category && (
+            <span className="flex items-center gap-1">
+              <FaTag size={12} /> {category}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <FaStar size={12} /> {quizFormConfig.DIFFICULTY_LEVELS[difficulty]}
+          </span>
+          <span className="flex items-center gap-1">
+            <FaClock size={12} />{" "}
+            {timeLimitPerQuestion
+              ? `${timeLimitPerQuestion} s (${formatTotalTime(totalTime)})`
+              : "Bez limitu"}
+          </span>
+          <span className="flex items-center gap-1">
+            <FaEye size={12} /> {quizFormConfig.VISIBILITY_OPTIONS[visibility]}
+          </span>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <CollapsibleSection
@@ -87,13 +86,8 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
             </label>
             <select
               id="category"
-              name="category"
-              value={quiz.category}
-              onChange={onChange}
-              required
-              className={`w-full rounded-md border ${
-                !quiz.category ? "border-warning" : "border-gray-200"
-              } p-2 text-sm focus:ring-1 focus:ring-indigo-500`}
+              {...register("category", { required: "Kategoria jest wymagana" })}
+              className={`w-full rounded-md border ${!category ? "border-warning" : "border-gray-200"} p-2 text-sm focus:ring-1 focus:ring-indigo-500`}
             >
               <option value="">Wybierz Kategorię</option>
               {quizFormConfig.QUIZ_CATEGORIES.map((cat) => (
@@ -102,6 +96,11 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
                 </option>
               ))}
             </select>
+            {errors.category && (
+              <span className="text-sm text-red-600">
+                {errors.category.message}
+              </span>
+            )}
           </div>
           <div>
             <label
@@ -112,9 +111,7 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
             </label>
             <select
               id="difficulty"
-              name="difficulty"
-              value={quiz.difficulty}
-              onChange={onChange}
+              {...register("difficulty")}
               className="w-full rounded-md border border-gray-200 p-2 text-sm focus:ring-1 focus:ring-indigo-500"
             >
               {Object.entries(quizFormConfig.DIFFICULTY_LEVELS).map(
@@ -135,14 +132,10 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
             </label>
             <select
               id="timeLimitPerQuestion"
-              name="timeLimitPerQuestion"
-              value={
-                quiz.timeLimitPerQuestion === 0 ? "" : quiz.timeLimitPerQuestion
-              }
-              onChange={onChange}
+              {...register("timeLimitPerQuestion")}
               className="w-full rounded-md border border-gray-200 p-2 text-sm focus:ring-1 focus:ring-indigo-500"
             >
-              <option value="">Bez limitu</option>
+              <option value={0}>Bez limitu</option>
               {quizFormConfig.TIME_OPTIONS.map((time) => (
                 <option key={time} value={time}>
                   {time} s
@@ -159,9 +152,7 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
             </label>
             <select
               id="visibility"
-              name="visibility"
-              value={quiz.visibility}
-              onChange={onChange}
+              {...register("visibility")}
               className="w-full rounded-md border border-gray-200 p-2 text-sm focus:ring-1 focus:ring-indigo-500"
             >
               {Object.entries(quizFormConfig.VISIBILITY_OPTIONS).map(
@@ -183,18 +174,31 @@ const QuizDetails = ({ quiz, onChange, questionCount }) => {
           </label>
           <textarea
             id="description"
-            name="description"
-            value={quiz.description}
-            onChange={onChange}
+            {...register("description", {
+              maxLength: {
+                value: quizFormConfig.MAX_DESCRIPTION_LENGTH,
+                message: `Maksymalna długość to ${quizFormConfig.MAX_DESCRIPTION_LENGTH} znaków`,
+              },
+            })}
             placeholder="Dodaj opis"
-            maxLength={quizFormConfig.MAX_DESCRIPTION_LENGTH}
             className="min-h-[80px] w-full rounded-md border border-gray-200 p-3 text-sm focus:ring-1 focus:ring-indigo-500"
           />
+          {errors.description && (
+            <span className="text-sm text-red-600">
+              {errors.description.message}
+            </span>
+          )}
         </div>
-        <ImageUpload
-          image={quiz.image}
-          onChange={handleImageChange}
-          label="Dodaj zdjęcie quizu (jpg/png)"
+        <Controller
+          name="image"
+          control={control}
+          render={({ field }) => (
+            <ImageUpload
+              image={field.value}
+              onChange={(file) => field.onChange(file)}
+              label="Dodaj zdjęcie quizu (jpg/png)"
+            />
+          )}
         />
       </div>
     </CollapsibleSection>
