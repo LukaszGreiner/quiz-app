@@ -9,7 +9,7 @@ export const createQuiz = async (
   showLoading,
   updateLoadingToSuccess,
   updateLoadingToError,
-  reset, // Add reset as a parameter
+  reset,
 ) => {
   // Show loading toast
   const toastId = showLoading("Saving quiz...");
@@ -73,7 +73,7 @@ export const createQuiz = async (
     await setDoc(quizRef, quizData);
 
     // Update toast to success
-    updateLoadingToSuccess(toastId, "Quiz saved successfully!");
+    updateLoadingToSuccess(toastId, "Quiz zapisany!");
 
     // Reset the form only on success
     reset();

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { FaTrash } from "react-icons/fa";
 import ImageUpload from "./ImageUpload";
 import { quizFormConfig } from "../../config/quizFormConfig";
-import CollapsibleSection from "./CollapsibleSection";
 import { useFormContext } from "react-hook-form";
 import { Controller } from "react-hook-form";
+import CollapsibleSection from "./CollapsibleSection";
 
 const Question = ({ index, onDelete, canDelete }) => {
   const {
@@ -13,46 +13,34 @@ const Question = ({ index, onDelete, canDelete }) => {
     watch,
     formState: { errors },
   } = useFormContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const title = watch(`questions.${index}.title`) || "";
+  const quizTitle = useRef(null);
 
-  const handleToggle = () => setIsOpen((prev) => !prev);
+  // Watch required fields
+  const title = watch(`questions.${index}.title`);
+  const correctAnswer = watch(`questions.${index}.correctAnswer`);
+  const wrongAnswers = [
+    watch(`questions.${index}.wrongAnswers.0`),
+    watch(`questions.${index}.wrongAnswers.1`),
+    watch(`questions.${index}.wrongAnswers.2`),
+  ];
 
-  const renderSummary = () => {
-    const image = watch(`questions.${index}.image`);
-    return (
-      <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center">
-        {image && (
-          <div className="mx-auto flex-shrink-0 md:mx-0">
-            <img
-              src={URL.createObjectURL(image)}
-              alt={`Podgląd pytania ${index + 1}`}
-              className="h-16 w-16 rounded-md object-cover"
-            />
-          </div>
-        )}
-        <div className="w-full flex-1">
-          <input
-            type="text"
-            {...register(`questions.${index}.title`, {
-              required: "Pytanie jest wymagane",
-              maxLength: {
-                value: quizFormConfig.MAX_QUESTION_TEXT_LENGTH,
-                message: `Maksymalna długość to ${quizFormConfig.MAX_QUESTION_TEXT_LENGTH} znaków`,
-              },
-            })}
-            placeholder="Wpisz pytanie"
-            className="w-full rounded-md border border-gray-200 p-1.5 text-sm break-all focus:ring-1 focus:ring-indigo-500"
-            onClick={handleToggle}
-          />
-          {errors.questions?.[index]?.title && (
-            <span className="text-sm text-red-600">
-              {errors.questions[index].title.message}
-            </span>
-          )}
-        </div>
-      </div>
-    );
+  // Check if all required fields are filled
+  const areFieldsFilled =
+    title?.trim() &&
+    correctAnswer?.trim() &&
+    wrongAnswers.every((answer) => answer?.trim());
+
+  // Custom toggle handler
+  const handleToggle = (isOpen, setIsOpen) => {
+    if (isOpen) {
+      // Allow collapsing only if all fields are filled
+      if (areFieldsFilled) {
+        setIsOpen(false);
+      }
+    } else {
+      // Always allow expanding
+      setIsOpen(true);
+    }
   };
 
   return (
@@ -72,38 +60,31 @@ const Question = ({ index, onDelete, canDelete }) => {
           </button>
         )}
       </div>
-      <CollapsibleSection
-        isOpen={isOpen}
-        onToggle={handleToggle}
-        summary={renderSummary()}
-      >
+      {/* Title */}
+      <div className="mb-2">
+        <input
+          ref={quizTitle}
+          id={`title-${index}`}
+          type="text"
+          {...register(`questions.${index}.title`, {
+            required: "Pytanie jest wymagane",
+            maxLength: {
+              value: quizFormConfig.MAX_QUESTION_TEXT_LENGTH,
+              message: `Maksymalna długość to ${quizFormConfig.MAX_QUESTION_TEXT_LENGTH} znaków`,
+            },
+          })}
+          placeholder="Wpisz pytanie"
+          className="w-full rounded-md border border-gray-200 p-1.5 text-sm break-all focus:ring-1 focus:ring-indigo-500"
+        />
+        {errors.questions?.[index]?.title && (
+          <span className="text-sm text-red-600">
+            {errors.questions[index].title.message}
+          </span>
+        )}
+      </div>
+      {/* Collapsible Content */}
+      <CollapsibleSection onToggle={handleToggle}>
         <div className="mt-4 space-y-4">
-          <div>
-            <label
-              htmlFor={`title-${index}`}
-              className="mb-1 block text-sm text-gray-600"
-            >
-              Tekst pytania
-            </label>
-            <input
-              id={`title-${index}`}
-              type="text"
-              {...register(`questions.${index}.title`, {
-                required: "Pytanie jest wymagane",
-                maxLength: {
-                  value: quizFormConfig.MAX_QUESTION_TEXT_LENGTH,
-                  message: `Maksymalna długość to ${quizFormConfig.MAX_QUESTION_TEXT_LENGTH} znaków`,
-                },
-              })}
-              placeholder="Wpisz pytanie"
-              className="w-full rounded-md border border-gray-200 p-1.5 text-sm break-all focus:ring-1 focus:ring-indigo-500"
-            />
-            {errors.questions?.[index]?.title && (
-              <span className="text-sm text-red-600">
-                {errors.questions[index].title.message}
-              </span>
-            )}
-          </div>
           <Controller
             name={`questions.${index}.image`}
             control={control}
@@ -115,6 +96,7 @@ const Question = ({ index, onDelete, canDelete }) => {
               />
             )}
           />
+          {/* Correct answers */}
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <div>
               <label
@@ -142,6 +124,7 @@ const Question = ({ index, onDelete, canDelete }) => {
                 </span>
               )}
             </div>
+            {/* Wrong answer */}
             <div>
               <label className="mb-1 block text-sm text-gray-600">
                 Nieprawidłowe odpowiedzi

@@ -9,7 +9,7 @@ export const quizFormConfig = {
   MAX_ANSWER_LENGTH: 50,
   MAX_IMAGE_SIZE: 5 * 1024 * 1024,
   ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/gif"],
-  DEFAULT_DIFFICULTY: "normal",
+  DEFAULT_DIFFICULTY: "easy",
   QUIZ_CATEGORIES: categoriesConfig.QUIZ_CATEGORIES,
   DIFFICULTY_LEVELS: { easy: "Łatwy", normal: "Normalny", hard: "Trudny" },
   VISIBILITY_OPTIONS: { public: "Publiczny", private: "Prywatny" },

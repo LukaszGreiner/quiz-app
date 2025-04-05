@@ -22,8 +22,8 @@ const QuizForm = () => {
       title: "Quiz bez nazwy",
       category: "",
       description: "",
-      timeLimitPerQuestion: 0,
-      difficulty: "łatwy",
+      timeLimitPerQuestion: quizFormConfig.timeLimitPerQuestion,
+      difficulty: quizFormConfig.defaultValues,
       visibility: "public",
       image: null,
       questions: [
@@ -36,7 +36,8 @@ const QuizForm = () => {
       ],
     },
   });
-  const { control, handleSubmit } = methods; // Removed reset from here since we'll pass it to createQuiz
+  const { control, handleSubmit, formState } = methods;
+  const { isValid } = formState;
   const { fields, append, remove } = useFieldArray({
     control,
     name: "questions",
@@ -50,7 +51,7 @@ const QuizForm = () => {
       showLoading,
       updateLoadingToSuccess,
       updateLoadingToError,
-      methods.reset, // Pass reset as a parameter to createQuiz
+      methods.reset,
     );
   };
 
@@ -66,31 +67,20 @@ const QuizForm = () => {
             </span>
           </div>
           <QuestionList fields={fields} append={append} remove={remove} />
-          <button
-            type="button"
-            onClick={() =>
-              append({
-                title: "",
-                correctAnswer: "",
-                wrongAnswers: ["", "", ""],
-                image: null,
-              })
-            }
-            disabled={fields.length >= quizFormConfig.QUIZ_QUESTIONS_LIMIT}
-            title="Dodaj nowe pytanie"
-            className="flex w-full items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-          >
-            <FaSave className="mr-2" />
-            Dodaj pytanie
-          </button>
+
           <div className="relative">
             <button
               type="submit"
-              title="Zapisz i opublikuj"
-              className="flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+              title={
+                isValid
+                  ? "Zapisz i opublikuj"
+                  : "Wypełnij wszystkie wymagane pola, aby zapisać quiz"
+              }
+              className="flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+              disabled={!isValid}
             >
               <FaSave className="mr-2" />
-              Zapisz quiz
+              Zapisz i opublikuj
             </button>
           </div>
         </form>
