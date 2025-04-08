@@ -13,6 +13,7 @@ import QuizDisplay from "./pages/QuizDisplay";
 import QuizPlay from "./pages/QuizPlay";
 import CreateQuiz from "./pages/CreateQuiz";
 import CategoryRoute from "./routes/CategoryRoute";
+import OtherUserPage from "./pages/OtherUserPage";
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
                 </CategoryRoute>
               }
             />
+            <Route path="profile/:uid" element={<OtherUserPage />} />
             <Route path="not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>

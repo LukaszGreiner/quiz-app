@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase"; // Make sure to import db for Firestore access
 import ChangeUsername from "../components/ChangeUserName";
+import LevelBar from "../components/UserPage/LevelBar";
 
 function UserPage() {
   const { currentUser, logout } = useAuth();
@@ -66,10 +67,7 @@ function UserPage() {
   }
 
   const profileImage = currentUser.photoURL || "/profile_icon.jpg";
-  const experience = currentUser.experience || 0;
-  const level = Math.floor(experience / 500) + 1;
-  const experienceToNextLevel = 500 - (experience % 500);
-  const progressPercentage = ((experience % 500) / 500) * 100;
+
   const lastLogin = currentUser.lastLogin
     ? new Date(currentUser.lastLogin).toLocaleString()
     : "Unknown";
@@ -79,6 +77,7 @@ function UserPage() {
       <h1 className="mb-8 text-center font-serif text-4xl font-bold tracking-tight text-gray-800">
         Your Profile
       </h1>
+
       <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg transition-all hover:shadow-xl">
         {/* Profile Image */}
         <div className="mb-6 flex justify-center">
@@ -90,23 +89,7 @@ function UserPage() {
           />
         </div>
 
-        {/* Experience and Level Bar */}
-        <div className="mb-8">
-          <label className="mb-2 block text-sm font-medium text-gray-600">
-            Level {level}
-          </label>
-          <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-200">
-            <div
-              className="absolute h-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
-          </div>
-          <p className="mt-2 text-sm text-gray-500">
-            {experience} / 500 XP •{" "}
-            <span className="font-medium">{experienceToNextLevel} XP</span> to
-            next level
-          </p>
-        </div>
+        <LevelBar currentUser={currentUser} />
 
         {/* Name */}
         <div className="mb-6">
