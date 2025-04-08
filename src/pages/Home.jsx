@@ -1,5 +1,5 @@
 // src/components/Home/Home.js
-import QuizCard from "../Components/QuizCard/QuizCard";
+import QuizCard from "../components/QuizCard/QuizCard";
 import { useQuizzes } from "../hooks/useQuizzes";
 import { useCategory } from "../hooks/useCategory";
 
