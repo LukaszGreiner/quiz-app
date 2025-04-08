@@ -1,5 +1,3 @@
-import { categoriesConfig } from "./categoriesConfig";
-
 export const quizFormConfig = {
   QUIZ_QUESTIONS_LIMIT: 20,
   MIN_QUESTIONS_REQUIRED: 1,
@@ -7,11 +5,24 @@ export const quizFormConfig = {
   MAX_DESCRIPTION_LENGTH: 300,
   MAX_QUESTION_TEXT_LENGTH: 150,
   MAX_ANSWER_LENGTH: 50,
-  MAX_IMAGE_SIZE: 5 * 1024 * 1024,
-  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/gif"],
-  DEFAULT_DIFFICULTY: "easy",
-  QUIZ_CATEGORIES: categoriesConfig.QUIZ_CATEGORIES,
+  MAX_IMAGE_SIZE: 2 * 1024 * 1024,
+  ALLOWED_IMG_TYPES: {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+  },
+  QUIZ_CATEGORIES: [
+    "Matematyka",
+    "Nauka",
+    "Historia",
+    "Geografia",
+    "Literatura",
+    "Wiedza ogólna",
+  ],
+
+  DEFAULT_DIFFICULTY: "easy", // easy | normal | hard
   DIFFICULTY_LEVELS: { easy: "Łatwy", normal: "Normalny", hard: "Trudny" },
+
   VISIBILITY_OPTIONS: { public: "Publiczny", private: "Prywatny" },
-  TIME_OPTIONS: [5, 10, 15, 20, 30, 45, 60],
+  TIME_OPTIONS: [5, 10, 15, 20, 30, 45, 60], // no limit by default
 };

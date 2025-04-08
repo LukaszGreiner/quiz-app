@@ -10,7 +10,11 @@ import {
 } from "react-icons/fa";
 
 const formatDate = (date) => {
-  return date ? new Date(date).toLocaleDateString("pl-PL") : "brak";
+  return date
+    ? date.toDate
+      ? date.toDate().toLocaleDateString("pl-PL") // Handle Firestore Timestamp
+      : new Date(date).toLocaleDateString("pl-PL")
+    : "brak";
 };
 
 export default function MetadataGrid({
@@ -25,21 +29,21 @@ export default function MetadataGrid({
       <InfoItem
         icon={<FaUser className="text-base text-gray-500 sm:text-lg" />}
         text={creatorName}
-        label={`Autor: \n${creatorName}`}
+        label={`Autor: ${creatorName}`}
       />
       <InfoItem
         icon={<FaFolder className="text-base text-gray-500 sm:text-lg" />}
         text={category || "brak"}
-        label="Kategoria"
+        label="Kategoria" // Restored category
       />
       <InfoItem
-        icon={<FaSignal />}
+        icon={<FaSignal className="text-base text-gray-500 sm:text-lg" />}
         text={questionCount}
-        label="Poziom trudności"
+        label="Liczba pytań" // Corrected label
       />
       <InfoItem
         icon={<FaStar className="text-base text-yellow-400 sm:text-lg" />}
-        text="brak"
+        text="brak" // Placeholder for avgRating
         label="Średnia ocena"
       />
       <InfoItem

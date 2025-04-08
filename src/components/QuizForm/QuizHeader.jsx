@@ -5,7 +5,6 @@ import { quizFormConfig } from "../../config/quizFormConfig";
 
 const QuizHeader = () => {
   const {
-    register,
     setValue,
     watch,
     formState: { errors },

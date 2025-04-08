@@ -1,9 +1,9 @@
-// src/hooks/useUserData.js
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { showError } from "../utils/toastUtils"; // Adjust path as needed
 
-export const useUserData = (createdBy, currentUserId) => {
+export const useUserData = (authorId, currentUserId) => {
   const [creatorName, setCreatorName] = useState("Nieznany autor");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
@@ -11,32 +11,28 @@ export const useUserData = (createdBy, currentUserId) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!createdBy) {
-        console.log("No createdBy provided");
+      if (!authorId) {
+        console.log("No authorId provided");
         setLoading(false);
         return;
       }
 
       try {
-        console.log("Fetching user data for ID:", createdBy);
-        const userRef = doc(db, "users", createdBy);
+        const userRef = doc(db, "users", authorId);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
           const userData = userSnap.data();
-          console.log("User data found:", userData);
-          setCreatorName(userData.username || "Nieznany autor"); // Use username field
+          setCreatorName(userData.username || "Nieznany autor");
           setIsAdmin(userData.isAdmin || false);
         } else {
-          console.log("No user document found for ID:", createdBy);
+          console.log("No user document found for ID:", authorId);
         }
 
-        setIsOwner(currentUserId && createdBy === currentUserId);
+        setIsOwner(currentUserId && authorId === currentUserId);
       } catch (error) {
-        console.error(
-          "Wystąpił błąd podczas ładowania danych użytkownika:",
-          error,
-        );
+        console.error("Error fetching user data:", error);
+        showError(`Błąd ładowania danych użytkownika: ${error.message}`);
         setCreatorName("Błąd ładowania autora");
       } finally {
         setLoading(false);
@@ -44,7 +40,7 @@ export const useUserData = (createdBy, currentUserId) => {
     };
 
     fetchUserData();
-  }, [createdBy, currentUserId]);
+  }, [authorId, currentUserId]);
 
   return {
     creatorName,

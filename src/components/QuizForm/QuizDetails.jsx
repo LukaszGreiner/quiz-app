@@ -184,11 +184,9 @@ const Summary = ({ fields, totalTime }) => (
     <div className="flex-1 text-center text-sm text-gray-700 md:text-left">
       <p className="mb-2 line-clamp-3 break-all">{fields.description}</p>
       <div className="flex flex-wrap justify-center gap-3 md:justify-start">
-        {fields.category && (
-          <span className="flex items-center gap-1">
-            <FaTag size={12} /> {fields.category}
-          </span>
-        )}
+        <span className="flex items-center gap-1">
+          <FaTag size={12} /> {fields.category || "Brak"}
+        </span>
         <span className="flex items-center gap-1">
           <FaStar size={12} />{" "}
           {quizFormConfig.DIFFICULTY_LEVELS[fields.difficulty]}

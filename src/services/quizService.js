@@ -1,6 +1,8 @@
 import { collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { db, storage } from "../firebase"; // Adjust path as needed
+import { db, storage } from "../firebase";
+import { quizFormConfig } from "../config/quizFormConfig";
+const { ALLOWED_IMG_TYPES, MAX_IMG_SIZE } = quizFormConfig;
 
 export const createQuiz = async (
   data,
@@ -11,7 +13,6 @@ export const createQuiz = async (
   updateLoadingToError,
   reset,
 ) => {
-  // Show loading toast
   const toastId = showLoading("Saving quiz...");
 
   try {
@@ -19,35 +20,58 @@ export const createQuiz = async (
       throw new Error("Zaloguj się aby stworzyć quiz!");
     }
 
-    // Create a new quiz document reference
     const quizRef = doc(collection(db, "quizzes"));
     const quizId = quizRef.id;
 
-    // Upload quiz image to Firebase Storage (if provided)
     let quizImageUrl = null;
     if (data.image) {
       const file = data.image;
-      const quizImageRef = ref(storage, `quizzes/${quizId}/quiz_image.jpg`);
-      await uploadBytes(quizImageRef, file);
+      if (!Object.keys(ALLOWED_IMG_TYPES).includes(file.type)) {
+        throw new Error("Obraz quizu musi być w formacie JPG, PNG lub GIF");
+      }
+      if (file.size > MAX_IMG_SIZE) {
+        throw new Error("Obraz quizu nie może być większy niż 2 MB");
+      }
+      const extension = ALLOWED_IMG_TYPES[file.type];
+      const quizImageRef = ref(
+        storage,
+        `quizzes/${quizId}/quiz_image${extension}`,
+      );
+      await uploadBytes(quizImageRef, file, {
+        contentType: file.type,
+        customMetadata: { originalName: file.name },
+      });
       quizImageUrl = await getDownloadURL(quizImageRef);
     }
 
-    // Upload question images concurrently (if provided)
     const questionImageUploads = data.questions.map(async (question, index) => {
       if (question.image) {
         const file = question.image;
+        if (!Object.keys(ALLOWED_IMG_TYPES).includes(file.type)) {
+          throw new Error(
+            `Obraz pytania ${index + 1} musi być w formacie JPG, PNG lub GIF`,
+          );
+        }
+        if (file.size > MAX_IMG_SIZE) {
+          throw new Error(
+            `Obraz pytania ${index + 1} nie może być większy niż 2 MB`,
+          );
+        }
+        const extension = ALLOWED_IMG_TYPES[file.type];
         const questionImageRef = ref(
           storage,
-          `quizzes/${quizId}/questions/${index}/image.jpg`,
+          `quizzes/${quizId}/questions/${index}/image${extension}`,
         );
-        await uploadBytes(questionImageRef, file);
+        await uploadBytes(questionImageRef, file, {
+          contentType: file.type,
+          customMetadata: { originalName: file.name },
+        });
         return await getDownloadURL(questionImageRef);
       }
       return null;
     });
     const questionImageUrls = await Promise.all(questionImageUploads);
 
-    // Prepare the quiz data object
     const quizData = {
       quizId: quizId,
       authorId: currentUser.uid,
@@ -59,29 +83,33 @@ export const createQuiz = async (
       difficulty: data.difficulty,
       visibility: data.visibility,
       imageUrl: quizImageUrl,
-      questions: data.questions.map((question, index) => ({
-        title: question.title,
-        correctAnswer: question.correctAnswer,
-        wrongAnswers: question.wrongAnswers,
-        imageUrl: questionImageUrls[index],
-      })),
-      avgRating: 0,
-      playsCount: 0,
     };
 
-    // Save the quiz data to Firestore
     await setDoc(quizRef, quizData);
 
-    // Update toast to success
+    const questionsRef = collection(quizRef, "questions");
+    await Promise.all(
+      data.questions.map(async (question, index) => {
+        const questionDocRef = doc(questionsRef);
+        await setDoc(questionDocRef, {
+          title: question.title,
+          correctAnswer: question.correctAnswer,
+          wrongAnswers: question.wrongAnswers,
+          imageUrl: questionImageUrls[index],
+        });
+      }),
+    );
+
+    const statsRef = collection(quizRef, "stats");
+    await Promise.all([
+      setDoc(doc(statsRef, "plays"), { count: 0 }),
+      setDoc(doc(statsRef, "ratings"), { total: 0, count: 0 }),
+    ]);
+
     updateLoadingToSuccess(toastId, "Quiz zapisany!");
-
-    // Reset the form only on success
     reset();
-
-    // Navigate to the quiz detail page
     navigate(`/quiz/${quizId}`);
   } catch (error) {
-    // Update toast to error
     updateLoadingToError(toastId, `${error.message}`);
   }
 };

@@ -1,3 +1,6 @@
+// src/components/Home/QuizActions.js
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaTrash,
   FaRegBookmark,
@@ -5,36 +8,16 @@ import {
   FaEllipsisV,
   FaLock,
   FaGlobe,
+  FaPlay,
+  FaEdit,
 } from "react-icons/fa";
-import { useState } from "react";
-import { doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { deleteObject, ref, updateMetadata } from "firebase/storage";
-import { db, storage, auth } from "../../firebase";
+import { auth } from "../../firebase";
 import {
-  showError,
-  showLoading,
-  updateLoadingToSuccess,
-  updateLoadingToError,
-} from "../../utils/toastUtils";
-
-const toastMessages = {
-  deleteQuiz: { success: "Quiz usunięty!", error: "Błąd usuwania quizu" },
-  changeVisibility: {
-    success: "Widoczność zmieniona!",
-    error: "Błąd zmiany widoczności",
-  },
-};
-
-const withToastHandling = async (callback, messageConfig) => {
-  const toastId = showLoading("Przetwarzanie...");
-  try {
-    await callback();
-    updateLoadingToSuccess(toastId, messageConfig.success);
-  } catch (err) {
-    updateLoadingToError(toastId, messageConfig.error);
-    throw err;
-  }
-};
+  deleteQuiz,
+  changeQuizVisibility,
+  updateQuiz,
+} from "../../utils/quizUtils";
+import { showError } from "../../utils/toastUtils";
 
 const QuizActions = ({
   quizId,
@@ -43,32 +26,47 @@ const QuizActions = ({
   isAdmin,
   visibility,
   setVisibility,
+  onEdit,
+  onDelete,
+  setIsActionsOpen, // Callback to control parent z-index
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const navigate = useNavigate();
+
+  const handleToggle = () => {
+    setIsOpen((prev) => {
+      const newState = !prev;
+      setIsActionsOpen(newState); // Notify parent of dropdown state
+      return newState;
+    });
+  };
+
+  const handlePlay = () => {
+    navigate(`/quiz/play/${quizId}`);
+    setIsOpen(false);
+    setIsActionsOpen(false);
+  };
+
+  const handleEdit = () => {
+    navigate(`/quiz/edit/${quizId}`);
+    setIsOpen(false);
+    setIsActionsOpen(false);
+  };
 
   const handleDeleteQuiz = async () => {
     if (!isOwner && !isAdmin) {
       showError("Brak uprawnień do usunięcia quizu!");
       return;
     }
-
-    await withToastHandling(async () => {
-      const userId = auth.currentUser?.uid;
-      if (!userId) throw new Error("Musisz być zalogowany!");
-
-      const quizRef = doc(db, "quizzes", quizId);
-      const quizDoc = quizData;
-
-      if (quizDoc.imagePath)
-        await deleteObject(ref(storage, quizDoc.imagePath));
-      for (const q of quizDoc.questions || []) {
-        if (q.imagePath) await deleteObject(ref(storage, q.imagePath));
-      }
-
-      await deleteDoc(quizRef);
-    }, toastMessages.deleteQuiz);
+    try {
+      await deleteQuiz(quizId, quizData);
+      onDelete?.(quizId);
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
     setIsOpen(false);
+    setIsActionsOpen(false);
   };
 
   const handleChangeVisibility = async () => {
@@ -76,38 +74,25 @@ const QuizActions = ({
       showError("Brak uprawnień do zmiany widoczności!");
       return;
     }
-
-    const newVisibility = visibility === "public" ? "private" : "public";
-
-    await withToastHandling(async () => {
-      const userId = auth.currentUser?.uid;
-      if (!userId) throw new Error("Musisz być zalogowany!");
-
-      const quizRef = doc(db, "quizzes", quizId);
-      await updateDoc(quizRef, { visibility: newVisibility });
-
-      if (quizData.imagePath) {
-        await updateMetadata(ref(storage, quizData.imagePath), {
-          customMetadata: { visibility: newVisibility },
-        });
-      }
-      for (const q of quizData.questions || []) {
-        if (q.imagePath) {
-          await updateMetadata(ref(storage, q.imagePath), {
-            customMetadata: { visibility: newVisibility },
-          });
-        }
-      }
-
+    try {
+      const newVisibility = await changeQuizVisibility(
+        quizId,
+        visibility,
+        quizData,
+      );
       setVisibility(newVisibility);
-    }, toastMessages.changeVisibility);
+    } catch (err) {
+      console.error("Visibility change failed:", err);
+    }
     setIsOpen(false);
+    setIsActionsOpen(false);
   };
 
   const handleBookmark = () => {
     setIsBookmarked((prev) => !prev);
     console.log(`Bookmark quiz ${quizId}, new state: ${!isBookmarked}`);
     setIsOpen(false);
+    setIsActionsOpen(false);
   };
 
   const hasOwnerActions = isOwner || isAdmin;
@@ -120,15 +105,9 @@ const QuizActions = ({
         title="Dodaj do zakładek"
       >
         {isBookmarked ? (
-          <FaBookmark
-            className={`text-xl ${isBookmarked ? "fill-current" : ""}`}
-            aria-label="Dodaj do zakładek"
-          />
+          <FaBookmark className="text-xl" aria-label="Usuń z zakładek" />
         ) : (
-          <FaRegBookmark
-            className={`text-xl ${isBookmarked ? "fill-current" : ""}`}
-            aria-label="Usuń z zakładek"
-          />
+          <FaRegBookmark className="text-xl" aria-label="Dodaj do zakładek" />
         )}
         <div className="absolute top-full z-20 mt-2 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block">
           {isBookmarked ? "Usuń z zakładek" : "Dodaj do zakładek"}
@@ -140,7 +119,7 @@ const QuizActions = ({
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="group relative cursor-pointer rounded-full bg-white p-2 text-gray-600 shadow-md transition-all duration-200 hover:bg-gray-50 hover:text-gray-800 focus:ring-2 focus:ring-gray-300 focus:outline-none"
         title="Więcej opcji"
       >
@@ -151,22 +130,27 @@ const QuizActions = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg bg-white shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg bg-white shadow-lg">
           <div className="flex flex-col p-2">
+            <button
+              onClick={handlePlay}
+              className="flex cursor-pointer items-center gap-2 rounded-md p-2 text-blue-600 transition-all duration-200 hover:bg-gray-100"
+              title="Graj w Quiz"
+            >
+              <FaPlay className="text-lg" aria-label="Graj w Quiz" />
+              <span>Graj w Quiz</span>
+            </button>
             <button
               onClick={handleBookmark}
               className="flex cursor-pointer items-center gap-2 rounded-md p-2 text-yellow-500 transition-all duration-200 hover:bg-gray-100"
               title={isBookmarked ? "Usuń z zakładek" : "Dodaj do zakładek"}
             >
               {isBookmarked ? (
-                <FaBookmark
-                  className={`text-xl ${isBookmarked ? "fill-current" : ""}`}
-                  aria-label="Dodaj do zakładek"
-                />
+                <FaBookmark className="text-lg" aria-label="Usuń z zakładek" />
               ) : (
                 <FaRegBookmark
-                  className={`text-xl ${isBookmarked ? "fill-current" : ""}`}
-                  aria-label="Usuń z zakładek"
+                  className="text-lg"
+                  aria-label="Dodaj do zakładek"
                 />
               )}
               <span>
@@ -176,13 +160,21 @@ const QuizActions = ({
             {(isOwner || isAdmin) && (
               <>
                 <button
+                  onClick={handleEdit}
+                  className="flex cursor-pointer items-center gap-2 rounded-md p-2 text-gray-600 transition-all duration-200 hover:bg-gray-100"
+                  title="Edytuj quiz"
+                >
+                  <FaEdit className="text-lg" aria-label="Edytuj quiz" />
+                  <span>Edytuj quiz</span>
+                </button>
+                <button
                   onClick={handleChangeVisibility}
                   className="flex cursor-pointer items-center gap-2 rounded-md p-2 text-gray-600 transition-all duration-200 hover:bg-gray-100"
                   title={`Zmień widoczność na ${visibility === "public" ? "prywatny" : "publiczny"}`}
                 >
                   {visibility === "public" ? (
                     <FaGlobe
-                      className="text-lg text-nowrap"
+                      className="text-lg"
                       aria-label="Zmień na prywatny"
                     />
                   ) : (

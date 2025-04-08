@@ -1,15 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { useEffect, useState, useRef } from "react";
-import { toast } from "react-toastify";
+import {
+  showLoading,
+  updateLoadingToSuccess,
+  updateLoadingToError,
+} from "../utils/toastUtils"; // Adjust path as needed
 
 const QuizPlay = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const [quizData, setQuizData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -19,39 +23,62 @@ const QuizPlay = () => {
 
   useEffect(() => {
     const fetchQuiz = async () => {
+      const toastId = showLoading("Ładowanie quizu...");
+      setLoading(true);
+
       try {
-        const docRef = doc(db, "quizzes", quizId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setQuizData(docSnap.data());
-          setTimeLeft(docSnap.data().timeLimitPerQuestion || 0); // Initialize timer
-        } else {
-          setError("Quiz not found");
+        // Fetch main quiz document
+        const quizRef = doc(db, "quizzes", quizId);
+        const quizSnap = await getDoc(quizRef);
+
+        if (!quizSnap.exists()) {
+          throw new Error("Quiz nie istnieje");
         }
+
+        const quiz = quizSnap.data();
+
+        // Fetch questions from subcollection
+        const questionsRef = collection(db, "quizzes", quizId, "questions");
+        const questionsSnap = await getDocs(questionsRef);
+
+        if (questionsSnap.empty) {
+          throw new Error("Brak pytań w quizie");
+        }
+
+        const questionsData = questionsSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setQuizData(quiz);
+        setQuestions(questionsData);
+        setTimeLeft(quiz.timeLimitPerQuestion || 0); // Initialize timer
+        updateLoadingToSuccess(toastId, "Quiz załadowany!");
       } catch (err) {
-        setError("Failed to load quiz: " + err.message);
+        updateLoadingToError(toastId, `Błąd: ${err.message}`);
       } finally {
         setLoading(false);
       }
     };
+
     fetchQuiz();
   }, [quizId]);
 
   // Shuffle answers when the question changes
   useEffect(() => {
-    if (quizData) {
-      const currentQuestion = quizData.questions[currentQuestionIndex];
+    if (questions.length > 0) {
+      const currentQuestion = questions[currentQuestionIndex];
       const answers = [
         currentQuestion.correctAnswer,
         ...currentQuestion.wrongAnswers,
       ];
       setShuffledAnswers(answers.sort(() => Math.random() - 0.5)); // Shuffle once per question
     }
-  }, [quizData, currentQuestionIndex]);
+  }, [questions, currentQuestionIndex]);
 
   // Timer logic
   useEffect(() => {
-    if (quizData && timeLeft > 0 && !isSubmitted) {
+    if (questions.length > 0 && timeLeft > 0 && !isSubmitted) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -64,13 +91,11 @@ const QuizPlay = () => {
       }, 1000);
     }
     return () => clearInterval(timerRef.current); // Cleanup on unmount or question change
-  }, [quizData, timeLeft, currentQuestionIndex, isSubmitted]);
+  }, [questions, timeLeft, currentQuestionIndex, isSubmitted]);
 
-  if (loading) return <div className="text-center text-lg">Loading...</div>;
-  if (error) return <div className="text-center text-red-600">{error}</div>;
-  if (!quizData) return null;
+  if (loading || !quizData || questions.length === 0) return null;
 
-  const currentQuestion = quizData.questions[currentQuestionIndex];
+  const currentQuestion = questions[currentQuestionIndex];
 
   const handleAnswerSelect = (answer) => {
     setUserAnswers((prev) => ({
@@ -80,7 +105,7 @@ const QuizPlay = () => {
   };
 
   const handleNextOrSubmit = () => {
-    if (currentQuestionIndex < quizData.questions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setTimeLeft(quizData.timeLimitPerQuestion || 0); // Reset timer
     } else {
@@ -89,7 +114,7 @@ const QuizPlay = () => {
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < quizData.questions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setTimeLeft(quizData.timeLimitPerQuestion || 0); // Reset timer
     }
@@ -110,30 +135,31 @@ const QuizPlay = () => {
     const userId = auth.currentUser?.uid;
     if (userId) {
       const score = calculateScore();
+      const toastId = showLoading("Zapisywanie wyniku...");
       try {
         await setDoc(
           doc(db, "quizResults", `${userId}_${quizId}_${Date.now()}`),
           {
             userId,
             quizId,
-            quizName: quizData.name,
+            quizTitle: quizData.title, // Updated to title
             score,
-            totalQuestions: quizData.questions.length,
+            totalQuestions: questions.length,
             completedAt: new Date().toISOString(),
           },
         );
-        toast.success("Wynik zapisany!");
+        updateLoadingToSuccess(toastId, "Wynik zapisany!");
       } catch (err) {
-        toast.error("Błąd zapisu wyniku: " + err.message);
+        updateLoadingToError(toastId, `Błąd zapisu wyniku: ${err.message}`);
       }
     } else {
-      toast.warn("Zaloguj się, aby zapisać wynik!");
+      updateLoadingToError(null, "Zaloguj się, aby zapisać wynik!");
     }
   };
 
   const calculateScore = () => {
     let score = 0;
-    quizData.questions.forEach((question, index) => {
+    questions.forEach((question, index) => {
       if (userAnswers[index] === question.correctAnswer) {
         score += 1;
       }
@@ -141,18 +167,17 @@ const QuizPlay = () => {
     return score;
   };
 
-  const progress =
-    ((currentQuestionIndex + 1) / quizData.questions.length) * 100;
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   if (isSubmitted) {
     const score = calculateScore();
     return (
       <div className="mx-auto max-w-4xl p-6">
         <h1 className="mb-4 text-3xl font-bold text-gray-800">
-          Wynik Quizu: {quizData.name}
+          Wynik Quizu: {quizData.title}
         </h1>
         <p className="text-lg text-gray-700">
-          Twój wynik: {score} / {quizData.questions.length}
+          Twój wynik: {score} / {questions.length}
         </p>
         <div className="mt-4 flex justify-center gap-4">
           <button
@@ -174,7 +199,9 @@ const QuizPlay = () => {
 
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <h1 className="mb-4 text-3xl font-bold text-gray-800">{quizData.name}</h1>
+      <h1 className="mb-4 text-3xl font-bold text-gray-800">
+        {quizData.title}
+      </h1>
 
       {/* Progress Bar */}
       <div className="mb-6">
@@ -185,17 +212,17 @@ const QuizPlay = () => {
           ></div>
         </div>
         <p className="mt-1 text-sm text-gray-600">
-          Pytanie {currentQuestionIndex + 1} z {quizData.questions.length}
+          Pytanie {currentQuestionIndex + 1} z {questions.length}
         </p>
       </div>
 
       <div className="rounded-xl bg-white p-6 shadow-md">
         <h2 className="mb-4 text-xl font-semibold text-gray-800">
-          Pytanie {currentQuestionIndex + 1}: {currentQuestion.text}
+          Pytanie {currentQuestionIndex + 1}: {currentQuestion.title}
         </h2>
-        {currentQuestion.image && (
+        {currentQuestion.imageUrl && (
           <img
-            src={currentQuestion.image}
+            src={currentQuestion.imageUrl}
             alt={`Obraz dla pytania ${currentQuestionIndex + 1}`}
             className="mb-4 h-32 w-full rounded-lg object-cover"
             onError={(e) =>
@@ -238,7 +265,7 @@ const QuizPlay = () => {
           >
             Poprzednie
           </button>
-          {currentQuestionIndex < quizData.questions.length - 1 ? (
+          {currentQuestionIndex < questions.length - 1 ? (
             <button
               onClick={handleNext}
               disabled={!userAnswers[currentQuestionIndex]}

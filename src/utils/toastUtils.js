@@ -12,7 +12,9 @@ const toastConfig = {
   "aria-live": "polite",
 };
 
-export const showError = (message) => toast.error(message, toastConfig);
+export const showError = (message, overrideConfig = {}) =>
+  toast.error(message, { ...toastConfig, ...overrideConfig });
+
 export const showSuccess = (message) => toast.success(message, toastConfig);
 export const showLoading = (message) =>
   toast.loading(message, { ...toastConfig, autoClose: false });

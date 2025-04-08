@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
-import { categoriesConfig } from "../../config/categoriesConfig";
-import { FaChevronDown } from "react-icons/fa"; // Import the desired icon
+// src/components/Home/Categories.js
+import { FaChevronDown } from "react-icons/fa";
+import { useCategory } from "../../hooks/useCategory";
 
 const STYLE_OPTIONS = [
   { bg: "bg-primary", hover: "hover:bg-primary/80", text: "text-white" },
@@ -9,21 +9,11 @@ const STYLE_OPTIONS = [
   { bg: "bg-success", hover: "hover:bg-success/80", text: "text-white" },
 ];
 
-function Categories({ selectedCategory = "wszystkie" }) {
-  const navigate = useNavigate();
-  const categoryNames = categoriesConfig.QUIZ_CATEGORIES;
-
-  // Normalize selectedCategory with a safeguard
-  const normalizedSelectedCategory = selectedCategory
-    ? selectedCategory.charAt(0).toUpperCase() +
-      selectedCategory.slice(1).toLowerCase()
-    : "Wszystkie";
+function Categories() {
+  const { categoryNames, normalizedCategory, navigateToCategory } =
+    useCategory();
 
   const getStyles = (index) => STYLE_OPTIONS[index % STYLE_OPTIONS.length];
-
-  const navigateToCategory = (category) => {
-    navigate(category === "Wszystkie" ? "/" : `/${category.toLowerCase()}`);
-  };
 
   const handleCategoryChange = (event) =>
     navigateToCategory(event.target.value);
@@ -35,7 +25,7 @@ function Categories({ selectedCategory = "wszystkie" }) {
       <div className="relative md:hidden">
         <p className="mb-4 text-xl font-bold">Kategorie</p>
         <select
-          value={normalizedSelectedCategory}
+          value={normalizedCategory}
           onChange={handleCategoryChange}
           className="text-dark focus:border-primary focus:ring-primary/20 w-full appearance-none rounded-lg border border-gray-300 bg-white p-3 font-medium transition duration-300 focus:ring-2 focus:outline-none"
           aria-label="Wybierz kategorię quizu"

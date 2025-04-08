@@ -4,7 +4,7 @@ import { FaAngleDown } from "react-icons/fa";
 const CollapsibleSection = ({
   children,
   summary,
-  defaultOpen = false,
+  defaultOpen = true,
   onToggle,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);

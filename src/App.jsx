@@ -21,7 +21,13 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path="newquiz" element={<CreateQuiz />} />
+            <Route
+              element={
+                <ProtectedRoute message="Musisz się zalogować aby stworzyć quiz" />
+              }
+            >
+              <Route path="newquiz" element={<CreateQuiz />} />
+            </Route>
             <Route path="user/login" element={<Login />} />
             <Route path="user/signup" element={<Signup />} />
             <Route path="user/reset-password" element={<ForgotPassword />} />

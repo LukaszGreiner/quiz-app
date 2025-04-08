@@ -1,53 +1,82 @@
-import { useParams, useNavigate } from "react-router-dom"; // Add useNavigate
-import { doc, getDoc } from "firebase/firestore";
+import { useParams, useNavigate } from "react-router-dom";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useEffect, useState } from "react";
 import { formatTotalTime } from "../utils/quizUtils";
+import {
+  showLoading,
+  updateLoadingToSuccess,
+  updateLoadingToError,
+} from "../utils/toastUtils";
 
 const QuizDisplay = () => {
   const { quizId } = useParams();
   const [quizData, setQuizData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Add navigate hook
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false); // prevent rendering
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuiz = async () => {
+      const toastId = showLoading("Ładowanie quizu..."); // Show loading toast
+      setLoading(true);
+
       try {
-        const docRef = doc(db, "quizzes", quizId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setQuizData(docSnap.data());
-        } else {
-          setError("Quiz not found");
+        // Fetch main quiz document
+        const quizRef = doc(db, "quizzes", quizId);
+        const quizSnap = await getDoc(quizRef);
+
+        if (!quizSnap.exists()) {
+          throw new Error("Quiz nie istnieje");
         }
+
+        const quiz = quizSnap.data();
+
+        // Fetch questions from subcollection
+        const questionsRef = collection(db, "quizzes", quizId, "questions");
+        const questionsSnap = await getDocs(questionsRef);
+
+        if (questionsSnap.empty) {
+          throw new Error("Brak pytań w quizie");
+        }
+
+        const questionsData = questionsSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setQuizData(quiz);
+        setQuestions(questionsData);
+        updateLoadingToSuccess(toastId, "Quiz załadowany pomyślnie!");
       } catch (err) {
-        setError("Failed to load quiz: " + err.message);
+        updateLoadingToError(toastId, `Błąd: ${err.message}`);
       } finally {
         setLoading(false);
       }
     };
+
     fetchQuiz();
   }, [quizId]);
 
-  if (loading) return <div className="text-center text-lg">Loading...</div>;
-  if (error) return <div className="text-center text-red-600">{error}</div>;
-  if (!quizData) return null;
+  if (loading || !quizData || questions.length === 0) return null; // Render nothing while loading or if data is incomplete
 
-  const totalTime = quizData.timeLimitPerQuestion * quizData.questions.length;
+  const totalTime = quizData.timeLimitPerQuestion * questions.length;
 
   const handleStartQuiz = () => {
-    navigate(`/quiz/play/${quizId}`); // Redirect to /quiz/play/:quizId
+    navigate(`/quiz/play/${quizId}`);
   };
+
+  // Placeholder for author name (replace with actual user fetch if needed)
+  const authorName = quizData.authorId; // Ideally, fetch username from users collection
 
   return (
     <div className="mx-auto max-w-4xl p-6">
       {/* Quiz Header */}
       <div className="mb-8 rounded-xl bg-white p-6 shadow-md">
-        {quizData.image && (
+        {quizData.imageUrl && (
           <img
-            src={quizData.image}
-            alt={`Obraz quizu ${quizData.name}`}
+            src={quizData.imageUrl}
+            alt={`Obraz quizu ${quizData.title}`}
             className="mb-4 h-48 w-full rounded-lg object-cover"
             onError={(e) =>
               (e.target.src =
@@ -56,7 +85,7 @@ const QuizDisplay = () => {
           />
         )}
         <h1 className="mb-2 text-3xl font-bold text-gray-800">
-          {quizData.name}
+          {quizData.title}
         </h1>
         <p className="mb-4 text-gray-600">{quizData.description}</p>
         <div className="flex flex-col gap-2 text-sm text-gray-700">
@@ -71,10 +100,10 @@ const QuizDisplay = () => {
             {quizData.visibility === "public" ? "Publiczny" : "Prywatny"}
           </p>
           <p>
-            <strong>Twórca:</strong> {quizData.createdBy}
+            <strong>Twórca:</strong> {authorName}
           </p>
           <p>
-            <strong>Liczba pytań:</strong> {quizData.questions.length}
+            <strong>Liczba pytań:</strong> {questions.length}
           </p>
           <p>
             <strong>Czas całkowity:</strong>{" "}
@@ -86,14 +115,14 @@ const QuizDisplay = () => {
       {/* Questions List */}
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold text-gray-800">Pytania</h2>
-        {quizData.questions.map((question, index) => (
-          <div key={index} className="rounded-xl bg-white p-6 shadow-md">
+        {questions.map((question, index) => (
+          <div key={question.id} className="rounded-xl bg-white p-6 shadow-md">
             <h3 className="mb-2 text-xl font-medium text-gray-800">
-              Pytanie {index + 1}: {question.text}
+              Pytanie {index + 1}: {question.title}
             </h3>
-            {question.image && (
+            {question.imageUrl && (
               <img
-                src={question.image}
+                src={question.imageUrl}
                 alt={`Obraz dla pytania ${index + 1}`}
                 className="mb-4 h-32 w-full rounded-lg object-cover"
                 onError={(e) =>
