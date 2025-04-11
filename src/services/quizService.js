@@ -1,9 +1,38 @@
-import { collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { quizFormConfig } from "../config/quizFormConfig";
+
 const { ALLOWED_IMG_TYPES, MAX_IMG_SIZE } = quizFormConfig;
 
+// Fetch user quiz attempts
+export const fetchUserQuizAttempts = async (userId, quizId) => {
+  try {
+    const resultsRef = collection(db, "quizResults");
+    const q = query(
+      resultsRef,
+      where("userId", "==", userId),
+      where("quizId", "==", quizId),
+    );
+    const querySnapshot = await getDocs(q);
+
+    const attempts = querySnapshot.docs.map((doc) => doc.data());
+    return attempts;
+  } catch (error) {
+    console.error("Error fetching user quiz attempts:", error);
+    throw error;
+  }
+};
+
+// Create a new quiz
 export const createQuiz = async (
   data,
   currentUser,
