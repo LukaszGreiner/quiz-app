@@ -66,7 +66,7 @@ function AccountActions({ onLogout }) {
 
       {/* Logout */}
       <div className="mb-6">
-        <h3 className="mb-2 text-sm font-medium text-gray-600">Logout</h3>
+        <h3 className="mb-2 text-sm font-medium text-gray-600"></h3>
         <button
           onClick={handleLogoutClick}
           className="w-full rounded-lg bg-gradient-to-r from-red-500 to-red-600 py-3 font-medium tracking-wide text-white shadow-md transition-all duration-300 hover:from-red-600 hover:to-red-700"
@@ -78,7 +78,7 @@ function AccountActions({ onLogout }) {
       {/* Delete Account */}
       <div>
         <h3 className="mb-2 text-sm font-medium text-gray-600">
-          Delete Account
+          
         </h3>
         {showConfirmDelete ? (
           <div className="space-y-3">
