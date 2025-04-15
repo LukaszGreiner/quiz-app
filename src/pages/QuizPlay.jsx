@@ -12,6 +12,7 @@ import {
   updateLoadingToError,
 } from "../utils/toastUtils";
 import { fetchUserQuizAttempts } from "../services/quizService";
+import QuizRating from "../components/QuizPlay/QuizRating";
 
 const QuizPlay = () => {
   const { quizId } = useParams();
@@ -159,6 +160,7 @@ const QuizPlay = () => {
             ? "Gratulacje! Zdobyłeś maksymalny wynik w jednym z podejść."
             : "Nie zdobyłeś jeszcze maksymalnego wyniku. Spróbuj ponownie!"}
         </p>
+        <QuizRating />
         <div className="mt-6 space-y-4">
           {questions.map((question, index) => (
             <div

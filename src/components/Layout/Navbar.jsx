@@ -5,10 +5,10 @@ import Hamburger from "./Hamburger";
 
 // Navigation link data
 const navLinks = [
-  { path: "/", label: "Home" },
-  { path: "/newquiz", label: "Create Quiz" },
-  { path: "/user/library", label: "Dashboard" },
-  { path: "/profile/vdijlQklhZR0Lrh1noplnugpv852", label: "Otheruser" },
+  { path: "/", label: "Strona główna" },
+  { path: "/newquiz", label: "Stwórz Quiz" },
+  { path: "/user/library", label: "[Dashboard]" },
+  { path: "/profile/vdijlQklhZR0Lrh1noplnugpv852", label: "[OtherUserPage]" },
 ];
 
 const linkStyle = "text-white hover:text-gray-300";
