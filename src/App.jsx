@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import UserPage from "./pages/UserPage";
+import EditProfile from "./pages/EditProfile"; // Nowy import
 import NotFound from "./pages/NotFound";
 import { ToastContainer } from "react-toastify";
 import QuizDisplay from "./pages/QuizDisplay";
@@ -34,6 +35,7 @@ function App() {
             <Route path="user/reset-password" element={<ForgotPassword />} />
             <Route element={<ProtectedRoute />}>
               <Route path="user/details" element={<UserPage />} />
+              <Route path="user/edit-profile" element={<EditProfile />} /> {/* Nowa trasa */}
             </Route>
             <Route path="quiz/:quizId" element={<QuizDisplay />} />
             <Route path="quiz/play/:quizId" element={<QuizPlay />} />
