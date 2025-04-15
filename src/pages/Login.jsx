@@ -1,4 +1,3 @@
-// src/components/Login.js
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +11,7 @@ import {
   collection,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import { showError, showSuccess } from "../utils/toastUtils";
 
@@ -26,7 +26,15 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      await login(email, password);
+      const userCredential = await login(email, password);
+      const user = userCredential.user;
+
+      // Update lastLogin property
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, {
+        lastLogin: new Date().toISOString(),
+      });
+
       navigate("/user/details");
     } catch (err) {
       setError("Nieprawidłowa dane logowania");
@@ -71,6 +79,12 @@ function Login() {
           username: username,
           createdAt: new Date().toISOString(),
           isAdmin: false,
+          lastLogin: new Date().toISOString(),
+        });
+      } else {
+        // Update lastLogin property
+        await updateDoc(userDocRef, {
+          lastLogin: new Date().toISOString(),
         });
       }
 

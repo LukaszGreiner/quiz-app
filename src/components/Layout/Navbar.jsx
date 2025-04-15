@@ -8,7 +8,7 @@ const navLinks = [
   { path: "/", label: "Home" },
   { path: "/newquiz", label: "Create Quiz" },
   { path: "/user/library", label: "Dashboard" },
-  { path: "/profile/afasasdfa", label: "Otheruser" },
+  { path: "/profile/vdijlQklhZR0Lrh1noplnugpv852", label: "Otheruser" },
 ];
 
 const linkStyle = "text-white hover:text-gray-300";
