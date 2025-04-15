@@ -4,7 +4,7 @@ import ImageUpload from "./ImageUpload";
 import { quizFormConfig } from "../../config/quizFormConfig";
 import CollapsibleSection from "./CollapsibleSection";
 import { FaTag, FaStar, FaClock, FaEye } from "react-icons/fa";
-import { formatTotalTime } from "../../utils/quizUtils";
+import QuizFormSummary from "./QuizFormSummary";
 
 const QuizDetails = ({ questionCount }) => {
   const {
@@ -30,7 +30,7 @@ const QuizDetails = ({ questionCount }) => {
   return (
     <div className="rounded-md border border-gray-200 bg-gray-50 p-4 md:p-6">
       <CollapsibleSection
-        summary={<Summary fields={fields} totalTime={totalTime} />}
+        summary={<QuizFormSummary fields={fields} totalTime={totalTime} />}
         defaultOpen={true}
       >
         <div className="space-y-4">
@@ -162,47 +162,6 @@ const TextAreaField = ({ id, label, register, error }) => (
       className="min-h-[80px] w-full rounded-md border border-gray-200 p-3 text-sm focus:ring-1 focus:ring-indigo-500"
     />
     {error && <span className="text-sm text-red-600">{error.message}</span>}
-  </div>
-);
-
-// Sub-component for summary
-const Summary = ({ fields, totalTime }) => (
-  <div className="flex flex-col gap-6 p-2 md:flex-row md:items-center">
-    <div className="mx-auto flex-shrink-0 md:mx-0">
-      {fields.image ? (
-        <img
-          src={URL.createObjectURL(fields.image)}
-          alt="Podgląd zdjęcia quizu"
-          className="h-24 w-24 rounded-md object-cover"
-        />
-      ) : (
-        <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 text-sm text-gray-500">
-          Brak zdjęcia
-        </div>
-      )}
-    </div>
-    <div className="flex-1 text-center text-sm text-gray-700 md:text-left">
-      <p className="mb-2 line-clamp-3 break-all">{fields.description}</p>
-      <div className="flex flex-wrap justify-center gap-3 md:justify-start">
-        <span className="flex items-center gap-1">
-          <FaTag size={12} /> {fields.category || "Brak"}
-        </span>
-        <span className="flex items-center gap-1">
-          <FaStar size={12} />{" "}
-          {quizFormConfig.DIFFICULTY_LEVELS[fields.difficulty]}
-        </span>
-        <span className="flex items-center gap-1">
-          <FaClock size={12} />{" "}
-          {fields.timeLimitPerQuestion
-            ? `${fields.timeLimitPerQuestion} s (${formatTotalTime(totalTime)})`
-            : "Bez limitu"}
-        </span>
-        <span className="flex items-center gap-1">
-          <FaEye size={12} />{" "}
-          {quizFormConfig.VISIBILITY_OPTIONS[fields.visibility]}
-        </span>
-      </div>
-    </div>
   </div>
 );
 

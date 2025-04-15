@@ -6,6 +6,9 @@ import {
   collection,
   getDocs,
   setDoc,
+  getDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { deleteObject, ref, updateMetadata } from "firebase/storage";
 import { db, storage, auth } from "../firebase";
@@ -15,6 +18,38 @@ import {
   updateLoadingToSuccess,
   updateLoadingToError,
 } from "./toastUtils";
+
+export const fetchQuizData = async (quizId) => {
+  try {
+    // Fetch main quiz document
+    const quizRef = doc(db, "quizzes", quizId);
+    const quizSnap = await getDoc(quizRef);
+
+    if (!quizSnap.exists()) {
+      throw new Error("Quiz nie istnieje");
+    }
+
+    const quiz = quizSnap.data();
+
+    // Fetch questions from subcollection
+    const questionsRef = collection(db, "quizzes", quizId, "questions");
+    const questionsSnap = await getDocs(questionsRef);
+
+    if (questionsSnap.empty) {
+      throw new Error("Brak pytań w quizie");
+    }
+
+    const questions = questionsSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return { quiz, questions };
+  } catch (error) {
+    console.error("Error fetching quiz data:", error);
+    throw error;
+  }
+};
 
 const toastMessages = {
   deleteQuiz: { success: "Quiz usunięty!", error: "Błąd usuwania quizu" },

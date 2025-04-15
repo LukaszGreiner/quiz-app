@@ -25,7 +25,7 @@ export default function MetadataGrid({
   visibility,
 }) {
   return (
-    <div className="grid grid-cols-2 gap-1 py-4">
+    <div className="mx-a grid grid-cols-2 justify-between gap-1 py-4">
       <InfoItem
         icon={<FaUser className="text-base text-gray-500 sm:text-lg" />}
         text={creatorName}
