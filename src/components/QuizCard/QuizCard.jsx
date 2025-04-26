@@ -32,6 +32,7 @@ const QuizCard = ({ quiz, onEdit, onDelete }) => {
   const quizData = {
     visibility,
     imageUrl: quiz.imageUrl,
+    questions: quiz.questions,
   };
 
   const handleImageError = (e) => {

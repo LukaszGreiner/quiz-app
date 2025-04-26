@@ -6,7 +6,7 @@ const QuestionList = ({ fields, append, remove }) => {
     <div className="space-y-4">
       {fields.map((field, index) => (
         <Question
-          key={field.id} // Use field.id from useFieldArray for unique keys
+          key={field.id}
           index={index}
           onDelete={() => remove(index)}
           canDelete={fields.length > 1}

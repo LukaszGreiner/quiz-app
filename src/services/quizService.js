@@ -3,15 +3,33 @@ import {
   doc,
   query,
   where,
-  getDocs,
+  getDoc,
   serverTimestamp,
   setDoc,
+  getDocs,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { quizFormConfig } from "../config/quizFormConfig";
 
 const { ALLOWED_IMG_TYPES, MAX_IMG_SIZE } = quizFormConfig;
+
+// Fetch quiz data by ID
+export const fetchQuizById = async (quizId) => {
+  try {
+    const docRef = doc(db, "quizzes", quizId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) throw new Error("Taki quiz nie istnieje");
+
+    console.log(docSnap.data(), docSnap);
+
+    return docSnap.data();
+  } catch (error) {
+    console.error("Wystąpił błąd przy pobieraniu quizu: ", error);
+    throw error;
+  }
+};
 
 // Fetch user quiz attempts
 export const fetchUserQuizAttempts = async (userId, quizId) => {
@@ -53,8 +71,10 @@ export const createQuiz = async (
     const quizId = quizRef.id;
 
     let quizImageUrl = null;
+
     if (data.image) {
       const file = data.image;
+      console.log("file", file);
       if (!Object.keys(ALLOWED_IMG_TYPES).includes(file.type)) {
         throw new Error("Obraz quizu musi być w formacie JPG, PNG lub GIF");
       }
@@ -78,12 +98,12 @@ export const createQuiz = async (
         const file = question.image;
         if (!Object.keys(ALLOWED_IMG_TYPES).includes(file.type)) {
           throw new Error(
-            `Obraz pytania ${index + 1} musi być w formacie JPG, PNG lub GIF`,
+            `Obraz pytania numer ${index + 1} musi być w formacie JPG, PNG lub GIF`,
           );
         }
         if (file.size > MAX_IMG_SIZE) {
           throw new Error(
-            `Obraz pytania ${index + 1} nie może być większy niż 2 MB`,
+            `Obraz pytania numer ${index + 1} jest za duży. Maksymalny dozwolony rozmiar to ${MAX_IMG_SIZE} MB`,
           );
         }
         const extension = ALLOWED_IMG_TYPES[file.type];
@@ -102,33 +122,26 @@ export const createQuiz = async (
     const questionImageUrls = await Promise.all(questionImageUploads);
 
     const quizData = {
-      quizId: quizId,
       authorId: currentUser.uid,
-      createdAt: serverTimestamp(),
-      title: data.title,
       category: data.category,
       description: data.description,
-      timeLimitPerQuestion: data.timeLimitPerQuestion,
       difficulty: data.difficulty,
-      visibility: data.visibility,
       imageUrl: quizImageUrl,
+      quizId: quizId,
+      createdAt: serverTimestamp(),
+      timeLimitPerQuestion: data.timeLimitPerQuestion,
+      title: data.title,
+      visibility: data.visibility,
+      questions: data.questions.map((question, index) => ({
+        title: question.title,
+        correctAnswer: question.correctAnswer,
+        wrongAnswers: question.wrongAnswers,
+        imageUrl: questionImageUrls[index],
+      })),
     };
+    setDoc(quizRef, quizData);
 
-    await setDoc(quizRef, quizData);
-
-    const questionsRef = collection(quizRef, "questions");
-    await Promise.all(
-      data.questions.map(async (question, index) => {
-        const questionDocRef = doc(questionsRef);
-        await setDoc(questionDocRef, {
-          title: question.title,
-          correctAnswer: question.correctAnswer,
-          wrongAnswers: question.wrongAnswers,
-          imageUrl: questionImageUrls[index],
-        });
-      }),
-    );
-
+    // stats subcollection
     const statsRef = collection(quizRef, "stats");
     await Promise.all([
       setDoc(doc(statsRef, "plays"), { count: 0 }),

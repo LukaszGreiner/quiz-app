@@ -1,4 +1,3 @@
-// src/utils/quizUtils.js
 import {
   doc,
   updateDoc,
@@ -10,7 +9,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { deleteObject, ref, updateMetadata } from "firebase/storage";
+import { deleteObject, listAll, ref, updateMetadata } from "firebase/storage";
 import { db, storage, auth } from "../firebase";
 import {
   showError,
@@ -28,21 +27,9 @@ export const fetchQuizData = async (quizId) => {
     if (!quizSnap.exists()) {
       throw new Error("Quiz nie istnieje");
     }
-
     const quiz = quizSnap.data();
-
-    // Fetch questions from subcollection
-    const questionsRef = collection(db, "quizzes", quizId, "questions");
-    const questionsSnap = await getDocs(questionsRef);
-
-    if (questionsSnap.empty) {
-      throw new Error("Brak pytań w quizie");
-    }
-
-    const questions = questionsSnap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const questions = quizSnap.data().questions;
+    console.log(questions);
 
     return { quiz, questions };
   } catch (error) {
@@ -81,28 +68,48 @@ export const deleteQuiz = async (quizId, quizData) => {
   await withToastHandling(async () => {
     const quizRef = doc(db, "quizzes", quizId);
 
-    // Delete quiz image from storage
+    // Delete quiz image
     if (quizData.imageUrl) {
-      const imageRef = ref(storage, `quizzes/${quizId}/quiz_image.*`); // Adjust based on exact path
+      const imgFormat = quizData.imageUrl.split("?")[0].split(".").pop();
+      const imageRef = ref(
+        storage,
+        `quizzes/${quizId}/quiz_image.${imgFormat}`,
+      );
+      console.log("Deleting: ", imageRef);
       await deleteObject(imageRef).catch((err) =>
-        console.warn("Image deletion failed:", err),
+        console.warn("Wystąpił błąd podczas usuwania zdjęcia:", err),
+      );
+      console.log(
+        "Quiz image deleted successfully. `quizzes/${quizId}/quiz_image.jpg`",
+        imageRef,
       );
     }
 
-    // Fetch and delete question images
-    const questionsRef = collection(db, "quizzes", quizId, "questions");
-    const questionsSnap = await getDocs(questionsRef);
-    await Promise.all(
-      questionsSnap.docs.map(async (qDoc) => {
-        const qData = qDoc.data();
-        if (qData.imageUrl) {
-          const qImageRef = ref(storage, qData.imageUrl);
-          await deleteObject(qImageRef).catch((err) =>
-            console.warn("Question image deletion failed:", err),
+    // Delete questions images
+    const questions = quizData.questions || [];
+    const deleteQuestionImages = questions.map(async (question, index) => {
+      if (question.imageUrl) {
+        const imgFormat = question.imageUrl.split("?")[0].split(".").pop();
+        const imgRef = ref(
+          storage,
+          `quizzes/${quizId}/questions/${index}/image.${imgFormat}`,
+        );
+        console.log("Deleting question image:", imgRef.fullPath);
+        try {
+          await deleteObject(imgRef);
+          console.log(
+            `Question image deleted successfully: ${imgRef.fullPath}`,
+          );
+        } catch (err) {
+          console.warn(
+            `Question image deletion failed for index ${index}:`,
+            err,
           );
         }
-      }),
-    );
+      }
+    });
+
+    await Promise.all(deleteQuestionImages);
 
     // Delete quiz document
     await deleteDoc(quizRef);

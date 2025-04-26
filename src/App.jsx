@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import UserPage from "./pages/UserPage";
-import EditProfile from "./pages/EditProfile"; // Nowy import
+import EditProfile from "./pages/EditProfile";
 import NotFound from "./pages/NotFound";
 import { ToastContainer } from "react-toastify";
 import QuizDisplay from "./pages/QuizDisplay";
@@ -15,6 +15,7 @@ import QuizPlay from "./pages/QuizPlay";
 import CreateQuiz from "./pages/CreateQuiz";
 import CategoryRoute from "./routes/CategoryRoute";
 import OtherUserPage from "./pages/OtherUserPage";
+import QuizEdit from "./pages/QuizEdit";
 
 function App() {
   return (
@@ -35,10 +36,11 @@ function App() {
             <Route path="user/reset-password" element={<ForgotPassword />} />
             <Route element={<ProtectedRoute />}>
               <Route path="user/details" element={<UserPage />} />
-              <Route path="user/edit-profile" element={<EditProfile />} /> {/* Nowa trasa */}
+              <Route path="user/edit-profile" element={<EditProfile />} />
             </Route>
             <Route path="quiz/:quizId" element={<QuizDisplay />} />
             <Route path="quiz/play/:quizId" element={<QuizPlay />} />
+            <Route path="quiz/edit/:quizId" element={<QuizEdit />} />
             <Route
               path=":category"
               element={
