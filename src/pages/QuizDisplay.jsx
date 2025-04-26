@@ -26,7 +26,11 @@ const QuizDisplay = () => {
           <img
             src={quizData.imageUrl}
             alt={`Obraz quizu ${quizData.title}`}
-            className="mb-4 h-48 w-full rounded-lg object-cover"
+            className="mb-4 w-full max-h-64 h-auto rounded-lg object-contain"
+            onError={(e) =>
+              (e.target.src =
+                "https://placehold.co/200x150.png?text=Brak%20obrazu")
+            }
           />
         )}
         <h1 className="mb-2 text-3xl font-bold text-gray-800">
