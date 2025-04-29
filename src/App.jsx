@@ -49,7 +49,7 @@ function App() {
                 </CategoryRoute>
               }
             />
-            <Route path="profile/:uuid" element={<OtherUserPage />} />
+            <Route path="profile/:username" element={<OtherUserPage />} />
             <Route path="not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>

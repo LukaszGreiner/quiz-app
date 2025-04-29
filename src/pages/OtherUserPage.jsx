@@ -1,40 +1,12 @@
-import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
 import ProfileImageEditor from "../components/UserPage/ProfileImageEditor";
 import ProfileInfo from "../components/UserPage/ProfileInfo";
 import CreatedQuizzes from "../components/UserPage/CreatedQuizzes";
+import { useUserProfile } from "../hooks/useUserProfile";
 
 function Profile() {
-  const { uuid } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const profileDoc = doc(db, "users", uuid);
-        const profileSnapshot = await getDoc(profileDoc);
-
-        if (profileSnapshot.exists()) {
-          setProfile(profileSnapshot.data());
-        } else {
-          setError("Nie znaleziono takiego użytkownika");
-        }
-      } catch (err) {
-        setError("Wystąpił błąd podczas pobierania danych: " + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [uuid]);
+  const { username } = useParams();
+  const { profile, userId, loading, error } = useUserProfile(username);
 
   if (loading) return <p className="text-center">Ładowanie profilu...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -55,10 +27,11 @@ function Profile() {
         />
         <ProfileInfo
           displayName={profile?.username}
+          userId={userId}
           creationTime={profile?.createdAt}
           lastLogin={lastLogin}
         />
-        <CreatedQuizzes uid={uuid} />
+        <CreatedQuizzes authorId={userId} />
       </div>
     </div>
   );
