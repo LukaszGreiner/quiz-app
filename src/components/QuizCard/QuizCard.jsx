@@ -6,12 +6,18 @@ import QuizActions from "../Home/QuizActions";
 import MetadataGrid from "./MetadataGrid";
 import { useState } from "react";
 
-const QuizCard = ({ quiz, onEdit, onDelete }) => {
-  const navigate = useNavigate();
+const QuizCard = ({ quiz }) => {
   const currentUserId = auth.currentUser?.uid || null;
-  const [isActionsOpen, setIsActionsOpen] = useState(false); // Track dropdown state
+  const {
+    creatorName,
+    isAdmin,
+    isOwner,
+    loading: userLoading,
+  } = useUserData(quiz.authorId, currentUserId);
 
-  console.log("QuizCard received quiz:", quiz);
+  const [visibility, setVisibility] = useState(quiz.visibility || "public");
+  const navigate = useNavigate();
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
 
   if (!quiz || !quiz.quizId) {
     return (
@@ -21,18 +27,9 @@ const QuizCard = ({ quiz, onEdit, onDelete }) => {
     );
   }
 
-  const {
-    creatorName,
-    isAdmin,
-    isOwner,
-    loading: userLoading,
-  } = useUserData(quiz.authorId, currentUserId);
-  const [visibility, setVisibility] = useState(quiz.visibility || "public");
-
   const quizData = {
     visibility,
     imageUrl: quiz.imageUrl,
-    questions: quiz.questions,
   };
 
   const handleImageError = (e) => {
@@ -68,9 +65,7 @@ const QuizCard = ({ quiz, onEdit, onDelete }) => {
           isAdmin={isAdmin}
           visibility={visibility}
           setVisibility={setVisibility}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          setIsActionsOpen={setIsActionsOpen} // Pass callback to control z-index
+          setIsActionsOpen={setIsActionsOpen}
         />
       </div>
       <div className="flex flex-col items-center sm:flex-row sm:items-start">

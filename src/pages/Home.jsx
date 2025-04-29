@@ -23,14 +23,6 @@ const Home = () => {
       ? quizzes
       : quizzes.filter((quiz) => quiz.category === normalizedCategory);
 
-  const handleEdit = (quizId) => {
-    console.log("Edit quiz:", quizId); // Placeholder for edit logic
-  };
-
-  const handleDelete = (quizId) => {
-    console.log("Delete quiz:", quizId); // Placeholder for delete logic
-  };
-
   if (loading) return null; // Toast handles loading feedback
 
   return (
@@ -80,12 +72,7 @@ const Home = () => {
           </p>
         ) : (
           filteredQuizzes.map((quiz) => (
-            <QuizCard
-              key={quiz.quizId}
-              quiz={quiz}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+            <QuizCard key={quiz.quizId} quiz={quiz} />
           ))
         )}
       </div>

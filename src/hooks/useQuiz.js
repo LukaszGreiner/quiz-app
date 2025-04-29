@@ -1,40 +1,39 @@
 import { useState, useEffect } from "react";
-import { fetchQuizData } from "../utils/quizUtils";
-import {
-  showLoading,
-  updateLoadingToSuccess,
-  updateLoadingToError,
-} from "../utils/toastUtils";
+import { showError } from "../utils/toastUtils";
+import { fetchQuizById } from "../services/quizService";
 
 export const useQuiz = (quizId) => {
-  const [quizData, setQuizData] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [state, setState] = useState({
+    quizData: null,
+    questions: [],
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
-    const fetchQuiz = async () => {
-      const toastId = showLoading("Ładowanie quizu...");
-      setLoading(true);
-      setError(null);
+    if (!quizId) return;
 
+    const fetchQuiz = async () => {
       try {
-        const { quiz, questions } = await fetchQuizData(quizId);
-        setQuizData(quiz);
-        setQuestions(questions);
-        updateLoadingToSuccess(toastId, "Quiz załadowany pomyślnie!");
-      } catch (err) {
-        setError(err.message);
-        updateLoadingToError(toastId, `Błąd: ${err.message}`);
-      } finally {
-        setLoading(false);
+        const quiz = await fetchQuizById(quizId);
+        setState({
+          quizData: quiz,
+          questions: quiz.questions,
+          loading: false,
+          error: null,
+        });
+      } catch (error) {
+        showError("Błąd ładowania quizu: " + error.message);
+        setState((prev) => ({
+          ...prev,
+          error: error.message,
+          loading: false,
+        }));
       }
     };
 
-    if (quizId) {
-      fetchQuiz();
-    }
+    fetchQuiz();
   }, [quizId]);
 
-  return { quizData, questions, loading, error };
+  return state;
 };

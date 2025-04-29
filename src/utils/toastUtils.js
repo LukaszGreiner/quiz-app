@@ -32,3 +32,22 @@ export const updateLoadingToError = (toastId, message) =>
     isLoading: false,
     autoClose: toastConfig.autoClose,
   });
+
+const defaultMessageConfig = {
+  success: "Operacja zakończona pomyślnie",
+  error: "Wystąpił nieoczekiwany błąd!",
+};
+
+export const withToastHandling = async (
+  callback,
+  messageConfig = defaultMessageConfig,
+) => {
+  const toastId = showLoading("Przetwarzanie...");
+  try {
+    await callback();
+    updateLoadingToSuccess(toastId, messageConfig.success);
+  } catch (err) {
+    updateLoadingToError(toastId, `${messageConfig.error}: ${err.message}`);
+    throw err;
+  }
+};

@@ -7,19 +7,18 @@ import {
   updateLoadingToSuccess,
   updateLoadingToError,
 } from "../../utils/toastUtils";
-import { fetchQuizData } from "../../utils/quizUtils";
 import QuizHeader from "./QuizHeader";
 import QuizDetails from "./QuizDetails";
 import QuestionList from "./QuestionList";
 import ScrollToTopButton from "./ScrollToTopButton";
 import { FaSave } from "react-icons/fa";
 import { quizFormConfig } from "../../config/quizFormConfig";
-import { createQuiz } from "../../services/quizService";
+import { createQuiz, fetchQuizById } from "../../services/quizService";
 
 const QuizForm = ({ defaultValues, onSubmit }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false); // Define useState at the top level
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const methods = useForm({
     defaultValues: defaultValues || {
       title: "Quiz bez nazwy",
@@ -46,18 +45,19 @@ const QuizForm = ({ defaultValues, onSubmit }) => {
     name: "questions",
   });
 
+  const { quizId } = useParams();
   useEffect(() => {
     const loadQuizData = async () => {
       if (defaultValues) {
         reset(defaultValues);
       } else {
-        const { quizId } = useParams();
         if (quizId) {
           try {
-            const { quiz, questions } = await fetchQuizData(quizId);
+            const quizObj = await fetchQuizById(quizId);
+
             reset({
-              ...quiz,
-              questions: questions.map((q) => ({
+              ...quizObj,
+              questions: quizObj.questions.map((q) => ({
                 title: q.title,
                 correctAnswer: q.correctAnswer,
                 wrongAnswers: q.wrongAnswers,
@@ -72,13 +72,13 @@ const QuizForm = ({ defaultValues, onSubmit }) => {
     };
 
     loadQuizData();
-  }, [defaultValues, reset]);
+  }, [defaultValues, reset, quizId]);
 
   const handleFormSubmit = async (data) => {
-    if (isSubmitting) return; // Prevent re-submission
+    if (isSubmitting) return;
 
     try {
-      setIsSubmitting(true); // Set submitting state
+      setIsSubmitting(true);
       if (onSubmit) {
         await onSubmit(data);
       } else {
@@ -95,7 +95,7 @@ const QuizForm = ({ defaultValues, onSubmit }) => {
     } catch (error) {
       console.error("Error submitting quiz:", error);
     } finally {
-      setIsSubmitting(false); // Reset submitting state
+      setIsSubmitting(false);
     }
   };
 

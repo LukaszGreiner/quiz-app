@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { showError } from "../utils/toastUtils"; // Adjust path as needed
+import { showError } from "../utils/toastUtils";
 
 export const useUserData = (authorId, currentUserId) => {
   const [creatorName, setCreatorName] = useState("Nieznany autor");

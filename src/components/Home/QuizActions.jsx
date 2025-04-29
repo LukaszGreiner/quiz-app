@@ -11,12 +11,8 @@ import {
   FaPlay,
   FaEdit,
 } from "react-icons/fa";
-import { auth } from "../../firebase";
-import {
-  deleteQuiz,
-  changeQuizVisibility,
-  updateQuiz,
-} from "../../utils/quizUtils";
+import { deleteQuiz, changeQuizVisibility } from "../../services/quizService";
+
 import { showError } from "../../utils/toastUtils";
 
 const QuizActions = ({
@@ -26,7 +22,6 @@ const QuizActions = ({
   isAdmin,
   visibility,
   setVisibility,
-  onEdit,
   onDelete,
   setIsActionsOpen, // Callback to control parent z-index
 }) => {

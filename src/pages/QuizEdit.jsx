@@ -5,9 +5,9 @@ import { useEffect } from "react";
 import { useState } from "react";
 
 export default function QuizEdit() {
+  const { quizId } = useParams();
   const [quizData, setQuizData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { quizId } = useParams();
 
   useEffect(() => {
     const loadQuizData = async () => {
