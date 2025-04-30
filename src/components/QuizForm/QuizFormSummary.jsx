@@ -1,16 +1,9 @@
 import { FaClock, FaEye, FaStar, FaTag } from "react-icons/fa";
 import { quizFormConfig } from "../../config/quizFormConfig";
 import { formatTotalTime } from "../../utils/quizUtils";
+import { getImageSource } from "../../services/imageUploadService";
 
 export default function QuizFormSummary({ fields, totalTime }) {
-  const getImageSource = (image) => {
-    if (!image) return null;
-    // If image is already a URL string, return it directly
-    if (typeof image === "string") return image;
-    // If image is a File object, create object URL
-    return URL.createObjectURL(image);
-  };
-
   return (
     <div className="flex flex-col gap-6 p-2 md:flex-row md:items-center">
       <div className="mx-auto flex-shrink-0 md:mx-0">
@@ -19,6 +12,10 @@ export default function QuizFormSummary({ fields, totalTime }) {
             src={getImageSource(fields.image)}
             alt="Podgląd zdjęcia quizu"
             className="h-24 w-24 rounded-md object-cover"
+            onError={(e) => {
+              console.error("Failed to load image:", fields.image);
+              e.target.style.display = "none"; // Hide broken image
+            }}
           />
         ) : (
           <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 text-sm text-gray-500">

@@ -17,21 +17,39 @@ export const convertUrlToFile = async (imageUrl) => {
 
   try {
     const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error("Failed to fetch image");
+    }
     const blob = await response.blob();
-    const fileName = imageUrl.split("/").pop().split("?")[0];
+    const fileName = imageUrl.split("/").pop().split("?")[0] || "image.jpg";
     return new File([blob], fileName, { type: blob.type });
   } catch (error) {
-    console.error("Wystąpił błąd przy konwersji UR zdjęcia do Pliku: ", error);
-    throw new Error("Wystąpił błąd przy pobieraniu zdjęcia z bazy danych");
+    console.error("Error converting image URL to File:", error);
+    throw new Error("Failed to fetch image from database");
   }
 };
 
 export const getImageSource = (image) => {
   if (!image) return null;
+
+  // Handle File objects
   if (image instanceof File) {
-    return URL.createObjectURL(image);
+    try {
+      return URL.createObjectURL(image);
+    } catch (error) {
+      console.error("Error creating object URL:", error);
+      return null;
+    }
   }
-  return image;
+
+  // Handle URL strings (Firebase URLs or other image URLs)
+  if (typeof image === "string" && image.length > 0) {
+    return image;
+  }
+
+  // Return null for invalid inputs
+  console.warn("Invalid image input:", image);
+  return null;
 };
 
 export const handleImageChange = (file) => {
