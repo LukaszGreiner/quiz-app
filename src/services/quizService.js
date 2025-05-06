@@ -218,6 +218,7 @@ const deleteQuiz = async (quizId, quizData) => {
 
     // Delete question images
     const questions = quizData.questions || [];
+    console.log("questions", questions);
     questions.forEach((question, index) => {
       if (question.imageUrl) {
         const imgFormat = question.imageUrl.split("?")[0].split(".").pop();

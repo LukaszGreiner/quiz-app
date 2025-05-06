@@ -106,6 +106,7 @@ const QuizDetails = ({ questionCount }) => {
                 image={field.value}
                 onChange={(file) => field.onChange(file)}
                 label="Dodaj zdjęcie quizu (jpg/png)"
+                fieldName="image"
               />
             )}
           />

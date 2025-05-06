@@ -1,277 +1,317 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { auth, db, storage } from "../firebase";
-import { deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { deleteObject, ref, updateMetadata } from "firebase/storage";
-import { quizFormConfig } from "../config/quizFormConfig";
+import { useForm, useFieldArray } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
+import { createQuiz } from "../services/quizService";
+import useLocalStorage from "./useLocalStorage";
 import {
-  isQuizValid,
-  isQuestionFilled,
-  prepareQuizData,
-  uploadImages,
-  saveQuizToFirestore,
-  validateField,
-} from "../utils/quizUtils";
-import {
-  showError,
   showLoading,
   updateLoadingToSuccess,
   updateLoadingToError,
 } from "../utils/toastUtils";
+import { quizFormConfig } from "../config/quizFormConfig";
 
-const toastMessages = {
-  saveQuiz: {
-    success: (quizName) => `Quiz "${quizName}" został zapisany!`,
-    error: "Błąd zapisu quizu",
-  },
-  changeVisibility: {
-    success: "Widoczność zmieniona!",
-    error: "Błąd zmiany widoczności",
-  },
-  deleteQuiz: { success: "Quiz usunięty!", error: "Błąd usuwania quizu" },
+export const DEFAULT_FORM_VALUES = {
+  title: "Quiz bez nazwy",
+  category: "Nauka",
+  description: "",
+  timeLimitPerQuestion: 0,
+  difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
+  visibility: "public",
+  image: null,
+  questions: [
+    {
+      title: "placeholder",
+      correctAnswer: "placeholder1",
+      wrongAnswers: ["placeholder2", "placeholder3", "placeholder4"],
+      image: null,
+    },
+  ],
 };
 
-const withToastHandling = async (callback, messageConfig) => {
-  const toastId = showLoading("Przetwarzanie...");
-  try {
-    const result = await callback();
-    updateLoadingToSuccess(toastId, messageConfig.success(result));
-    return result;
-  } catch (err) {
-    updateLoadingToError(toastId, messageConfig.error);
-    throw err;
-  }
-};
+function useQuizForm(defaultValues = DEFAULT_FORM_VALUES, onSubmit) {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRestoredFromStorage, setIsRestoredFromStorage] = useState(false);
+  const { setItem, getItem, removeItem } = useLocalStorage();
+  const { quizId } = useParams();
+  const saveTimeoutRef = useRef(null);
+  const initialLoadDone = useRef(false);
+  const skipSaveOnce = useRef(false);
+  const isEditMode = Boolean(quizId);
 
-export const useQuizForm = () => {
-  const [quiz, setQuiz] = useState({
-    name: "Quiz bez nazwy",
-    description: "",
-    timeLimitPerQuestion: 0,
-    category: "",
-    difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
-    visibility: "public",
-    image: null,
+  const getStorageKey = useCallback(
+    () => (isEditMode ? "editQuizFormState" : "createQuizFormState"),
+    [isEditMode],
+  );
+
+  const methods = useForm({
+    defaultValues,
+    mode: "onChange",
   });
 
-  const [questions, setQuestions] = useState([
-    {
-      questionText: "",
-      correctAnswer: "",
-      wrongAnswers: ["", "", ""],
-      isOpen: true,
-      image: null,
-    },
+  const { control, handleSubmit, formState, reset, watch } = methods;
+  const { isValid } = formState;
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "questions",
+  });
+
+  // Try to restore from localStorage only once on mount
+  useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
+    // Skip localStorage operations completely when editing
+    if (isEditMode) {
+      reset(defaultValues);
+      setIsRestoredFromStorage(true);
+      return;
+    }
+
+    const storageKey = getStorageKey();
+    const savedForm = getItem(storageKey);
+
+    if (savedForm && !isRestoredFromStorage) {
+      try {
+        reset({
+          ...savedForm,
+          // For main quiz image, prioritize imageUrl over image
+          image: savedForm.imageUrl || savedForm.image || null,
+          imageUrl: savedForm.imageUrl || null,
+          // For question images, do the same
+          questions:
+            savedForm.questions?.map((q) => ({
+              ...q,
+              image: q.imageUrl || q.image || null,
+              imageUrl: q.imageUrl || null,
+            })) || [],
+        });
+        setIsRestoredFromStorage(true);
+        skipSaveOnce.current = true; // skip the next save
+      } catch (err) {
+        console.error("Error restoring form from localStorage:", err);
+      }
+    } else if (defaultValues && !isRestoredFromStorage) {
+      reset(defaultValues);
+      setIsRestoredFromStorage(true);
+      skipSaveOnce.current = true;
+    }
+  }, [
+    getStorageKey,
+    getItem,
+    reset,
+    defaultValues,
+    isRestoredFromStorage,
+    isEditMode,
   ]);
 
-  const questionsContainerRef = useRef(null);
-  const isMounted = useRef(false);
-  const navigate = useNavigate(); // Add useNavigate hook
-
+  // Watch for defaultValues changes to update form
   useEffect(() => {
-    isMounted.current = true;
-    return () => (isMounted.current = false);
-  }, []);
-
-  const handleQuizChange = (e) => {
-    const { name, value, files } = e.target;
-    try {
-      setQuiz((prev) => ({
-        ...prev,
-        [name]: validateField(
-          files
-            ? files[0]
-            : name === "timeLimitPerQuestion"
-              ? value === ""
-                ? 0
-                : Number(value)
-              : value,
-          {
-            maxLength:
-              quizFormConfig[`MAX_${name.toUpperCase()}_LENGTH`] || Infinity,
-          },
-          name,
-        ),
-      }));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleQuestionChange = (
-    index,
-    field,
-    value,
-    wrongAnswerIndex = null,
-  ) => {
-    try {
-      const config = {
-        maxLength:
-          quizFormConfig[`MAX_${field.toUpperCase()}_LENGTH`] || Infinity,
-      };
-      const validatedValue = validateField(value, config, field);
-      setQuestions((prev) => {
-        const newQuestions = [...prev];
-        if (field === "wrongAnswers" && wrongAnswerIndex !== null) {
-          newQuestions[index][field][wrongAnswerIndex] = validatedValue;
-        } else {
-          newQuestions[index][field] = validatedValue;
-        }
-        return newQuestions;
+    // When defaultValues changes after reset in QuizEdit
+    if (defaultValues && initialLoadDone.current) {
+      reset({
+        ...defaultValues,
+        image: defaultValues.imageUrl || null,
+        imageUrl: defaultValues.imageUrl || null,
+        questions:
+          defaultValues.questions?.map((q) => ({
+            ...q,
+            image: q.imageUrl || null,
+            imageUrl: q.imageUrl || null,
+          })) || [],
       });
-    } catch (err) {
-      console.error(err);
+      skipSaveOnce.current = true; // Skip saving to localStorage right after reset
     }
-  };
+  }, [defaultValues, reset]);
 
-  const handleExpandQuestion = useCallback((index) => {
-    setQuestions((prev) => {
-      const newQuestions = [...prev];
-      if (
-        isQuestionFilled(newQuestions[index]) &&
-        !newQuestions[index].isOpen
-      ) {
-        newQuestions[index].isOpen = true;
+  // Debounced save to localStorage
+  const saveFormToStorage = useCallback(
+    (formData) => {
+      // Skip saving to localStorage when editing
+      if (isEditMode || !formData || !isRestoredFromStorage) return;
+
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
-      return newQuestions;
-    });
+
+      saveTimeoutRef.current = setTimeout(() => {
+        const storageKey = getStorageKey();
+        const dataToSave = {
+          ...formData,
+          // Don't save File objects to localStorage
+          image: null,
+          imageUrl: formData.imageUrl,
+          questions: formData.questions?.map((q) => ({
+            ...q,
+            image: null,
+            imageUrl: q.imageUrl,
+          })),
+        };
+
+        setItem(storageKey, dataToSave);
+      }, 500);
+    },
+    [getStorageKey, setItem, isRestoredFromStorage, isEditMode],
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, []);
 
-  const handleAddQuestion = () => {
-    if (
-      questions.length < quizFormConfig.QUIZ_QUESTIONS_LIMIT &&
-      isQuestionFilled(questions[questions.length - 1])
-    ) {
-      setQuestions((prev) => [
-        ...prev.map((q) => ({ ...q, isOpen: false })),
-        {
-          questionText: "",
-          correctAnswer: "",
-          wrongAnswers: ["", "", ""],
-          isOpen: true,
-          image: null,
-        },
-      ]);
-      setTimeout(
-        () =>
-          questionsContainerRef.current?.lastElementChild?.scrollIntoView({
-            behavior: "smooth",
-          }),
-        0,
-      );
-    }
-  };
-
-  const handleDeleteQuestion = (index) => {
-    if (questions.length > quizFormConfig.MIN_QUESTIONS_REQUIRED) {
-      setQuestions((prev) => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const resetForm = () => {
-    setQuiz({
-      name: "Quiz bez nazwy",
-      description: "",
-      timeLimitPerQuestion: 0,
-      category: "",
-      difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
-      visibility: "public",
-      image: null,
-    });
-    setQuestions([
-      {
-        questionText: "",
-        correctAnswer: "",
-        wrongAnswers: ["", "", ""],
-        isOpen: true,
-        image: null,
-      },
-    ]);
-  };
-
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!isMounted.current || !isQuizValid(quiz, questions)) {
-        showError(
-          quiz.category.trim()
-            ? "Wypełnij wszystkie wymagane pola!"
-            : "Wybierz kategorię!",
-        );
+  // Watch form changes with debounced storage
+  useEffect(() => {
+    const subscription = watch((formData, { type }) => {
+      if (!isRestoredFromStorage) return;
+      if (skipSaveOnce.current) {
+        skipSaveOnce.current = false;
         return;
       }
-      await withToastHandling(async () => {
-        const userId =
-          auth.currentUser?.uid || throwError("Musisz być zalogowany!");
-        const quizData = prepareQuizData(quiz, questions, userId);
-        const uploadedData = await uploadImages(
-          quizData,
-          quiz.image,
-          questions.map((q) => q.image),
-        );
-        const quizId = await saveQuizToFirestore(uploadedData);
-        resetForm();
-        navigate(`/quiz/${quizId}`); // Redirect to /quizUUID
-        return quiz.name;
-      }, toastMessages.saveQuiz);
-    },
-    [quiz, questions, navigate], // Add navigate to dependencies
-  );
 
-  const handleChangeVisibility = useCallback(
-    async (quizId, newVisibility, quizData) => {
-      if (!isMounted.current) return;
-      await withToastHandling(async () => {
-        auth.currentUser?.uid || throwError("Musisz być zalogowany!");
-        await updateDoc(doc(db, "quizzes", quizId), {
-          visibility: newVisibility,
-        });
-        const metadata = { customMetadata: { visibility: newVisibility } };
-        if (quizData.imagePath)
-          await updateMetadata(ref(storage, quizData.imagePath), metadata);
-        for (const q of quizData.questions) {
-          if (q.imagePath)
-            await updateMetadata(ref(storage, q.imagePath), metadata);
-        }
-        setQuiz((prev) => ({ ...prev, visibility: newVisibility }));
-      }, toastMessages.changeVisibility);
-    },
-    [],
-  );
-
-  const deleteQuiz = useCallback(async (quizId, quizData) => {
-    if (!isMounted.current) return;
-    await withToastHandling(async () => {
-      const userId =
-        auth.currentUser?.uid || throwError("Musisz być zalogowany!");
-      const { claims } = await auth.currentUser.getIdTokenResult();
-      if (!claims.admin && quizData.createdBy !== userId)
-        throwError("Brak uprawnień!");
-      if (quizData.imagePath)
-        await deleteObject(ref(storage, quizData.imagePath));
-      for (const q of quizData.questions) {
-        if (q.imagePath) await deleteObject(ref(storage, q.imagePath));
+      // Autosave for new quizzes on both field changes and array modifications
+      if (!isEditMode && (type === "change" || type === "array")) {
+        saveFormToStorage(formData);
       }
-      await deleteDoc(doc(db, "quizzes", quizId));
-    }, toastMessages.deleteQuiz);
-  }, []);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, saveFormToStorage, isRestoredFromStorage, isEditMode]);
+
+  const cleanupLocalStorage = useCallback(() => {
+    if (!isEditMode) {
+      removeItem(getStorageKey());
+    }
+  }, [getStorageKey, removeItem, isEditMode]);
+
+  const handleCreateQuiz = async (data) => {
+    await createQuiz(
+      data,
+      currentUser,
+      navigate,
+      showLoading,
+      updateLoadingToSuccess,
+      updateLoadingToError,
+      methods.reset,
+    );
+  };
+
+  const handleCustomSubmit = async (data) => {
+    await onSubmit(data);
+  };
+
+  const handleFormSubmit = async (data) => {
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      // Execute appropriate submit handler
+      if (onSubmit) {
+        await handleCustomSubmit(data);
+      } else {
+        await handleCreateQuiz(data);
+      }
+
+      // Cleanup after successful submission
+      cleanupLocalStorage();
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReset = useCallback(() => {
+    // Clear localStorage data when resetting form for new quiz creation
+    if (!isEditMode) {
+      removeItem(getStorageKey());
+    }
+
+    // Create a fresh copy of default values to ensure a complete reset
+    const defaultFormValues = {
+      ...DEFAULT_FORM_VALUES,
+      image: null,
+      imageUrl: null,
+      questions: [
+        ...DEFAULT_FORM_VALUES.questions.map((q) => ({
+          ...q,
+          image: null,
+          imageUrl: null,
+        })),
+      ],
+    };
+
+    // Reset with keepDefaultValues: false to ensure all values are updated
+    reset(defaultFormValues, {
+      keepDefaultValues: false,
+      keepValues: false,
+      keepDirtyValues: false,
+      keepErrors: false,
+      keepDirty: false,
+      keepIsSubmitted: false,
+      keepTouched: false,
+      keepIsValid: false,
+    });
+
+    // Prevent auto-save from immediately saving the default values
+    skipSaveOnce.current = true;
+  }, [reset, isEditMode, removeItem, getStorageKey]);
+
+  const handleRestoreFromStorage = async () => {
+    // Disable restore from localStorage in edit mode
+    if (isEditMode) return;
+
+    const storageKey = getStorageKey();
+    const savedForm = getItem(storageKey);
+
+    if (savedForm) {
+      try {
+        reset({
+          ...savedForm,
+          image: savedForm.imageUrl || null, // Ensure image is cleared if null
+          imageUrl: savedForm.imageUrl || null,
+          questions:
+            savedForm.questions?.map((q) => ({
+              ...q,
+              image: q.imageUrl || null, // Ensure question images are cleared if null
+              imageUrl: q.imageUrl || null,
+            })) || [],
+        });
+        setIsRestoredFromStorage(true);
+      } catch (err) {
+        console.error("Error restoring form from localStorage:", err);
+      }
+    }
+  };
+
+  const handleImportQuestions = (importedQuestions) => {
+    // Replace all questions with imported ones
+    reset({
+      ...methods.getValues(),
+      questions: importedQuestions,
+    });
+  };
 
   return {
-    quiz,
-    questions,
-    questionsContainerRef,
-    handleQuizChange,
-    handleQuestionChange,
-    handleExpandQuestion,
-    handleAddQuestion,
-    handleDeleteQuestion,
-    handleSubmit,
-    handleChangeVisibility,
-    deleteQuiz,
-    questionLimit: quizFormConfig.QUIZ_QUESTIONS_LIMIT,
+    methods,
+    fields,
+    append,
+    remove,
+    isValid,
+    isSubmitting,
+    handleImportQuestions,
+    handleFormSubmit: handleSubmit(handleFormSubmit),
+    handleSaveToStorage: () => saveFormToStorage(watch()),
+    handleRestoreFromStorage,
+    handleReset,
+    watch,
   };
-};
+}
 
-const throwError = (message) => {
-  throw new Error(message);
-};
+export default useQuizForm;

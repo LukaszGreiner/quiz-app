@@ -1,60 +1,45 @@
-import { useState, useEffect } from "react";
+import { useRef, useCallback } from "react";
 
-/**
- * Custom hook for managing form state persistence in localStorage
- * @param {string} key - Storage key to use
- * @param {Object} initialValue - Initial value if nothing found in storage
- * @returns {[Object, Function, Function]} - [storedValue, updateValue, clearValue]
- */
-const useLocalStorage = (key, initialValue) => {
-  // Get from localStorage on init
-  const getStoredValue = () => {
+function useLocalStorage() {
+  const cache = useRef(new Map());
+
+  const setItem = useCallback((key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+    cache.current.set(key, value);
+    console.log(`Set ${key} in localStorage`);
+  }, []);
+
+  const getItem = useCallback((key) => {
+    console.log(`Getting ${key} from localStorage`);
+    // Check cache first
+    if (cache.current.has(key)) {
+      return cache.current.get(key);
+    }
+
+    // If not in cache, get from localStorage
+    const rawValue = localStorage.getItem(key);
+    if (!rawValue) return null;
+
     try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error("Failed to parse localStorage data:", error);
-      return initialValue;
+      const value = JSON.parse(rawValue);
+      cache.current.set(key, value); // Cache the parsed value
+      return value;
+    } catch (err) {
+      console.error("Error parsing localStorage value:", err);
+      return null;
     }
+  }, []);
+
+  const removeItem = useCallback((key) => {
+    localStorage.removeItem(key);
+    cache.current.delete(key);
+  }, []);
+
+  return {
+    setItem,
+    getItem,
+    removeItem,
   };
-
-  // State to store our value
-  const [storedValue, setStoredValue] = useState(getStoredValue);
-
-  // Save to localStorage whenever state changes
-  const setValue = (value) => {
-    try {
-      // Allow value to be a function like in useState
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value;
-
-      // Save state and localStorage
-      setStoredValue(valueToStore);
-      localStorage.setItem(key, JSON.stringify(valueToStore));
-    } catch (error) {
-      console.error("Failed to save to localStorage:", error);
-    }
-  };
-
-  // Clear the stored value
-  const clearValue = () => {
-    try {
-      setStoredValue(initialValue);
-      localStorage.removeItem(key);
-    } catch (error) {
-      console.error("Failed to clear localStorage item:", error);
-    }
-  };
-
-  // Update localStorage if key changes
-  useEffect(() => {
-    const savedValue = getStoredValue();
-    if (savedValue !== storedValue) {
-      setStoredValue(savedValue);
-    }
-  }, [key]);
-
-  return [storedValue, setValue, clearValue];
-};
+}
 
 export default useLocalStorage;
