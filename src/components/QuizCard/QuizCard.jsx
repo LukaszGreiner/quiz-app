@@ -28,6 +28,7 @@ const QuizCard = ({ quiz }) => {
   }
 
   const quizData = {
+    ...quiz,
     visibility,
     imageUrl: quiz.imageUrl,
   };
@@ -60,7 +61,7 @@ const QuizCard = ({ quiz }) => {
       <div className="quiz-actions absolute top-2 right-2">
         <QuizActions
           quizId={quiz.quizId}
-          quizData={quizData}
+          quiz={quiz}
           isOwner={isOwner}
           isAdmin={isAdmin}
           visibility={visibility}

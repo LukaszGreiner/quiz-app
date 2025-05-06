@@ -17,7 +17,7 @@ import { showError } from "../../utils/toastUtils";
 
 const QuizActions = ({
   quizId,
-  quizData,
+  quiz,
   isOwner,
   isAdmin,
   visibility,
@@ -55,7 +55,7 @@ const QuizActions = ({
       return;
     }
     try {
-      await deleteQuiz(quizId, quizData);
+      await deleteQuiz(quizId, quiz);
       onDelete?.(quizId);
     } catch (err) {
       console.error("Delete failed:", err);
@@ -71,9 +71,9 @@ const QuizActions = ({
     }
     try {
       const newVisibility = await changeQuizVisibility(
+        ...quiz,
         quizId,
         visibility,
-        quizData,
       );
       setVisibility(newVisibility);
     } catch (err) {
