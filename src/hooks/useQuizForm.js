@@ -290,6 +290,14 @@ function useQuizForm(defaultValues = DEFAULT_FORM_VALUES, onSubmit) {
     }
   };
 
+  const handleImportQuestions = (importedQuestions) => {
+    // Replace all questions with imported ones
+    reset({
+      ...methods.getValues(),
+      questions: importedQuestions,
+    });
+  };
+
   return {
     methods,
     fields,
@@ -297,6 +305,7 @@ function useQuizForm(defaultValues = DEFAULT_FORM_VALUES, onSubmit) {
     remove,
     isValid,
     isSubmitting,
+    handleImportQuestions,
     handleFormSubmit: handleSubmit(handleFormSubmit),
     handleSaveToStorage: () => saveFormToStorage(watch()),
     handleRestoreFromStorage,

@@ -54,6 +54,9 @@ const QuizDisplay = () => {
             <strong>Twórca:</strong> {quizData.authorId}
           </p>
           <p>
+            <strong>QuizId:</strong> {quizData.quizId}
+          </p>
+          <p>
             <strong>Liczba pytań:</strong> {questions.length}
           </p>
           <p>

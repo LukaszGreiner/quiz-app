@@ -7,6 +7,7 @@ import ScrollToTopButton from "./ScrollToTopButton";
 import { FaSave, FaInfoCircle } from "react-icons/fa";
 import useQuizForm from "../../hooks/useQuizForm";
 import { quizFormConfig } from "../../config/quizFormConfig";
+import QuizFromFileBtn from "./QuizFromFileBtn";
 
 function QuizForm({ defaultValues, onSubmit, onReset }) {
   const { quizId } = useParams();
@@ -19,6 +20,7 @@ function QuizForm({ defaultValues, onSubmit, onReset }) {
     remove,
     isValid,
     isSubmitting,
+    handleImportQuestions,
     handleFormSubmit,
     handleSaveToStorage,
     handleRestoreFromStorage,
@@ -74,6 +76,7 @@ function QuizForm({ defaultValues, onSubmit, onReset }) {
             >
               Przywróć z localstorage
             </button>
+            <QuizFromFileBtn onImportQuestions={handleImportQuestions} />
           </div>
 
           <div className="flex items-center justify-between">
