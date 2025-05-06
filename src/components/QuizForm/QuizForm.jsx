@@ -1,172 +1,37 @@
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { FaSave, FaTrash } from "react-icons/fa";
-
-// Local imports
-import { useAuth } from "../../context/AuthContext";
-import {
-  showLoading,
-  updateLoadingToSuccess,
-  updateLoadingToError,
-} from "../../utils/toastUtils";
-import { quizFormConfig } from "../../config/quizFormConfig";
-import { createQuiz, fetchQuizById } from "../../services/quizService";
-import useLocalStorage from "../../hooks/useLocalStorage";
-
-// Component imports
+import { FormProvider } from "react-hook-form";
+import { useParams } from "react-router-dom";
 import QuizHeader from "./QuizHeader";
 import QuizDetails from "./QuizDetails";
 import QuestionList from "./QuestionList";
 import ScrollToTopButton from "./ScrollToTopButton";
+import { FaSave, FaInfoCircle } from "react-icons/fa";
+import useQuizForm from "../../hooks/useQuizForm";
+import { quizFormConfig } from "../../config/quizFormConfig";
 
-// Default form values for new quizzes
-const DEFAULT_FORM_VALUES = {
-  title: "Quiz bez nazwy",
-  category: "Wiedza ogólna",
-  description: "",
-  timeLimitPerQuestion: 0,
-  difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
-  visibility: "public",
-  image: null,
-  questions: [
-    {
-      title: "placeholder",
-      correctAnswer: "placeholder1",
-      wrongAnswers: ["placeholder2", "placeholder3", "placeholder4"],
-      image: null,
-    },
-  ],
-};
-
-/**
- * Sanitizes form data to ensure image fields are safe
- * @param {Object} formData - Form data to sanitize
- * @returns {Object} Sanitized form data
- */
-const sanitizeFormData = (formData) => {
-  if (!formData) return null;
-
-  // Deep clone the object to avoid mutations
-  const sanitized = JSON.parse(JSON.stringify(formData));
-
-  // Set main quiz image to null if it's not a valid image
-  if (
-    sanitized.image &&
-    typeof sanitized.image === "object" &&
-    Object.keys(sanitized.image).length === 0
-  ) {
-    sanitized.image = null;
-  }
-
-  // Set question images to null if they're not valid images
-  if (sanitized.questions && Array.isArray(sanitized.questions)) {
-    sanitized.questions = sanitized.questions.map((question) => {
-      if (
-        question.image &&
-        typeof question.image === "object" &&
-        Object.keys(question.image).length === 0
-      ) {
-        return { ...question, image: null };
-      }
-      return question;
-    });
-  }
-
-  return sanitized;
-};
-
-/**
- * QuizForm component for creating or editing quizzes
- * @param {Object} props
- * @param {Object} [props.defaultValues] - Initial form values for editing
- * @param {Function} [props.onSubmit] - Custom submit handler
- */
-const QuizForm = ({ defaultValues, onSubmit }) => {
-  const { currentUser } = useAuth();
-  const navigate = useNavigate();
+function QuizForm({ defaultValues, onSubmit, onReset }) {
   const { quizId } = useParams();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = Boolean(quizId);
 
-  // Storage key based on form mode
-  const storageKey = `quizForm_${quizId ? "edit" : "new"}`;
+  const {
+    methods,
+    fields,
+    append,
+    remove,
+    isValid,
+    isSubmitting,
+    handleFormSubmit,
+    handleSaveToStorage,
+    handleRestoreFromStorage,
+    handleReset: defaultReset,
+    watch,
+  } = useQuizForm(defaultValues, onSubmit);
 
-  // Use our custom localStorage hook with sanitization
-  const [storedFormData, setStoredFormData, clearStoredFormData] =
-    useLocalStorage(storageKey, null);
-
-  // Sanitize stored form data
-  const sanitizedStoredData = sanitizeFormData(storedFormData);
-
-  // Initialize react-hook-form with either defaultValues, sanitized stored data, or defaults
-  const methods = useForm({
-    defaultValues: defaultValues || sanitizedStoredData || DEFAULT_FORM_VALUES,
-  });
-
-  const { control, handleSubmit, formState, reset, watch } = methods;
-  const { isValid } = formState;
-
-  // Manage questions array
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "questions",
-  });
-
-  /**
-   * Fetches quiz data from server when editing
-   * @returns {Promise<Object|null>} Quiz data or null
-   */
-  const fetchQuizData = async () => {
-    try {
-      const quizObj = await fetchQuizById(quizId);
-      return {
-        ...quizObj,
-        questions: quizObj.questions.map((q) => ({
-          title: q.title,
-          correctAnswer: q.correctAnswer,
-          wrongAnswers: q.wrongAnswers,
-          image: null, // Set image to null explicitly
-        })),
-        image: null, // Set main quiz image to null explicitly
-      };
-    } catch (error) {
-      console.error("Failed to load quiz data:", error);
-      return null;
-    }
-  };
-
-  // ===== FORM HANDLERS =====
-
-  /**
-   * Handles form submission
-   * @param {Object} formData - Form values
-   */
-  const handleFormSubmit = async (formData) => {
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      // Sanitize form data before submission
-      const sanitizedData = sanitizeFormData(formData);
-
-      if (onSubmit) {
-        await onSubmit(sanitizedData);
-      } else {
-        await createQuiz(
-          sanitizedData,
-          currentUser,
-          navigate,
-          showLoading,
-          updateLoadingToSuccess,
-          updateLoadingToError,
-          reset,
-        );
-        clearStoredFormData();
-      }
-    } catch (error) {
-      console.error("Failed to submit quiz:", error);
-    } finally {
-      setIsSubmitting(false);
+  // Use external reset handler if provided, otherwise use the default
+  const resetForm = () => {
+    if (onReset) {
+      onReset();
+    } else {
+      defaultReset();
     }
   };
 
@@ -213,14 +78,44 @@ const QuizForm = ({ defaultValues, onSubmit }) => {
   return (
     <div className="relative mx-auto max-w-3xl">
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-          {/* Quiz Header */}
+        <form onSubmit={handleFormSubmit} className="space-y-6">
           <QuizHeader />
+          <QuizDetails questionCount={watch("questions")?.length || 0} />
 
-          {/* Quiz Details */}
-          <QuizDetails questionCount={questionCount} />
+          {/* Autosave notification */}
+          <div
+            className={`flex items-center rounded-md p-3 text-sm ${isEditMode ? "bg-yellow-50 text-yellow-700" : "bg-green-50 text-green-700"}`}
+          >
+            <FaInfoCircle className="mr-2" />
+            {isEditMode
+              ? "W trybie edycji automatyczne zapisywanie jest wyłączone. Kliknij 'Zapisz do localStorage', aby zachować zmiany."
+              : "Automatyczne zapisywanie włączone. Twoje zmiany są zapisywane automatycznie."}
+          </div>
 
-          {/* Questions Counter and Reset Button */}
+          <div className="flex gap-2">
+            <button
+              className="bg-warning hover:bg-warning-hover cursor-pointer rounded-md p-2 text-white"
+              onClick={resetForm}
+              type="button"
+            >
+              Zresetuj formularz
+            </button>
+            <button
+              className="bg-primary hover:bg-primary-hover cursor-pointer rounded-md p-2 text-white"
+              onClick={handleSaveToStorage}
+              type="button"
+            >
+              Zapisz do localstorage
+            </button>
+            <button
+              className="bg-secondary hover:bg-secondary-hover cursor-pointer rounded-md p-2 text-white"
+              onClick={handleRestoreFromStorage}
+              type="button"
+            >
+              Przywróć z localstorage
+            </button>
+          </div>
+
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">
               Pytania: {questionCount}/{quizFormConfig.QUIZ_QUESTIONS_LIMIT}
@@ -262,6 +157,6 @@ const QuizForm = ({ defaultValues, onSubmit }) => {
       <ScrollToTopButton />
     </div>
   );
-};
+}
 
 export default QuizForm;
