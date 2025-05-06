@@ -12,13 +12,20 @@
 @theme {
   /* colors */
   --color-primary: #7c4dff; /* cosmic-purple - kosmiczny fiolet */
+  --color-primary-hover: #9e7cff; /* Jaśniejszy fiolet dla hover */
   --color-secondary: #ff7043; /* deep-orange - głęboki pomarańcz */
+  --color-secondary-hover: #ff916b; /* Jaśniejszy pomarańcz dla hover */
   --color-accent: #b388ff; /* light-purple - jasny fiolet, subtelny */
+  --color-accent-hover: #d1c1ff; /* Jaśniejszy fiolet dla hover */
   --color-success: #28a745;
+  --color-success-hover: #4ad06d; /* Jaśniejsza zieleń dla hover */
   --color-warning: #cc3300;
+  --color-warning-hover: #ff4400; /* Jaśniejsza czerwień/pomarańcz dla hover */
   --color-background: #e8eaf6; /* pale-indigo - jasny indygo */
   --color-white: #efefee;
   --color-dark: #1a237e; /* navy - głęboki granat dla tekstu */
+  --color-dark-hover: #3949ab; /* Jaśniejszy granat dla hover */
+
   /* fonts */
   --font-ptserif: PTSerif;
   --font-lato: Lato;

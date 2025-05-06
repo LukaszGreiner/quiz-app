@@ -1,110 +1,81 @@
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import {
-  showLoading,
-  updateLoadingToSuccess,
-  updateLoadingToError,
-} from "../../utils/toastUtils";
+import { FormProvider } from "react-hook-form";
+import { useParams } from "react-router-dom";
 import QuizHeader from "./QuizHeader";
 import QuizDetails from "./QuizDetails";
 import QuestionList from "./QuestionList";
 import ScrollToTopButton from "./ScrollToTopButton";
-import { FaSave } from "react-icons/fa";
+import { FaSave, FaInfoCircle } from "react-icons/fa";
+import useQuizForm from "../../hooks/useQuizForm";
 import { quizFormConfig } from "../../config/quizFormConfig";
-import { createQuiz, fetchQuizById } from "../../services/quizService";
 
-const QuizForm = ({ defaultValues, onSubmit }) => {
-  const { currentUser } = useAuth();
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const methods = useForm({
-    defaultValues: defaultValues || {
-      title: "Quiz bez nazwy",
-      category: "Nauka",
-      description: "",
-      timeLimitPerQuestion: 0,
-      difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
-      visibility: "public",
-      image: null,
-      questions: [
-        {
-          title: "placeholder",
-          correctAnswer: "placeholder1",
-          wrongAnswers: ["placeholder2", "placeholder3", "placeholder4"],
-          image: null,
-        },
-      ],
-    },
-  });
-  const { control, handleSubmit, formState, reset, watch } = methods;
-  const { isValid } = formState;
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "questions",
-  });
-
+function QuizForm({ defaultValues, onSubmit, onReset }) {
   const { quizId } = useParams();
-  useEffect(() => {
-    const loadQuizData = async () => {
-      if (defaultValues) {
-        reset(defaultValues);
-      } else {
-        if (quizId) {
-          try {
-            const quizObj = await fetchQuizById(quizId);
+  const isEditMode = Boolean(quizId);
 
-            reset({
-              ...quizObj,
-              questions: quizObj.questions.map((q) => ({
-                title: q.title,
-                correctAnswer: q.correctAnswer,
-                wrongAnswers: q.wrongAnswers,
-                imageUrl: null,
-              })),
-            });
-          } catch (error) {
-            console.error("Error loading quiz data:", error);
-          }
-        }
-      }
-    };
+  const {
+    methods,
+    fields,
+    append,
+    remove,
+    isValid,
+    isSubmitting,
+    handleFormSubmit,
+    handleSaveToStorage,
+    handleRestoreFromStorage,
+    handleReset: defaultReset,
+    watch,
+  } = useQuizForm(defaultValues, onSubmit);
 
-    loadQuizData();
-  }, [defaultValues, reset, quizId]);
-
-  const handleFormSubmit = async (data) => {
-    if (isSubmitting) return;
-
-    try {
-      setIsSubmitting(true);
-      if (onSubmit) {
-        await onSubmit(data);
-      } else {
-        await createQuiz(
-          data,
-          currentUser,
-          navigate,
-          showLoading,
-          updateLoadingToSuccess,
-          updateLoadingToError,
-          methods.reset,
-        );
-      }
-    } catch (error) {
-      console.error("Error submitting quiz:", error);
-    } finally {
-      setIsSubmitting(false);
+  // Use external reset handler if provided, otherwise use the default
+  const resetForm = () => {
+    if (onReset) {
+      onReset();
+    } else {
+      defaultReset();
     }
   };
 
   return (
     <div className="relative mx-auto max-w-3xl">
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <form onSubmit={handleFormSubmit} className="space-y-6">
           <QuizHeader />
           <QuizDetails questionCount={watch("questions")?.length || 0} />
+
+          {/* Autosave notification */}
+          <div
+            className={`flex items-center rounded-md p-3 text-sm ${isEditMode ? "bg-yellow-50 text-yellow-700" : "bg-green-50 text-green-700"}`}
+          >
+            <FaInfoCircle className="mr-2" />
+            {isEditMode
+              ? "W trybie edycji automatyczne zapisywanie jest wyłączone. Kliknij 'Zapisz do localStorage', aby zachować zmiany."
+              : "Automatyczne zapisywanie włączone. Twoje zmiany są zapisywane automatycznie."}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              className="bg-warning hover:bg-warning-hover cursor-pointer rounded-md p-2 text-white"
+              onClick={resetForm}
+              type="button"
+            >
+              Zresetuj formularz
+            </button>
+            <button
+              className="bg-primary hover:bg-primary-hover cursor-pointer rounded-md p-2 text-white"
+              onClick={handleSaveToStorage}
+              type="button"
+            >
+              Zapisz do localstorage
+            </button>
+            <button
+              className="bg-secondary hover:bg-secondary-hover cursor-pointer rounded-md p-2 text-white"
+              onClick={handleRestoreFromStorage}
+              type="button"
+            >
+              Przywróć z localstorage
+            </button>
+          </div>
+
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">
               Pytania: {watch("questions")?.length || 0}/
@@ -133,6 +104,6 @@ const QuizForm = ({ defaultValues, onSubmit }) => {
       <ScrollToTopButton />
     </div>
   );
-};
+}
 
 export default QuizForm;

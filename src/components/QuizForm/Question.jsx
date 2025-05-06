@@ -93,6 +93,7 @@ const Question = ({ index, onDelete, canDelete }) => {
                 image={field.value}
                 onChange={(file) => field.onChange(file)}
                 label="Dodaj zdjęcie (jpg/png)"
+                fieldName={`questions.${index}.image`}
               />
             )}
           />
