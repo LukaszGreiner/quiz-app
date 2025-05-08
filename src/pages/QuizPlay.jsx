@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useQuiz } from "../hooks/useQuiz";
 import { auth, db } from "../firebase";
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, updateDoc, increment } from "firebase/firestore";
 import QuizHeader from "../components/QuizPlay/QuizHeader";
 import QuestionCard from "../components/QuizPlay/QuestionCard";
 import NavigationButtons from "../components/QuizPlay/NavigationButtons";
@@ -123,6 +123,9 @@ const QuizPlay = () => {
             completedAt: new Date().toISOString(),
           },
         );
+        //update quiz playsCount
+        const quizRef = doc(db, "quizzes", quizId);
+        await updateDoc(quizRef, { playsCount: increment(1) });
         updateLoadingToSuccess(toastId, "Wynik zapisany!");
       } catch (err) {
         updateLoadingToError(toastId, `Błąd zapisu wyniku: ${err.message}`);
@@ -160,7 +163,7 @@ const QuizPlay = () => {
             ? "Gratulacje! Zdobyłeś maksymalny wynik w jednym z podejść."
             : "Nie zdobyłeś jeszcze maksymalnego wyniku. Spróbuj ponownie!"}
         </p>
-        <QuizRating />
+        <QuizRating quizId={quizId} />
         <div className="mt-6 space-y-4">
           {questions.map((question, index) => (
             <div

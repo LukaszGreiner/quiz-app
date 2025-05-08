@@ -144,25 +144,33 @@ const createQuiz = async (
       return null;
     });
     const questionImageUrls = await Promise.all(questionImageUploads);
+    console.log("data", data);
+
+    // get rid of unnecessary data
+    const {
+      image,
+      ratingsCount,
+      ratingsSum,
+      playsCount,
+      bookmarksCount,
+      ...quizRest
+    } = data;
 
     const quizData = {
+      ...quizRest,
       authorId: currentUser.uid,
-      category: data.category,
-      description: data.description,
-      difficulty: data.difficulty,
-      imageUrl: quizImageUrl,
       quizId: quizId,
       createdAt: serverTimestamp(),
-      timeLimitPerQuestion: data.timeLimitPerQuestion,
-      title: data.title,
-      visibility: data.visibility,
-      questions: data.questions.map((question, index) => ({
-        title: question.title,
-        correctAnswer: question.correctAnswer,
-        wrongAnswers: question.wrongAnswers,
-        imageUrl: questionImageUrls[index],
-      })),
+      imageUrl: quizImageUrl,
+      questions: data.questions.map((question, index) => {
+        const { image, ...questionRest } = question;
+        return {
+          ...questionRest,
+          imageUrl: questionImageUrls[index],
+        };
+      }),
     };
+    console.log("quizData", quizData);
     setDoc(quizRef, quizData);
 
     // stats subcollection
@@ -195,6 +203,27 @@ const deleteQuiz = async (quizId, quizData) => {
     const quizStatsRef = collection(db, `quizzes/${quizId}/stats`);
     const statsSnapshot = await getDocs(quizStatsRef);
     statsSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // Delete all ratings for this quiz
+    const ratingsQuery = query(
+      collection(db, "quizRatings"),
+      where("quizId", "==", quizId),
+    );
+    const ratingsSnapshot = await getDocs(ratingsQuery);
+    ratingsSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // Delete all quiz results for this quiz
+    const resultsQuery = query(
+      collection(db, "quizResults"),
+      where("quizId", "==", quizId),
+    );
+
+    const resultsSnapshot = await getDocs(resultsQuery);
+    resultsSnapshot.forEach((doc) => {
       batch.delete(doc.ref);
     });
 

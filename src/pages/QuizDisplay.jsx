@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuiz } from "../hooks/useQuiz";
-import { formatTotalTime } from "../utils/quizUtils";
+import { formatTotalTime, timestampToCurrentDate } from "../utils/quizUtils";
 
 const QuizDisplay = () => {
   const { quizId } = useParams();
@@ -41,13 +41,13 @@ const QuizDisplay = () => {
         )}
         <div className="flex flex-col gap-2 text-sm text-gray-700">
           <p>
-            <strong>Kategoria:</strong> {quizData.category}
+            <strong>Kategoria: </strong> {quizData.category}
           </p>
           <p>
-            <strong>Trudność:</strong> {quizData.difficulty}
+            <strong>Trudność: </strong> {quizData.difficulty}
           </p>
           <p>
-            <strong>Widoczność:</strong>{" "}
+            <strong>Widoczność: </strong>
             {quizData.visibility === "public" ? "Publiczny" : "Prywatny"}
           </p>
           <p>
@@ -60,8 +60,12 @@ const QuizDisplay = () => {
             <strong>Liczba pytań:</strong> {questions.length}
           </p>
           <p>
-            <strong>Czas całkowity:</strong>{" "}
+            <strong>Czas całkowity: </strong>
             {totalTime > 0 ? formatTotalTime(totalTime) : "Bez limitu"}
+          </p>
+          <p>
+            <strong>Data utworzenia: </strong>
+            {timestampToCurrentDate(quizData?.createdAt)}
           </p>
         </div>
       </div>

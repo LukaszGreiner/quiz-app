@@ -1,10 +1,10 @@
 export const quizFormConfig = {
-  QUIZ_QUESTIONS_LIMIT: 20,
+  QUIZ_QUESTIONS_LIMIT: 21,
   MIN_QUESTIONS_REQUIRED: 1,
-  MAX_QUIZ_NAME_LENGTH: 50,
+  MAX_QUIZ_NAME_LENGTH: 150,
   MAX_DESCRIPTION_LENGTH: 300,
-  MAX_QUESTION_TEXT_LENGTH: 150,
-  MAX_ANSWER_LENGTH: 50,
+  MAX_QUESTION_TEXT_LENGTH: 300,
+  MAX_ANSWER_LENGTH: 300,
   MAX_IMAGE_SIZE: 2 * 1024 * 1024,
   ALLOWED_IMG_TYPES: {
     "image/jpeg": ".jpg",
@@ -13,6 +13,7 @@ export const quizFormConfig = {
   },
   QUIZ_CATEGORIES: [
     "Matematyka",
+    "Informatyka",
     "Nauka",
     "Historia",
     "Geografia",

@@ -19,6 +19,10 @@ export const DEFAULT_FORM_VALUES = {
   difficulty: quizFormConfig.DEFAULT_DIFFICULTY,
   visibility: "public",
   image: null,
+  playsCount: 0,
+  bookmarksCount: 0,
+  ratingsCount: 0,
+  ratingsSum: 0,
   questions: [
     {
       title: "placeholder",
@@ -140,7 +144,6 @@ function useQuizForm(defaultValues = DEFAULT_FORM_VALUES, onSubmit) {
         const storageKey = getStorageKey();
         const dataToSave = {
           ...formData,
-          // Don't save File objects to localStorage
           image: null,
           imageUrl: formData.imageUrl,
           questions: formData.questions?.map((q) => ({

@@ -27,12 +27,6 @@ const QuizCard = ({ quiz }) => {
     );
   }
 
-  const quizData = {
-    ...quiz,
-    visibility,
-    imageUrl: quiz.imageUrl,
-  };
-
   const handleImageError = (e) => {
     e.target.src = "https://placehold.co/128x128.png?text=Brak%20obrazu";
   };
@@ -53,8 +47,8 @@ const QuizCard = ({ quiz }) => {
 
   return (
     <div
-      className={`relative flex w-full max-w-[400px] min-w-[280px] cursor-pointer flex-col rounded-xl bg-white p-3 shadow-md transition-all duration-300 hover:scale-105 hover:bg-gray-50 hover:shadow-xl sm:p-4 ${
-        isActionsOpen ? "z-50" : "z-10"
+      className={`relative z-0 flex w-full max-w-[400px] min-w-[280px] cursor-pointer flex-col rounded-xl bg-white p-3 shadow-md transition-all duration-300 hover:scale-105 hover:bg-gray-50 hover:shadow-xl sm:p-4 ${
+        isActionsOpen ? "z-40" : ""
       }`}
       onClick={handleCardClick}
     >
@@ -85,9 +79,7 @@ const QuizCard = ({ quiz }) => {
           </h3>
           <MetadataGrid
             creatorName={creatorName}
-            category={quiz.category || "Brak kategorii"}
-            questionCount={quiz.questionCount || "Ładowanie..."}
-            createdAt={quiz.createdAt}
+            quiz={quiz}
             visibility={visibility}
           />
         </div>
