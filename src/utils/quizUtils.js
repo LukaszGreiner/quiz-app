@@ -41,3 +41,50 @@ export const timestampToCurrentDate = (timestamp) => {
 
   return `${day}/${month}/${year}`;
 };
+
+export const getPlaysCountText = (quizData) => {
+  return quizData?.playsCount?.toString() ?? "0";
+};
+
+export const getAvgRatingText = (quizData) => {
+  if (
+    !quizData ||
+    typeof quizData.ratingsSum !== "number" ||
+    typeof quizData.ratingsCount !== "number" ||
+    quizData.ratingsCount === 0
+  ) {
+    return "Brak ocen";
+  }
+  const rawAvgRating = quizData.ratingsSum / quizData.ratingsCount;
+  return rawAvgRating.toFixed(1);
+};
+
+export const getAvgScoreText = (quizData, questionsLength) => {
+  if (
+    !quizData ||
+    typeof quizData.scoreSum !== "number" ||
+    typeof quizData.playsCount !== "number" ||
+    quizData.playsCount === 0 ||
+    typeof questionsLength !== "number" ||
+    questionsLength === 0
+  ) {
+    return "Brak danych";
+  }
+  const rawAvgScore = quizData.scoreSum / quizData.playsCount / questionsLength;
+  return `${(rawAvgScore * 100).toFixed(0)}%`;
+};
+
+export const getAvgCompletionTimeText = (quizData) => {
+  if (
+    !quizData ||
+    typeof quizData.completionTimeSum !== "number" ||
+    typeof quizData.playsCount !== "number" ||
+    quizData.playsCount === 0
+  ) {
+    return "Brak danych";
+  }
+  const rawAvgCompletionTimeMs =
+    quizData.completionTimeSum / quizData.playsCount;
+  if (rawAvgCompletionTimeMs <= 0) return "Brak danych";
+  return formatTotalTime(rawAvgCompletionTimeMs / 1000); // formatTotalTime expects seconds
+};

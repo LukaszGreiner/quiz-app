@@ -67,14 +67,16 @@ const QuizCard = ({ quiz }) => {
         <img
           src={
             quiz.imageUrl ||
-            `https://placehold.co/128x128.png?text=${quiz.title || "Quiz"}`
+            `https://placehold.co/128x128.png?text=${encodeURIComponent(quiz.title || "Bez nazwy")}`
           }
           alt={`Obraz quizu ${quiz.title || "Bez nazwy"}`}
           className="mb-3 h-24 w-24 rounded-lg object-cover sm:mr-4 sm:mb-0 sm:h-32 sm:w-32"
           onError={handleImageError}
         />
         <div className="flex w-full flex-col">
-          <h3 className="mb-2 text-center text-lg font-semibold sm:text-left">
+          <h3 className="mb-3 text-center text-lg font-semibold sm:text-left">
+            {" "}
+            {/* Changed mb-2 to mb-3 */}
             {quiz.title || "Bez nazwy"}
           </h3>
           <MetadataGrid

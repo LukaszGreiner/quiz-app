@@ -32,6 +32,7 @@ import {
   getDocs,
   updateDoc,
   writeBatch,
+  increment,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -41,7 +42,12 @@ import {
 } from "firebase/storage";
 import { auth, db, storage } from "../firebase";
 import { quizFormConfig } from "../config/quizFormConfig";
-import { withToastHandling } from "../utils/toastUtils";
+import {
+  showLoading,
+  updateLoadingToError,
+  updateLoadingToSuccess,
+  withToastHandling,
+} from "../utils/toastUtils";
 
 const { ALLOWED_IMG_TYPES, MAX_IMG_SIZE } = quizFormConfig;
 
@@ -146,7 +152,8 @@ const createQuiz = async (
     const questionImageUrls = await Promise.all(questionImageUploads);
     console.log("data", data);
 
-    // get rid of unnecessary data
+    // Get rid of unnecessary data
+    /* eslint-disable no-unused-vars */
     const {
       image,
       ratingsCount,
@@ -155,6 +162,15 @@ const createQuiz = async (
       bookmarksCount,
       ...quizRest
     } = data;
+    /* eslint-enable no-unused-vars */
+
+    const initialQuestionsStats = {};
+    data.questions.forEach((_, index) => {
+      initialQuestionsStats[String(index)] = {
+        correctCount: 0,
+        incorrectCount: 0,
+      };
+    });
 
     const quizData = {
       ...quizRest,
@@ -163,12 +179,17 @@ const createQuiz = async (
       createdAt: serverTimestamp(),
       imageUrl: quizImageUrl,
       questions: data.questions.map((question, index) => {
+        // eslint-disable-next-line no-unused-vars
         const { image, ...questionRest } = question;
         return {
           ...questionRest,
           imageUrl: questionImageUrls[index],
         };
       }),
+      questionsStats: initialQuestionsStats,
+      playsCount: 0,
+      scoreSum: 0,
+      completionTimeSum: 0,
     };
     console.log("quizData", quizData);
     setDoc(quizRef, quizData);
@@ -322,7 +343,6 @@ const changeQuizVisibility = async (quizId, currentVisibility) => {
   }, toastMessages.changeVisibility);
 };
 
-// Fetch user quiz attempts
 const fetchUserQuizAttempts = async (userId, quizId) => {
   try {
     const resultsRef = collection(db, "quizResults");
@@ -341,6 +361,68 @@ const fetchUserQuizAttempts = async (userId, quizId) => {
   }
 };
 
+// Save quiz result
+const saveQuizResult = async (
+  userId,
+  quizId,
+  quizTitle,
+  score,
+  totalQuestions,
+  quizStartAt,
+  userAnswers,
+  questions,
+) => {
+  const toastId = showLoading("Zapisywanie wyniku...");
+  try {
+    const completedAt = Date.now();
+    const completionTimeinMs = Math.floor(completedAt - quizStartAt);
+
+    const batch = writeBatch(db);
+
+    // 1. Save the quiz result
+    const resultDocRef = doc(
+      db,
+      "quizResults",
+      `${userId}_${quizId}_${Date.now()}`,
+    );
+    batch.set(resultDocRef, {
+      userId,
+      quizId,
+      quizTitle,
+      score,
+      totalQuestions,
+      completedAt: new Date(completedAt).toISOString(),
+      completionTimeinMs,
+    });
+
+    // 2. Update overall quiz stats (playsCount, scoreSum, completionTimeSum)
+    const quizRef = doc(db, "quizzes", quizId);
+    batch.update(quizRef, {
+      playsCount: increment(1),
+      scoreSum: increment(score),
+      completionTimeSum: increment(completionTimeinMs),
+    });
+
+    // 3. Update question-specific stats
+    questions.forEach((question, index) => {
+      const isCorrect = userAnswers[index] === question.correctAnswer;
+
+      const statsPathPrefix = `questionsStats.${index}`;
+      batch.update(quizRef, {
+        [`${statsPathPrefix}.correctCount`]: increment(isCorrect ? 1 : 0),
+        [`${statsPathPrefix}.incorrectCount`]: increment(isCorrect ? 0 : 1),
+      });
+    });
+
+    await batch.commit();
+    updateLoadingToSuccess(toastId, "Wynik zapisany!");
+  } catch (err) {
+    updateLoadingToError(toastId, `Błąd zapisu wyniku: ${err.message}`);
+    console.error("Error saving quiz result:", err);
+    throw err;
+  }
+};
+
 export {
   fetchQuizById,
   createQuiz,
@@ -348,4 +430,5 @@ export {
   updateQuiz,
   changeQuizVisibility,
   fetchUserQuizAttempts,
+  saveQuizResult,
 };

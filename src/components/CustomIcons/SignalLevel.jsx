@@ -12,7 +12,7 @@ const gray = "#bdbdbd";
 const SignalLevel = ({ count }) => {
   const level = getLevel(count);
   return (
-    <svg width="auto" height="auto" viewBox="0 0 32 24">
+    <svg width="22" height="22" viewBox="0 0 32 24">
       <rect
         x="2"
         y="16"
