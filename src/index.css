@@ -11,7 +11,7 @@
 
 @theme {
   /* colors */
-  --color-primary: #7c4dff; /* cosmic-purple - kosmiczny fiolet */
+  --color-primary: #6145ae; /* cosmic-purple - kosmiczny fiolet  old: 7c4dff*/
   --color-primary-hover: #9e7cff; /* Jaśniejszy fiolet dla hover */
   --color-secondary: #ff7043; /* deep-orange - głęboki pomarańcz */
   --color-secondary-hover: #ff916b; /* Jaśniejszy pomarańcz dla hover */
