@@ -8,28 +8,89 @@
 }
 
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* colors */
-  --color-primary: #6145ae; /* cosmic-purple - kosmiczny fiolet  old: 7c4dff*/
-  --color-primary-hover: #9e7cff; /* Jaśniejszy fiolet dla hover */
-  --color-secondary: #ff7043; /* deep-orange - głęboki pomarańcz */
-  --color-secondary-hover: #ff916b; /* Jaśniejszy pomarańcz dla hover */
-  --color-accent: #b388ff; /* light-purple - jasny fiolet, subtelny */
-  --color-accent-hover: #d1c1ff; /* Jaśniejszy fiolet dla hover */
-  --color-success: #28a745;
-  --color-success-hover: #4ad06d; /* Jaśniejsza zieleń dla hover */
-  --color-warning: #cc3300;
-  --color-warning-hover: #ff4400; /* Jaśniejsza czerwień/pomarańcz dla hover */
-  --color-background: #e8eaf6; /* pale-indigo - jasny indygo */
-  --color-white: #efefee;
-  --color-dark: #1a237e; /* navy - głęboki granat dla tekstu */
-  --color-dark-hover: #3949ab; /* Jaśniejszy granat dla hover */
-
-  /* fonts */
   --font-ptserif: PTSerif;
   --font-lato: Lato;
   --font-montserrat: Montserrat;
   --font-quicksand: Quicksand;
   --font-poppins: Poppins;
+}
+
+@theme {
+  /* Core Structure */
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-elevated: #ffffff;
+
+  /* Brand */
+  --color-primary: #6145ae;
+  --color-secondary: #6b7280;
+  --color-accent: #f59e0b;
+
+  /* Typography */
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-inverse: #ffffff;
+
+  /* Quiz-Specific States */
+  --color-correct: #22c55e;
+  --color-incorrect: #ef4444;
+  --color-selected: #3b82f6;
+  --color-neutral: #9ca3af;
+
+  /* Functional */
+  --color-warning: #f59e0b;
+  --color-info: #0ea5e9;
+  --color-border: #e5e7eb;
+  --color-border-focus: #6145ae;
+}
+
+.dark {
+  /* Core Structure */
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-elevated: #334155;
+  /* Brand */
+  --color-primary: #8b5cf6;
+  --color-secondary: #94a3b8;
+  --color-accent: #fbbf24;
+
+  /* Typography */
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #0f172a;
+
+  /* Quiz-Specific States */
+  --color-correct: #10b981;
+  --color-incorrect: #f87171;
+  --color-selected: #60a5fa;
+  --color-neutral: #64748b;
+
+  /* Functional */
+  --color-warning: #fbbf24;
+  --color-info: #38bdf8;
+  --color-border: #475569;
+  --color-border-focus: #8b5cf6;
+}
+
+.theme-transition,
+body,
+header,
+footer,
+section:not([class*="mobile"]),
+nav:not([class*="mobile"]),
+button:not([class*="mobile"]),
+.bg-surface,
+.bg-surface-elevated,
+.bg-background,
+.text-text,
+.text-text-muted,
+.border-border {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }

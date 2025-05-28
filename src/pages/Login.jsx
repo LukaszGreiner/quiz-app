@@ -93,22 +93,17 @@ function Login() {
       setError("Logowanie się nie powiodło!");
     }
   };
-
   return (
     <div className="mx-auto mt-8 max-w-md">
-      <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
-        Sign in
-      </h1>
-      {error && <p className="mb-4 text-center text-red-500">{error}</p>}
+      <h1 className="text-text mb-6 text-center text-3xl font-bold">Sign in</h1>
+      {error && <p className="text-incorrect mb-4 text-center">{error}</p>}
       <form
         onSubmit={handleSubmit}
-        className="rounded-lg bg-white p-6 shadow-md"
+        className="bg-surface-elevated border-border rounded-lg border p-6 shadow-md"
       >
+        {" "}
         <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="mb-2 block font-medium text-gray-700"
-          >
+          <label htmlFor="email" className="text-text mb-2 block font-medium">
             Email
           </label>
           <input
@@ -116,7 +111,7 @@ function Login() {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-border bg-surface text-text focus:ring-primary focus:border-border-focus w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
             placeholder="Enter your email"
             required
           />
@@ -124,7 +119,7 @@ function Login() {
         <div className="mb-6">
           <label
             htmlFor="password"
-            className="mb-2 block font-medium text-gray-700"
+            className="text-text mb-2 block font-medium"
           >
             Password
           </label>
@@ -133,22 +128,21 @@ function Login() {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-border bg-surface text-text focus:ring-primary focus:border-border-focus w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
             placeholder="Enter your password"
             required
           />
-        </div>
+        </div>{" "}
         <button
           type="submit"
-          className="bg-primary hover:primary/90 mb-4 w-full cursor-pointer rounded-md py-2 text-white transition-colors"
+          className="bg-primary hover:bg-primary/90 text-text-inverse mb-4 w-full cursor-pointer rounded-md py-2 transition-colors"
         >
           Sign in
         </button>
-
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="mb-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-300 bg-white py-2 text-gray-700 transition-colors hover:bg-gray-100"
+          className="border-border bg-surface-elevated text-text hover:bg-surface mb-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border py-2 transition-colors"
         >
           <svg
             className="h-5 w-5"
@@ -173,20 +167,19 @@ function Login() {
             />
           </svg>
           Continue with Google
-        </button>
-
-        <div className="flex justify-between text-sm text-gray-600">
+        </button>{" "}
+        <div className="text-text-muted flex justify-between text-sm">
           <Link
-            to="/user/reset-password"
-            className="transition-colors hover:text-blue-600"
+            to="/reset-password"
+            className="hover:text-primary transition-colors"
           >
             Forgot password?
           </Link>
           <p>
             No account?{" "}
             <Link
-              to="/user/signup"
-              className="text-blue-600 transition-colors hover:underline"
+              to="/signup"
+              className="text-primary transition-colors hover:underline"
             >
               Create here
             </Link>

@@ -16,31 +16,19 @@ import CreateQuiz from "./pages/CreateQuiz";
 import CategoryRoute from "./routes/CategoryRoute";
 import OtherUserPage from "./pages/OtherUserPage";
 import QuizEdit from "./pages/QuizEdit";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route
-              element={
-                <ProtectedRoute message="Musisz się zalogować aby stworzyć quiz" />
-              }
-            >
-              <Route path="newquiz" element={<CreateQuiz />} />
-            </Route>
-            <Route path="user/login" element={<Login />} />
-            <Route path="user/signup" element={<Signup />} />
-            <Route path="user/reset-password" element={<ForgotPassword />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="user/details" element={<UserPage />} />
-              <Route path="user/edit-profile" element={<EditProfile />} />
-            </Route>
-            <Route path="quiz/:quizId" element={<QuizDisplay />} />
-            <Route path="quiz/play/:quizId" element={<QuizPlay />} />
-            <Route path="quiz/edit/:quizId" element={<QuizEdit />} />
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="reset-password" element={<ForgotPassword />} />
+            <Route path="/app" element={<Home />} />
             <Route
               path=":category"
               element={
@@ -50,6 +38,23 @@ function App() {
               }
             />
             <Route path="profile/:username" element={<OtherUserPage />} />
+            <Route path="quiz/:quizId" element={<QuizDisplay />} />
+
+            <Route
+              element={<ProtectedRoute info="Zaloguj się aby uzyskać dostęp" />}
+            >
+              {/* Tworzenie nowego quizu */}
+              <Route path="newquiz" element={<CreateQuiz />} />
+              {/* Gra w quizy */}
+              <Route path="quiz/play/:quizId" element={<QuizPlay />} />
+              {/* Strony profilu użytkownika */}
+              <Route path="user/details" element={<UserPage />} />
+              <Route path="user/edit-profile" element={<EditProfile />} />\{" "}
+              {/* Edycja quizu */}
+              <Route path="quiz/edit/:quizId" element={<QuizEdit />} />
+            </Route>
+
+            {/* 404 */}
             <Route path="not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Route>

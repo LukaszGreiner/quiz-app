@@ -14,6 +14,8 @@ const toastConfig = {
 
 export const showError = (message, overrideConfig = {}) =>
   toast.error(message, { ...toastConfig, ...overrideConfig });
+export const showInfo = (message, overrideConfig = {}) =>
+  toast.info(message, { ...toastConfig, ...overrideConfig });
 
 export const showSuccess = (message) => toast.success(message, toastConfig);
 export const showLoading = (message) =>

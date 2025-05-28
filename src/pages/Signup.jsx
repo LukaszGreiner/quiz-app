@@ -36,22 +36,17 @@ function Signup() {
       setError(err.message);
     }
   };
-
   return (
     <div className="mx-auto mt-8 max-w-md">
-      <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
-        Sign Up
-      </h1>
-      {error && <p className="mb-4 text-center text-red-500">{error}</p>}
+      <h1 className="text-text mb-6 text-center text-3xl font-bold">Sign Up</h1>
+      {error && <p className="text-incorrect mb-4 text-center">{error}</p>}
       <form
         onSubmit={handleSubmit}
-        className="rounded-lg bg-white p-6 shadow-md"
+        className="bg-surface-elevated border-border rounded-lg border p-6 shadow-md"
       >
+        {" "}
         <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="mb-2 block font-medium text-gray-700"
-          >
+          <label htmlFor="email" className="text-text mb-2 block font-medium">
             Email
           </label>
           <input
@@ -59,7 +54,7 @@ function Signup() {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-border bg-surface text-text focus:ring-primary focus:border-border-focus w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
             placeholder="Enter your email"
             required
           />
@@ -67,7 +62,7 @@ function Signup() {
         <div className="mb-4">
           <label
             htmlFor="password"
-            className="mb-2 block font-medium text-gray-700"
+            className="text-text mb-2 block font-medium"
           >
             Password
           </label>
@@ -76,7 +71,7 @@ function Signup() {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-border bg-surface text-text focus:ring-primary focus:border-border-focus w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
             placeholder="Enter your password"
             required
           />
@@ -84,7 +79,7 @@ function Signup() {
         <div className="mb-6">
           <label
             htmlFor="confirm-password"
-            className="mb-2 block font-medium text-gray-700"
+            className="text-text mb-2 block font-medium"
           >
             Confirm Password
           </label>
@@ -93,22 +88,21 @@ function Signup() {
             id="confirm-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-border bg-surface text-text focus:ring-primary focus:border-border-focus w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
             placeholder="Confirm your password"
             required
           />
-        </div>
+        </div>{" "}
         <button
           type="submit"
-          className="mb-4 w-full rounded-md bg-blue-600 py-2 text-white transition-colors hover:bg-blue-700"
+          className="bg-primary text-text-inverse hover:bg-primary/90 mb-4 w-full rounded-md py-2 transition-colors"
         >
           Sign Up
         </button>
-
         <button
           type="button"
           onClick={handleGoogleSignup}
-          className="mb-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white py-2 text-gray-700 transition-colors hover:bg-gray-100"
+          className="border-border bg-surface-elevated text-text hover:bg-surface mb-4 flex w-full items-center justify-center gap-2 rounded-md border py-2 transition-colors"
         >
           <svg
             className="h-5 w-5"
@@ -133,14 +127,13 @@ function Signup() {
             />
           </svg>
           Continue with Google
-        </button>
-
-        <div className="text-center text-sm text-gray-600">
+        </button>{" "}
+        <div className="text-text-muted text-center text-sm">
           <p>
             Already have an account?{" "}
             <Link
-              to="/user/login"
-              className="text-blue-600 transition-colors hover:underline"
+              to="/login"
+              className="text-primary transition-colors hover:underline"
             >
               Login here
             </Link>
