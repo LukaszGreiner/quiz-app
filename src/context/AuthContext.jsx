@@ -1,11 +1,12 @@
 // src/context/AuthContext.js
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db } from "../firebase";
+import { auth, db, googleProvider } from "../firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  signInWithPopup,
 } from "firebase/auth";
 import {
   doc,
@@ -15,6 +16,7 @@ import {
   collection,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 
 const AuthContext = createContext();
@@ -62,7 +64,6 @@ export function AuthProvider({ children }) {
   const logout = () => {
     return signOut(auth);
   };
-
   // Function to change username
   const changeUsername = async (newUsername) => {
     if (!currentUser) throw new Error("Użytkownik nie jest zalogowany");
@@ -91,6 +92,41 @@ export function AuthProvider({ children }) {
       { merge: true },
     );
     return newUsername;
+  };
+
+  // Function to handle Google authentication
+  const handleGoogleAuth = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Check if user document already exists
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // Set username to user_UUID
+        const username = `user_${user.uid}`;
+
+        // Create user document
+        await setDoc(userDocRef, {
+          email: user.email,
+          username: username,
+          createdAt: new Date().toISOString(),
+          isAdmin: false,
+          lastLogin: new Date().toISOString(),
+        });
+      } else {
+        // Update lastLogin property
+        await updateDoc(userDocRef, {
+          lastLogin: new Date().toISOString(),
+        });
+      }
+
+      return user;
+    } catch {
+      throw new Error("Logowanie się nie powiodło!");
+    }
   };
 
   const value = {

@@ -26,9 +26,8 @@ const QuizDetails = ({ questionCount }) => {
   const totalTime = fields.timeLimitPerQuestion
     ? fields.timeLimitPerQuestion * questionCount
     : null;
-
   return (
-    <div className="rounded-md border border-gray-200 bg-gray-50 p-4 md:p-6">
+    <div className="border-border bg-surface rounded-md border p-4 md:p-6">
       <CollapsibleSection
         summary={<QuizFormSummary fields={fields} totalTime={totalTime} />}
         defaultOpen={true}
@@ -50,9 +49,7 @@ const QuizDetails = ({ questionCount }) => {
                 })),
               ]}
               error={errors.category}
-              className={
-                !fields.category ? "border-warning" : "border-gray-200"
-              }
+              className={!fields.category ? "border-warning" : "border-border"}
             />
             <SelectField
               id="difficulty"
@@ -125,12 +122,12 @@ const SelectField = ({
   options,
   defaultValue,
   error,
-  className = "border-gray-200",
+  className = "border-border",
 }) => (
   <div>
     <label
       htmlFor={id}
-      className="mb-1 flex items-center gap-1 text-sm text-gray-600"
+      className="text-text-muted mb-1 flex items-center gap-1 text-sm"
     >
       {icon} {label}
     </label>
@@ -138,7 +135,7 @@ const SelectField = ({
       id={id}
       {...register}
       defaultValue={defaultValue || ""}
-      className={`w-full rounded-md border ${className} p-2 text-sm focus:ring-1 focus:ring-indigo-500`}
+      className={`w-full rounded-md border ${className} focus:ring-primary/20 focus:border-border-focus p-2 text-sm focus:ring-2`}
     >
       {options.map(({ value, label }) => (
         <option key={value} value={value}>
@@ -146,23 +143,23 @@ const SelectField = ({
         </option>
       ))}
     </select>
-    {error && <span className="text-sm text-red-600">{error.message}</span>}
+    {error && <span className="text-incorrect text-sm">{error.message}</span>}
   </div>
 );
 
 // Sub-component for textarea
 const TextAreaField = ({ id, label, register, error }) => (
   <div>
-    <label htmlFor={id} className="mb-1 block text-sm text-gray-600">
+    <label htmlFor={id} className="text-text-muted mb-1 block text-sm">
       {label}
     </label>
     <textarea
       id={id}
       {...register}
       placeholder="Dodaj opis"
-      className="min-h-[80px] w-full rounded-md border border-gray-200 p-3 text-sm focus:ring-1 focus:ring-indigo-500"
+      className="border-border focus:ring-primary/20 focus:border-border-focus min-h-[80px] w-full rounded-md border p-3 text-sm focus:ring-2"
     />
-    {error && <span className="text-sm text-red-600">{error.message}</span>}
+    {error && <span className="text-incorrect text-sm">{error.message}</span>}
   </div>
 );
 

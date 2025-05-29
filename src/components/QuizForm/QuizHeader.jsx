@@ -23,9 +23,8 @@ const QuizHeader = () => {
     setIsEditing(true);
     inputRef.current?.focus();
   };
-
   return (
-    <div className="flex items-center justify-between rounded-md bg-gray-50 p-4">
+    <div className="bg-surface flex items-center justify-between rounded-md p-4">
       {isEditing ? (
         <div className="w-full">
           <input
@@ -35,20 +34,20 @@ const QuizHeader = () => {
             onBlur={handleFinish}
             onKeyDown={(e) => e.key === "Enter" && handleFinish()}
             maxLength={quizFormConfig.MAX_QUIZ_NAME_LENGTH}
-            className="w-full border-b-2 border-indigo-500 py-1 text-2xl font-semibold text-gray-800 focus:outline-none"
+            className="border-primary text-text focus:border-border-focus w-full border-b-2 py-1 text-2xl font-semibold focus:outline-none"
           />
           {errors.title && (
-            <span className="mt-1 text-sm text-red-600">
+            <span className="text-incorrect mt-1 text-sm">
               {errors.title.message}
             </span>
           )}
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+          <h2 className="text-text text-2xl font-semibold">{title}</h2>
           <button
             onClick={startEditing}
-            className="text-gray-400 hover:text-indigo-600"
+            className="text-text-muted hover:text-primary focus:text-primary focus:ring-primary/20 transition-colors duration-200 focus:ring-2"
           >
             <FaEdit size={16} />
           </button>

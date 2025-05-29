@@ -1,11 +1,11 @@
 export default function InfoItem({ icon = "x", text = "x", label = "x" }) {
   return (
-    <div className="group relative flex items-center justify-start gap-1 sm:gap-2">
-      <div className="w-5 flex-shrink-0 sm:w-6">{icon}</div>
-      <span className="max-w-[80px] cursor-default truncate sm:max-w-[100px] md:max-w-[120px]">
+    <div className="group relative flex items-center gap-2">
+      <div className="flex-shrink-0">{icon}</div>
+      <span className="text-text flex-1 truncate text-sm" title={text}>
         {text}
       </span>
-      <div className="absolute top-full z-50 mt-2 hidden rounded bg-gray-800 px-2 py-1 text-xs text-nowrap text-white group-hover:block">
+      <div className="bg-surface-elevated border-border text-text absolute bottom-full left-1/2 z-50 mb-2 hidden -translate-x-1/2 transform rounded border px-2 py-1 text-xs whitespace-nowrap shadow-md group-hover:block">
         {label}
       </div>
     </div>

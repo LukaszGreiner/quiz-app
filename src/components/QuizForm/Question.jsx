@@ -42,24 +42,23 @@ const Question = ({ index, onDelete, canDelete }) => {
       setIsOpen(true);
     }
   };
-
   return (
-    <div className="rounded-md border border-gray-200 bg-gray-50 p-4 md:p-6">
+    <div className="border-border bg-surface rounded-md border p-4 md:p-6">
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-text-muted text-sm font-medium">
           Pytanie {index + 1}
         </span>
         {canDelete && (
           <button
             type="button"
             onClick={onDelete}
-            className="text-gray-400 hover:text-red-500"
+            className="text-text-muted hover:text-incorrect focus:text-incorrect focus:ring-incorrect/20 transition-colors duration-200 focus:ring-2"
             aria-label={`Usuń pytanie ${index + 1}`}
           >
             <FaTrash size={14} />
           </button>
         )}
-      </div>
+      </div>{" "}
       {/* Title */}
       <div className="mb-2">
         <input
@@ -74,10 +73,10 @@ const Question = ({ index, onDelete, canDelete }) => {
             },
           })}
           placeholder="Wpisz pytanie"
-          className="w-full rounded-md border border-gray-200 p-1.5 text-sm break-all focus:ring-1 focus:ring-indigo-500"
+          className="border-border focus:ring-primary/20 focus:border-border-focus w-full rounded-md border p-1.5 text-sm break-all focus:ring-2"
         />
         {errors.questions?.[index]?.title && (
-          <span className="text-sm text-red-600">
+          <span className="text-incorrect text-sm">
             {errors.questions[index].title.message}
           </span>
         )}
@@ -99,10 +98,11 @@ const Question = ({ index, onDelete, canDelete }) => {
           />
           {/* Correct answers */}
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {" "}
             <div>
               <label
                 htmlFor={`correctAnswer-${index}`}
-                className="mb-1 block text-sm text-gray-600"
+                className="text-text-muted mb-1 block text-sm"
               >
                 Prawidłowa odpowiedź
               </label>
@@ -117,17 +117,17 @@ const Question = ({ index, onDelete, canDelete }) => {
                   },
                 })}
                 placeholder="Prawidłowa odpowiedź"
-                className="w-full rounded-md border border-green-200 bg-green-50 p-1.5 text-sm focus:ring-1 focus:ring-green-500"
+                className="border-correct bg-correct/10 focus:ring-correct/20 focus:border-correct w-full rounded-md border p-1.5 text-sm focus:ring-2"
               />
               {errors.questions?.[index]?.correctAnswer && (
-                <span className="text-sm text-red-600">
+                <span className="text-incorrect text-sm">
                   {errors.questions[index].correctAnswer.message}
                 </span>
               )}
             </div>
             {/* Wrong answer */}
             <div>
-              <label className="mb-1 block text-sm text-gray-600">
+              <label className="text-text-muted mb-1 block text-sm">
                 Nieprawidłowe odpowiedzi
               </label>
               <div className="space-y-3">
@@ -147,10 +147,10 @@ const Question = ({ index, onDelete, canDelete }) => {
                         },
                       )}
                       placeholder={`Nieprawidłowa odpowiedź ${parseInt(wrongIndex) + 1}`}
-                      className="w-full rounded-md border border-red-200 bg-red-50 p-1.5 text-sm focus:ring-1 focus:ring-red-500"
+                      className="border-incorrect bg-incorrect/10 focus:ring-incorrect/20 focus:border-incorrect w-full rounded-md border p-1.5 text-sm focus:ring-2"
                     />
                     {errors.questions?.[index]?.wrongAnswers?.[wrongIndex] && (
-                      <span className="text-sm text-red-600">
+                      <span className="text-incorrect text-sm">
                         {
                           errors.questions[index].wrongAnswers[wrongIndex]
                             .message

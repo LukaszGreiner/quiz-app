@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
 @font-face {
   font-family: PTSerif;
@@ -6,27 +6,81 @@
   font-weight: 400;
   font-style: normal;
 }
-
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+/* 
+🚀 QUICK RULES: Tylko klasy Tailwind | Bez custom CSS | Używaj zmiennych kolorów |
+======================
+AI STYLING GUIDELINES 
+======================
+
+📝 TYPOGRAFIA - AUTOMATYCZNA
+✅ H1-H6 → font-heading (AUTOMATYCZNIE)
+✅ Body text → font-body (AUTOMATYCZNIE) 
+✅ Blockquotes → font-accent (AUTOMATYCZNIE)
+❌ NIE DODAWAJ font-heading, font-body do klas!
+
+📝 KOLORY DOSTĘPNE:
+🎨 TŁO: bg-background, bg-surface, bg-surface-elevated
+🎨 TŁO BRAND: bg-primary, bg-secondary, bg-accent  
+🎨 TŁO QUIZ: bg-correct, bg-incorrect, bg-selected, bg-neutral
+🎨 TŁO FUNKCJE: bg-warning, bg-info
+
+✏️ TEKST: text-text, text-text-muted, text-text-inverse
+✏️ TEKST BRAND: text-primary, text-secondary, text-accent
+✏️ TEKST QUIZ: text-correct, text-incorrect, text-selected, text-neutral
+✏️ TEKST FUNKCJE: text-warning, text-info
+
+🔲 BORDER: border-border, border-border-focus
+🔲 BORDER BRAND: border-primary, border-secondary, border-accent
+🔲 BORDER QUIZ: border-correct, border-incorrect, border-selected
+
+📊 OPACITY LEVELS:
+✅ /10 → 10% opacity (subtle backgrounds)
+✅ /20 → 20% opacity (focus rings)  
+✅ /85 → 85% opacity (hover states)
+✅ /95 → 95% opacity (active states)
+
+🎯 STANY INTERAKTYWNE - ZAWSZE UŻYWAJ:
+✅ hover:bg-primary hover:text-text-inverse
+✅ focus:border-border-focus focus:ring-primary/20
+✅ active:bg-primary/95
+✅ disabled:opacity-50 disabled:cursor-not-allowed
+
+❌ ZABRONIONE:
+❌ Surowe kolory: style={{background: '#ff0000'}}
+❌ Nadmiarowe klasy: font-heading na H1-H6
+❌ Custom CSS: używaj tylko Tailwind klas
+❌ Brak focus states na interaktywnych elementach
+❌ Twarde wartości: p-[12px] zamiast p-3
+
+
+
+====================
+TAILWIND → CSS MAPPING
+====================
+bg-primary → var(--color-primary)
+text-text → var(--color-text)
+border-border → var(--color-border)
+bg-surface → var(--color-surface)
+text-text-muted → var(--color-text-muted)
+focus:ring-primary/20 → focus:ring with 20% opacity primary
+*/
 
 @theme {
-  --font-ptserif: PTSerif;
-  --font-lato: Lato;
-  --font-montserrat: Montserrat;
-  --font-quicksand: Quicksand;
-  --font-poppins: Poppins;
-}
+  --font-heading: Montserrat;
+  --font-body: Hind;
+  --font-accent: PTSerif;
+  --font-ptserif: PTSerif; /* For logo */
 
-@theme {
-  /* Core Structure */
-  --color-background: #ffffff;
-  --color-surface: #f8fafc;
+  /* Background colors */
+  --color-background: #e2e8f0;
+  --color-surface: #f1f5f9;
   --color-surface-elevated: #ffffff;
 
   /* Brand */
   --color-primary: #6145ae;
-  --color-secondary: #6b7280;
+  --color-secondary: #2dd4bf;
   --color-accent: #f59e0b;
 
   /* Typography */
@@ -41,6 +95,7 @@
   --color-neutral: #9ca3af;
 
   /* Functional */
+  --color-danger: #dc2626;
   --color-warning: #f59e0b;
   --color-info: #0ea5e9;
   --color-border: #e5e7eb;
@@ -48,13 +103,14 @@
 }
 
 .dark {
-  /* Core Structure */
+  /* Background colors */
   --color-background: #0f172a;
   --color-surface: #1e293b;
   --color-surface-elevated: #334155;
+
   /* Brand */
   --color-primary: #8b5cf6;
-  --color-secondary: #94a3b8;
+  --color-secondary: #2dd4bf;
   --color-accent: #fbbf24;
 
   /* Typography */
@@ -69,10 +125,33 @@
   --color-neutral: #64748b;
 
   /* Functional */
+  --color-danger: #dc2626;
   --color-warning: #fbbf24;
   --color-info: #38bdf8;
   --color-border: #475569;
   --color-border-focus: #8b5cf6;
+}
+
+body,
+header {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+blockquote,
+cite,
+q {
+  font-family: var(--font-accent);
 }
 
 .theme-transition,

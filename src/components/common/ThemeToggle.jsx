@@ -7,18 +7,16 @@ export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <Button
-      onClick={toggleTheme}
-      variant="ghost"
-      size="icon"
-      className="rounded-full"
+    <button
+      onClick={() => toggleTheme(theme)}
+      className="hover:bg-background hover:[&_svg] flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm [&_svg]:size-4 hover:[&_svg]:fill-current"
       aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
     >
       {theme === "light" ? (
-        <Moon className="text-text h-5 w-5 fill-none hover:fill-current" />
+        <Moon className="text-text fill-none hover:fill-black" />
       ) : (
-        <Sun className="text-text h-5 w-5 fill-none hover:fill-current" />
+        <Sun className="text-text fill-none hover:fill-white" />
       )}
-    </Button>
+    </button>
   );
 }

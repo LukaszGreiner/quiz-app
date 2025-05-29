@@ -20,17 +20,16 @@ export default function MetadataGrid({ creatorName, quiz }) {
   const avgRatingText = getAvgRatingText(quiz);
   const avgScoreText = getAvgScoreText(quiz, quiz.questions.length);
   const avgCompletionTimeText = getAvgCompletionTimeText(quiz);
-
   // console.log(quiz, rawAvgRating); // debugging line
   return (
-    <div className="mx-a grid grid-cols-2 justify-between gap-1 py-4">
+    <div className="grid grid-cols-2 gap-3">
       <InfoItem
-        icon={<FaUser className="text-base text-gray-500 sm:text-lg" />}
+        icon={<FaUser className="text-text-muted text-sm" />}
         text={creatorText}
         label="Autor"
       />
       <InfoItem
-        icon={<FaFolder className="text-base text-gray-500 sm:text-lg" />}
+        icon={<FaFolder className="text-text-muted text-sm" />}
         text={categoryText}
         label="Kategoria"
       />
@@ -45,12 +44,12 @@ export default function MetadataGrid({ creatorName, quiz }) {
         label="Średnia ocena"
       />
       <InfoItem
-        icon={<FaMedal className="text-base text-yellow-500 sm:text-lg" />}
+        icon={<FaMedal className="text-accent text-sm" />}
         text={avgScoreText}
         label="Średni wynik"
       />
       <InfoItem
-        icon={<FaClock className="text-base text-slate-500 sm:text-lg" />}
+        icon={<FaClock className="text-text-muted text-sm" />}
         text={avgCompletionTimeText}
         label="Średni czas"
       />

@@ -4,7 +4,7 @@ export default function Logo({ className = "" }) {
   return (
     <Link to="/">
       <span
-        className={`font-ptserif text-2xl font-bold text-nowrap ${className}`}
+        className={`text-primary !font-ptserif text-2xl font-bold text-nowrap dark:text-white ${className}`}
       >
         Quizowisko
       </span>

@@ -104,43 +104,50 @@ const QuizList = () => {
   useEffect(() => {
     fetchQuizzes();
   }, [fetchQuizzes]);
-
   return (
-    <div className="mx-auto max-w-5xl p-4">
-      <h2 className="mb-6 text-center text-2xl font-bold">
+    <div className="mx-auto max-w-7xl p-6">
+      <h2 className="mb-8 text-center">
         Lista Quizów
         {category && category !== "wszystkie" ? ` - ${category}` : ""}
       </h2>
+
+      {/* Status Messages */}
       {loading && (
-        <div className="text-center text-indigo-600">Ładowanie quizów...</div>
+        <div className="text-primary mb-6 text-center">Ładowanie quizów...</div>
       )}
-      {error && <div className="text-center text-red-600">{error}</div>}
+      {error && <div className="text-incorrect mb-6 text-center">{error}</div>}
       {deleteLoading && (
-        <div className="text-center text-indigo-600">Usuwanie quizu...</div>
+        <div className="text-primary mb-6 text-center">Usuwanie quizu...</div>
       )}
       {deleteError && (
-        <div className="text-center text-red-600">{deleteError}</div>
+        <div className="text-incorrect mb-6 text-center">{deleteError}</div>
       )}
       {successMessage && (
-        <div className="text-center text-green-600">{successMessage}</div>
+        <div className="text-correct mb-6 text-center">{successMessage}</div>
       )}
+
+      {/* Empty State */}
       {!loading && !error && quizzes.length === 0 && (
-        <div className="text-center text-gray-600">
-          Brak quizów do wyświetlenia.
+        <div className="py-12 text-center">
+          <p className="text-text-muted text-lg">
+            Brak quizów do wyświetlenia.
+          </p>
         </div>
       )}
+
+      {/* Quiz Grid */}
       {!loading && !error && quizzes.length > 0 && (
-        <div className="grid grid-cols-1 justify-items-center gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {quizzes.map((quiz) => (
             <QuizCard
               key={quiz.id}
               quiz={{
-                id: quiz.id,
-                image: quiz.image,
-                name: quiz.name,
+                quizId: quiz.id,
+                imageUrl: quiz.image,
+                title: quiz.name,
                 description: quiz.description,
                 visibility: quiz.visibility,
-                createdBy: quiz.createdBy,
+                authorId: quiz.createdBy,
                 category: quiz.category,
                 questions: quiz.questions,
                 createdAt: quiz.createdAt,
@@ -152,10 +159,12 @@ const QuizList = () => {
           ))}
         </div>
       )}
-      <div className="mt-6 text-center">
+
+      {/* Refresh Button */}
+      <div className="mt-8 text-center">
         <button
           onClick={fetchQuizzes}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+          className="bg-primary text-text-inverse hover:bg-primary/85 active:bg-primary/95 focus:ring-primary/20 rounded-lg px-6 py-3 font-medium transition-all duration-200 focus:ring-2 focus:outline-none"
         >
           Odśwież listę
         </button>

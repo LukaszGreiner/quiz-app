@@ -7,6 +7,7 @@ import Hamburger from "./Hamburger";
 const navLinks = [
   { path: "/", label: "Strona główna" },
   { path: "/newquiz", label: "Stwórz Quiz" },
+  { path: "/design-system", label: "Design System" },
   { path: "/user/library", label: "[Dashboard]" },
   { path: "/profile/🌵", label: "[OtherUserPage]" },
 ];

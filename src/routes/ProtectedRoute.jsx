@@ -7,9 +7,14 @@ const ProtectedRoute = ({ message = null, info = null }) => {
   const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    if ((!loading && !isAuthenticated && message) || info) {
-      message && showError(message, { theme: "light" });
-      info && showInfo(info, { theme: "light" });
+    // Wyświetl wiadomość TYLKO gdy użytkownik nie jest zalogowany
+    if (!loading && !isAuthenticated) {
+      if (message) {
+        showError(message, { theme: "light" });
+      }
+      if (info) {
+        showInfo(info, { theme: "light" });
+      }
     }
   }, [isAuthenticated, loading, message, info]);
 

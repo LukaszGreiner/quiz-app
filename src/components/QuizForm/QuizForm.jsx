@@ -42,51 +42,47 @@ function QuizForm({ defaultValues, onSubmit, onReset }) {
       <FormProvider {...methods}>
         <form onSubmit={handleFormSubmit} className="space-y-6">
           <QuizHeader />
-          <QuizDetails questionCount={watch("questions")?.length || 0} />
-
+          <QuizDetails questionCount={watch("questions")?.length || 0} />{" "}
           {/* Autosave notification */}
           <div
-            className={`flex items-center rounded-md p-3 text-sm ${isEditMode ? "bg-yellow-50 text-yellow-700" : "bg-green-50 text-green-700"}`}
+            className={`flex items-center rounded-md p-3 text-sm ${isEditMode ? "bg-warning/10 text-warning" : "bg-correct/10 text-correct"}`}
           >
             <FaInfoCircle className="mr-2" />
             {isEditMode
               ? "W trybie edycji automatyczne zapisywanie jest wyłączone. Kliknij 'Zapisz do localStorage', aby zachować zmiany."
               : "Automatyczne zapisywanie włączone. Twoje zmiany są zapisywane automatycznie."}
           </div>
-
           <div className="flex gap-2">
             <button
-              className="bg-warning hover:bg-warning-hover cursor-pointer rounded-md p-2 text-white"
+              className="bg-warning text-text-inverse hover:bg-warning/85 focus:ring-warning/20 active:bg-warning/95 cursor-pointer rounded-md p-2 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={resetForm}
               type="button"
             >
               Zresetuj formularz
             </button>
             <button
-              className="bg-primary hover:bg-primary-hover cursor-pointer rounded-md p-2 text-white"
+              className="bg-primary text-text-inverse hover:bg-primary/85 focus:ring-primary/20 active:bg-primary/95 cursor-pointer rounded-md p-2 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={handleSaveToStorage}
               type="button"
             >
               Zapisz do localstorage
             </button>
             <button
-              className="bg-secondary hover:bg-secondary-hover cursor-pointer rounded-md p-2 text-white"
+              className="bg-secondary text-text-inverse hover:bg-secondary/85 focus:ring-secondary/20 active:bg-secondary/95 cursor-pointer rounded-md p-2 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={handleRestoreFromStorage}
               type="button"
             >
               Przywróć z localstorage
             </button>
             <QuizFromFileBtn onImportQuestions={handleImportQuestions} />
-          </div>
-
+          </div>{" "}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-text-muted text-sm font-medium">
               Pytania: {watch("questions")?.length || 0}/
               {quizFormConfig.QUIZ_QUESTIONS_LIMIT}
             </span>
           </div>
           <QuestionList fields={fields} append={append} remove={remove} />
-
           <div className="relative">
             <button
               type="submit"
@@ -95,7 +91,7 @@ function QuizForm({ defaultValues, onSubmit, onReset }) {
                   ? "Zapisz i opublikuj"
                   : "Wypełnij wszystkie wymagane pola, aby zapisać quiz"
               }
-              className="flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+              className="bg-correct text-text-inverse hover:bg-correct/85 focus:ring-correct/20 active:bg-correct/95 flex w-full items-center justify-center rounded-md px-4 py-2 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!isValid || isSubmitting}
             >
               <FaSave className="mr-2" />

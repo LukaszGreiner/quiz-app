@@ -1,3 +1,5 @@
+import ThemeToggle from "../common/ThemeToggle";
+
 const NavigationButtons = ({
   currentQuestionIndex,
   totalQuestions,

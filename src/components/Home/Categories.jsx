@@ -2,18 +2,9 @@
 import { FaChevronDown } from "react-icons/fa";
 import { useCategory } from "../../hooks/useCategory";
 
-const STYLE_OPTIONS = [
-  { bg: "bg-primary", hover: "hover:bg-primary/80", text: "text-white" },
-  { bg: "bg-secondary", hover: "hover:bg-secondary/80", text: "text-white" },
-  { bg: "bg-accent", hover: "hover:bg-accent/80", text: "text-white" },
-  { bg: "bg-success", hover: "hover:bg-success/80", text: "text-white" },
-];
-
 function Categories() {
   const { categoryNames, normalizedCategory, navigateToCategory } =
     useCategory();
-
-  const getStyles = (index) => STYLE_OPTIONS[index % STYLE_OPTIONS.length];
 
   const handleCategoryChange = (event) =>
     navigateToCategory(event.target.value);
@@ -23,39 +14,40 @@ function Categories() {
     <div className="md:w-1/4">
       {/* Mobile Dropdown */}
       <div className="relative md:hidden">
-        <p className="mb-4 text-xl font-bold">Kategorie</p>
-        <select
-          value={normalizedCategory}
-          onChange={handleCategoryChange}
-          className="text-dark focus:border-primary focus:ring-primary/20 w-full appearance-none rounded-lg border border-gray-300 bg-white p-3 font-medium transition duration-300 focus:ring-2 focus:outline-none"
-          aria-label="Wybierz kategorię quizu"
-        >
-          {categoryNames.map((name, index) => (
-            <option key={index} value={name} className="py-2 font-medium">
-              {name}
-            </option>
-          ))}
-        </select>
-        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-          <FaChevronDown className="absolute top-1/2 right-3 h-5 w-5 translate-y-1/2" />
-        </span>
+        <h2 className="text-text mb-4 text-xl font-semibold">Kategorie</h2>
+        <div className="relative">
+          <select
+            value={normalizedCategory}
+            onChange={handleCategoryChange}
+            className="border-border bg-surface text-text hover:bg-surface-elevated focus:border-border-focus focus:ring-primary/20 w-full appearance-none rounded-lg border p-3 font-medium transition-all duration-200 focus:ring-2 focus:outline-none"
+            aria-label="Wybierz kategorię quizu"
+          >
+            {categoryNames.map((name, index) => (
+              <option key={index} value={name} className="py-2 font-medium">
+                {name}
+              </option>
+            ))}
+          </select>
+          <FaChevronDown className="text-text-muted pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 transform" />
+        </div>
       </div>
 
       {/* Desktop Vertical List */}
-      <div className="hidden md:sticky md:top-30 md:flex md:flex-col md:space-y-4 md:self-start">
-        <p className="mb-4 text-center text-xl font-bold">Kategorie</p>
+      <div className="hidden md:sticky md:top-30 md:flex md:flex-col md:space-y-3 md:self-start">
+        <h2 className="text-text mb-4 text-center text-xl font-semibold">
+          Kategorie
+        </h2>
         {categoryNames.map((name, index) => {
-          const { bg, hover, text } = getStyles(index);
-          const isSelected = normalizedSelectedCategory === name;
+          const isSelected = normalizedCategory === name;
           return (
             <button
               key={index}
               type="button"
               onClick={() => handleLinkClick(name)}
-              className={`${bg} ${text} block cursor-pointer rounded-full px-4 py-3 text-center transition duration-300 ${
+              className={`rounded-lg px-4 py-3 text-center font-medium transition-all duration-200 ${
                 isSelected
-                  ? "ring-primary bg-opacity-90 shadow-md ring-2 ring-offset-2"
-                  : hover
+                  ? "bg-primary text-text-inverse shadow-md"
+                  : "bg-surface border-border text-text hover:bg-surface-elevated hover:border-border-focus active:bg-surface-elevated/95 focus:border-border-focus focus:ring-primary/20 border focus:ring-2 focus:outline-none"
               }`}
               aria-pressed={isSelected}
             >

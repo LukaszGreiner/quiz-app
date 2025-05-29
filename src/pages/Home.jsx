@@ -24,17 +24,16 @@ const Home = () => {
       : quizzes.filter((quiz) => quiz.category === normalizedCategory);
 
   if (loading) return null; // Toast handles loading feedback
-
   return (
-    <div className="p-6">
+    <div className="bg-background min-h-screen p-6">
       {/* Category Filter */}
-      <div className="mb-6">
+      <div className="mb-8">
         {/* Mobile: Dropdown */}
         <div className="sm:hidden">
           <select
             value={normalizedCategory}
             onChange={(e) => navigateToCategory(e.target.value)}
-            className="w-full rounded-md border border-gray-300 p-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border-border bg-surface text-text focus:border-border-focus focus:ring-primary/20 hover:bg-surface-elevated w-full rounded-lg border p-3 transition-all duration-200 focus:ring-2 focus:outline-none"
           >
             {categoryNames.map((category) => (
               <option key={category} value={category}>
@@ -45,31 +44,32 @@ const Home = () => {
         </div>
 
         {/* Desktop: Tabs */}
-        <div className="hidden flex-wrap gap-2 sm:flex">
+        <div className="hidden flex-wrap gap-3 sm:flex">
           {categoryNames.map((category) => (
             <button
               key={category}
               onClick={() => navigateToCategory(category)}
-              className={`rounded-md px-4 py-2 transition-colors duration-200 ${
+              className={`rounded-lg px-6 py-3 font-medium transition-all duration-200 ${
                 normalizedCategory === category
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  ? "bg-primary text-text-inverse shadow-md"
+                  : "bg-surface border-border text-text hover:bg-surface-elevated hover:border-border-focus active:bg-surface-elevated/95 focus:border-border-focus focus:ring-primary/20 border hover:shadow-sm focus:ring-2 focus:outline-none"
               }`}
             >
               {category}
             </button>
           ))}
         </div>
-      </div>
-
+      </div>{" "}
       {/* Quiz Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredQuizzes.length === 0 ? (
-          <p className="col-span-full text-center text-gray-600">
-            {normalizedCategory === "Wszystkie"
-              ? "Brak quizów do wyświetlenia"
-              : "Brak quizów w wybranej kategorii"}
-          </p>
+          <div className="col-span-full py-12 text-center">
+            <p className="text-text-muted mb-4 text-lg">
+              {normalizedCategory === "Wszystkie"
+                ? "Brak quizów do wyświetlenia"
+                : "Brak quizów w wybranej kategorii"}
+            </p>
+          </div>
         ) : (
           filteredQuizzes.map((quiz) => (
             <QuizCard key={quiz.quizId} quiz={quiz} />

@@ -28,9 +28,10 @@ const CollapsibleSection = ({
         {children}
       </div>
       <div className="mt-2 flex justify-center">
+        {" "}
         <FaAngleDown
           size={16}
-          className={`cursor-pointer text-gray-400 transition-transform ${
+          className={`text-text-muted hover:text-primary focus:text-primary cursor-pointer transition-all duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
           onClick={handleToggle}

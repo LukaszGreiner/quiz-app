@@ -17,6 +17,7 @@ import CategoryRoute from "./routes/CategoryRoute";
 import OtherUserPage from "./pages/OtherUserPage";
 import QuizEdit from "./pages/QuizEdit";
 import LandingPage from "./pages/LandingPage";
+import DesignSystemPage from "./pages/DesignSystemPage";
 
 function App() {
   return (
@@ -24,11 +25,13 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<Signup />} />
+          <Route path="reset-password" element={<ForgotPassword />} />
           <Route path="/" element={<Layout />}>
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-            <Route path="reset-password" element={<ForgotPassword />} />
-            <Route path="/app" element={<Home />} />
+            <Route path="/app" element={<Home />} />{" "}
+            {/* Design System Showcase */}
+            <Route path="design-system" element={<DesignSystemPage />} />
             <Route
               path=":category"
               element={
@@ -39,7 +42,6 @@ function App() {
             />
             <Route path="profile/:username" element={<OtherUserPage />} />
             <Route path="quiz/:quizId" element={<QuizDisplay />} />
-
             <Route
               element={<ProtectedRoute info="Zaloguj się aby uzyskać dostęp" />}
             >
@@ -53,7 +55,6 @@ function App() {
               {/* Edycja quizu */}
               <Route path="quiz/edit/:quizId" element={<QuizEdit />} />
             </Route>
-
             {/* 404 */}
             <Route path="not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />

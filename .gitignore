@@ -24,5 +24,6 @@ dist-ssr
 *.sw?
 *.env
 
-# Scripts
+# Other
 *.ps1
+.github

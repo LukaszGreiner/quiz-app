@@ -73,7 +73,7 @@ const ImageUpload = ({
     <div className="mb-2">
       <label
         htmlFor={`${fieldName}-upload`}
-        className="mb-2 flex items-center gap-1 text-sm text-gray-600"
+        className="text-text-muted mb-2 flex items-center gap-1 text-sm"
       >
         <FaImage size={12} /> {label}
       </label>
@@ -83,20 +83,20 @@ const ImageUpload = ({
         accept="image/jpeg,image/png,image/gif"
         onChange={onImageChange}
         ref={fileInputRef}
-        className="mb-2 w-full cursor-pointer text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-1 file:text-indigo-700 file:hover:bg-indigo-100"
+        className="text-text-muted file:bg-primary/10 file:text-primary file:hover:bg-primary/20 file:focus:ring-primary/20 mb-2 w-full cursor-pointer text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-1 file:focus:ring-2"
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="text-incorrect mt-1 text-sm">{error}</p>}
       {image && (
         <div className="relative mt-1 inline-block">
           <img
             src={getImageSource(image)}
             alt="Podgląd zdjęcia"
             className="h-32 rounded-md object-cover"
-          />
+          />{" "}
           <button
             type="button"
             onClick={onRemoveImage}
-            className="bg-warning hover:bg-warning/80 absolute top-1 right-1 cursor-pointer rounded-full p-1 text-white"
+            className="bg-warning text-text-inverse hover:bg-warning/85 focus:ring-warning/20 active:bg-warning/95 absolute top-1 right-1 cursor-pointer rounded-full p-1 focus:ring-2"
             aria-label="Usuń zdjęcie"
           >
             <FaTrash size={12} />

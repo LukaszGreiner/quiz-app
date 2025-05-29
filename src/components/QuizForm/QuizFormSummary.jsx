@@ -18,12 +18,12 @@ export default function QuizFormSummary({ fields, totalTime }) {
             }}
           />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 text-sm text-gray-500">
+          <div className="bg-surface-elevated text-text-muted flex h-24 w-24 items-center justify-center rounded-md text-sm">
             Brak zdjęcia
           </div>
         )}
       </div>
-      <div className="flex-1 text-center text-sm text-gray-700 md:text-left">
+      <div className="text-text-muted flex-1 text-center text-sm md:text-left">
         <p className="mb-2 line-clamp-3 break-all">{fields.description}</p>
         <div className="flex flex-wrap justify-center gap-3 md:justify-start">
           <span className="flex items-center gap-1">
