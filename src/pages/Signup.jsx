@@ -72,10 +72,11 @@ function Signup() {
 
         <div className="bg-surface-elevated border-border overflow-hidden rounded-lg border shadow-md">
           <div className="space-y-4 p-6">
+            {" "}
             <Btn
               type="button"
               variant="outline"
-              size="large"
+              size="lg"
               onClick={handleGoogleSignup}
               className="flex w-full items-center justify-center gap-2"
             >
@@ -153,12 +154,12 @@ function Signup() {
                   placeholder="Wpisz hasło"
                   required
                   aria-describedby="password-error"
-                />
+                />{" "}
                 <div className="absolute top-1/2 right-2 -translate-y-1/2">
                   <Btn
                     type="button"
                     variant="ghost"
-                    size="small"
+                    size="sm"
                     onClick={() => setShowPassword(!showPassword)}
                     className="size-10"
                     aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
@@ -195,7 +196,7 @@ function Signup() {
                   <Btn
                     type="button"
                     variant="ghost"
-                    size="small"
+                    size="sm"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="size-10"
                     aria-label={
@@ -213,12 +214,7 @@ function Signup() {
             </div>
 
             <div className="pt-2">
-              <Btn
-                type="submit"
-                variant="primary"
-                size="large"
-                className="w-full"
-              >
+              <Btn type="submit" variant="primary" size="lg" className="w-full">
                 Zarejestruj się
               </Btn>
             </div>

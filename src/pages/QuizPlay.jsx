@@ -9,6 +9,7 @@ import NavigationButtons from "../components/QuizPlay/NavigationButtons";
 // Remove fetchUserQuizAttempts from here
 import QuizRating from "../components/QuizPlay/QuizRating";
 import { useQuizPlay } from "../hooks/useQuizPlay"; // Import the new hook
+import Btn from "../components/common/Btn";
 
 const QuizPlay = () => {
   const { quizId } = useParams();
@@ -31,114 +32,125 @@ const QuizPlay = () => {
     score, // Get score from hook
   } = useQuizPlay(quizId, quizData, questions, navigate);
 
-  if (loading) return <p>Ładowanie...</p>;
-  if (error) return <p>Błąd: {error}</p>;
-  // Ensure questions and quizData are loaded before passing to hook or rendering
-  if (!quizData || !questions || questions.length === 0) {
-    // The hook might run with empty questions initially, handle this gracefully
-    return <p>Brak danych do wyświetlenia lub quiz jest pusty.</p>;
-  }
-
-  if (isSubmitted) {
-    // const finalScore = calculateScore(); // Score is now from the hook
-    return (
-      <div className="mx-auto max-w-4xl p-6">
-        <h1 className="mb-4 text-3xl font-bold text-gray-800">
-          Wynik Quizu: {quizData.title}
-        </h1>
-        <p className="text-lg text-gray-700">
-          Twój wynik: {score} / {questions.length}
-        </p>
-        <p className="text-sm text-gray-600">
-          {/* Add 1 to attempts if the current one isn't in userAttempts yet */}
-          Liczba podejść: {userAttempts.length > 0 ? userAttempts.length : 1}
-        </p>
-        <p className="text-sm text-gray-600">
-          {maxScoreAchieved
-            ? "Gratulacje! Zdobyłeś maksymalny wynik w jednym z podejść."
-            : score === questions.length
-              ? "Gratulacje! Zdobyłeś maksymalny wynik!"
-              : "Nie zdobyłeś jeszcze maksymalnego wyniku. Spróbuj ponownie!"}
-        </p>
-        <QuizRating quizId={quizId} />
-        <div className="mt-6 space-y-4">
-          {questions.map((question, index) => (
-            <div
-              key={index}
-              className={`rounded-lg p-4 shadow-md ${
-                userAnswers[index] === question.correctAnswer
-                  ? "bg-green-100"
-                  : "bg-red-100"
-              }`}
-            >
-              <h3 className="mb-2 text-lg font-semibold text-gray-800">
-                Pytanie {index + 1}: {question.title}
-              </h3>
-              <p className="text-sm text-gray-700">
-                <strong>Twoja odpowiedź:</strong>{" "}
-                {userAnswers[index] || "Brak odpowiedzi"}
-              </p>
-              <p className="text-sm text-gray-700">
-                <strong>Poprawna odpowiedź:</strong> {question.correctAnswer}
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => navigate(`/quiz/${quizId}`)}
-            className="rounded-full bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition duration-300 hover:bg-blue-700"
-          >
-            Powrót do opisu quizu
-          </button>
-          <button
-            onClick={() => window.location.reload()} // Or a more sophisticated reset
-            className="ml-4 rounded-full bg-gray-500 px-6 py-3 text-lg font-semibold text-white transition duration-300 hover:bg-gray-600"
-          >
-            Spróbuj ponownie
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Ensure currentQuestion is available before rendering QuestionCard
-  if (!currentQuestion) {
-    return <p>Ładowanie pytania...</p>;
-  }
-
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <QuizHeader
-        title={quizData.title}
-        currentQuestionIndex={currentQuestionIndex}
-        totalQuestions={questions.length}
-        progress={progress}
-      />
-      <QuestionCard
-        question={currentQuestion}
-        shuffledAnswers={shuffledAnswers}
-        userAnswer={userAnswers[currentQuestionIndex]}
-        onAnswerSelect={handleAnswerSelect}
-        timeLeft={timeLeft}
-        timeLimitPerQuestion={quizData.timeLimitPerQuestion}
-      />
-      <NavigationButtons
-        currentQuestionIndex={currentQuestionIndex}
-        totalQuestions={questions.length}
-        onPrevious={handlePrevious} // Use handlePrevious from hook
-        onNext={handleNextOrSubmit} // This now handles submit on last question
-        onSubmit={handleNextOrSubmit} // Or specific submit if needed, but handleNextOrSubmit covers it
-        isNextDisabled={
-          !userAnswers[currentQuestionIndex] &&
-          currentQuestionIndex < questions.length - 1
-        }
-        isSubmitDisabled={
-          currentQuestionIndex === questions.length - 1 &&
-          !userAnswers[currentQuestionIndex]
-        }
-        // No direct isSubmitDisabled needed if onNext handles submission
-      />
+    <div className="bg-background mx-auto min-h-screen max-w-4xl p-4 sm:p-6">
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <span className="text-primary animate-pulse text-lg">
+            Ładowanie...
+          </span>
+        </div>
+      )}
+      {error && (
+        <div className="flex items-center justify-center py-16">
+          <span className="text-incorrect text-lg">Błąd: {error}</span>
+        </div>
+      )}
+      {!loading &&
+        !error &&
+        (!quizData || !questions || questions.length === 0) && (
+          <div className="flex items-center justify-center py-16">
+            <span className="text-text-muted text-lg">
+              Brak danych do wyświetlenia lub quiz jest pusty.
+            </span>
+          </div>
+        )}
+      {!loading && !error && quizData && questions && questions.length > 0 && (
+        <>
+          {isSubmitted ? (
+            <div className="bg-surface-elevated mx-auto max-w-2xl rounded-2xl p-6 shadow-lg">
+              <h1 className="text-primary mb-4 text-3xl font-bold">
+                Wynik Quizu: {quizData.title}
+              </h1>
+              <p className="text-text mb-2 text-lg">
+                Twój wynik:{" "}
+                <span className="text-correct font-bold">{score}</span> /{" "}
+                {questions.length}
+              </p>
+              <p className="text-text-muted mb-1 text-sm">
+                Liczba podejść:{" "}
+                {userAttempts.length > 0 ? userAttempts.length : 1}
+              </p>
+              <p className="text-text-muted mb-4 text-sm">
+                {maxScoreAchieved
+                  ? "Gratulacje! Zdobyłeś maksymalny wynik w jednym z podejść."
+                  : score === questions.length
+                    ? "Gratulacje! Zdobyłeś maksymalny wynik!"
+                    : "Nie zdobyłeś jeszcze maksymalnego wyniku. Spróbuj ponownie!"}
+              </p>
+              <QuizRating quizId={quizId} />
+              <div className="mt-6 space-y-4">
+                {questions.map((question, index) => (
+                  <div
+                    key={index}
+                    className={`border-border rounded-xl border p-4 shadow-md ${userAnswers[index] === question.correctAnswer ? "bg-correct/10 border-correct/20" : "bg-incorrect/10 border-incorrect/20"}`}
+                  >
+                    <h3 className="text-text mb-2 text-lg font-semibold">
+                      Pytanie {index + 1}: {question.title}
+                    </h3>
+                    <p className="text-text-muted text-sm">
+                      <strong>Twoja odpowiedź:</strong>{" "}
+                      {userAnswers[index] || "Brak odpowiedzi"}
+                    </p>
+                    <p className="text-text-muted text-sm">
+                      <strong>Poprawna odpowiedź:</strong>{" "}
+                      {question.correctAnswer}
+                    </p>
+                  </div>
+                ))}
+              </div>              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+                <Btn
+                  onClick={() => navigate(`/quiz/${quizId}`)}
+                  variant="primary"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  Powrót do opisu quizu
+                </Btn>                <Btn
+                  onClick={() => window.location.reload()}
+                  variant="secondary"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  Spróbuj ponownie
+                </Btn>
+              </div>
+            </div>
+          ) : (
+            <>
+              <QuizHeader
+                title={quizData.title}
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                progress={progress}
+              />
+              <QuestionCard
+                question={currentQuestion}
+                shuffledAnswers={shuffledAnswers}
+                userAnswer={userAnswers[currentQuestionIndex]}
+                onAnswerSelect={handleAnswerSelect}
+                timeLeft={timeLeft}
+                timeLimitPerQuestion={quizData.timeLimitPerQuestion}
+              />
+              <NavigationButtons
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                onPrevious={handlePrevious}
+                onNext={handleNextOrSubmit}
+                onSubmit={handleNextOrSubmit}
+                isNextDisabled={
+                  !userAnswers[currentQuestionIndex] &&
+                  currentQuestionIndex < questions.length - 1
+                }
+                isSubmitDisabled={
+                  currentQuestionIndex === questions.length - 1 &&
+                  !userAnswers[currentQuestionIndex]
+                }
+              />
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };

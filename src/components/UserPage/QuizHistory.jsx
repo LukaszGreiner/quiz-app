@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Clock, ChevronRight, CheckCircle } from "lucide-react";
 
 function QuizHistory() {
   // Przykładowe dane lokalne
@@ -9,19 +10,10 @@ function QuizHistory() {
 
   return (
     <div>
+      {" "}
       <div className="mb-6 flex items-center gap-3">
         <div className="bg-secondary/10 flex h-8 w-8 items-center justify-center rounded-full">
-          <svg
-            className="text-secondary h-4 w-4"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <Clock className="text-secondary h-4 w-4" />
         </div>
         <div>
           <h3 className="font-montserrat text-text font-semibold">
@@ -32,23 +24,10 @@ function QuizHistory() {
           </p>
         </div>
       </div>
-
       {history.length === 0 ? (
         <div className="py-6 text-center">
           <div className="bg-surface mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <svg
-              className="text-text-muted h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <Clock className="text-text-muted h-6 w-6" />
           </div>
           <p className="font-quicksand text-text-muted text-sm">
             No quiz history yet
@@ -66,14 +45,9 @@ function QuizHistory() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                  {" "}
                   <div className="bg-secondary/10 group-hover:bg-secondary/20 flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200">
-                    <svg
-                      className="text-secondary h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <CheckCircle className="text-secondary h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-quicksand text-text group-hover:text-primary truncate font-medium transition-colors duration-200">
@@ -101,20 +75,8 @@ function QuizHistory() {
                     >
                       {entry.score}%
                     </div>
-                  )}
-                  <svg
-                    className="text-text-muted group-hover:text-primary h-4 w-4 transition-colors duration-200"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                  )}{" "}
+                  <ChevronRight className="text-text-muted group-hover:text-primary h-4 w-4 transition-colors duration-200" />
                 </div>
               </div>
             </div>

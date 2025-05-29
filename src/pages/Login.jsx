@@ -58,11 +58,12 @@ function Login() {
         )}
 
         <div className="bg-surface-elevated border-border overflow-hidden rounded-lg border shadow-md">
+          {" "}
           <div className="space-y-4 p-6">
             <Btn
               type="button"
               variant="outline"
-              size="large"
+              size="lg"
               onClick={handleGoogleLogin}
               className="flex w-full items-center justify-center gap-2"
             >
@@ -91,7 +92,6 @@ function Login() {
               Kontynuuj za pomocą Google
             </Btn>
           </div>
-
           <div className="relative py-4">
             <div className="absolute inset-0 flex items-center">
               <div className="border-border w-full border-t"></div>
@@ -102,7 +102,6 @@ function Login() {
               </span>
             </div>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-4 p-6 pt-0">
             <div>
               <label
@@ -153,12 +152,8 @@ function Login() {
             </div>
 
             <div className="pt-2">
-              <Btn
-                type="submit"
-                variant="primary"
-                size="large"
-                className="w-full"
-              >
+              {" "}
+              <Btn type="submit" variant="primary" size="lg" className="w-full">
                 Logowanie
               </Btn>
             </div>

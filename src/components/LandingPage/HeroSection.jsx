@@ -64,14 +64,12 @@ export default function HeroSection() {
               Użytkowników
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:justify-center sm:gap-6">
-          <Btn variant="primary" size="large" to="/signup" className="group">
+        </div>        <div className="flex flex-col gap-4 sm:flex-row sm:justify-center sm:gap-6">
+          <Btn variant="primary" size="lg" to="/signup" className="group">
             <PlayCircle className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
             Rozpocznij grę!
           </Btn>
-          <Btn variant="outline" size="large" to="/newquiz" className="group">
+          <Btn variant="outline" size="lg" to="/newquiz" className="group">
             <PlusSquare className="mr-2 h-5 w-5 transition-transform group-hover:rotate-12" />
             Utwórz quiz
           </Btn>

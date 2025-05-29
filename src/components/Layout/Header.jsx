@@ -23,12 +23,11 @@ function Header() {
             <Logo />
           </div>
           <nav className="flex items-center space-x-4">
-            {navLinks.map(({ path, label }) => (
-              <Btn
+            {navLinks.map(({ path, label }) => (              <Btn
                 key={path}
                 to={path}
                 variant={location.pathname === path ? "primary" : "ghost"}
-                size="small"
+                size="sm"
                 aria-label={label}
               >
                 {label}

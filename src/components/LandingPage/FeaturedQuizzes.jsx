@@ -73,9 +73,8 @@ export default function FeaturedQuizzes() {
               </div>
             </div>
           ))}
-        </div>
-        <div className="mt-16 text-center">
-          <Btn variant="outline" size="large">
+        </div>        <div className="mt-16 text-center">
+          <Btn variant="outline" size="lg">
             Przeglądaj Więcej Quizów
             <ChevronRight className="ml-2 h-5 w-5" />
           </Btn>

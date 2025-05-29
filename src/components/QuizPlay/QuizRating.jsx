@@ -48,13 +48,15 @@ export default function QuizRating({ quizId }) {
   };
 
   return (
-    <div className="my-4">
-      <h3 className="mb-2 font-semibold">Oceń ten quiz:</h3>
+    <section className="bg-surface border-border my-6 rounded-xl border p-4 shadow-sm">
+      <h3 className="text-primary mb-2 text-lg font-semibold">
+        Oceń ten quiz:
+      </h3>
       <StarRating
         maxRating={5}
         defaultRating={userRating}
         onSetRating={handleSetRating}
       />
-    </div>
+    </section>
   );
 }

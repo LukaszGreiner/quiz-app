@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
+import Btn from "../components/common/Btn";
 import ProfileImageEditor from "../components/UserPage/ProfileImageEditor";
 import SavedQuizzes from "../components/UserPage/SavedQuizzes";
 import QuizHistory from "../components/UserPage/QuizHistory";
@@ -10,27 +12,25 @@ import ProfileInfo from "../components/UserPage/ProfileInfo";
 import LevelBar from "../components/UserPage/LevelBar";
 
 function UserPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
   const [username, setUsername] = useState(
-    location.state?.username || currentUser?.displayName || "User",
+    location.state?.username || currentUser?.displayName || "Użytkownik",
   );
   const [description, setDescription] = useState(
-    location.state?.description || "No description provided.",
+    location.state?.description || "Brak opisu.",
   );
   const [userType, setUserType] = useState(
-    location.state?.userType || "Not specified",
+    location.state?.userType || "Nie określono",
   );
-  const [goal, setGoal] = useState(location.state?.goal || "Not specified");
+  const [goal, setGoal] = useState(location.state?.goal || "Nie określono");
   const [profileImage, setProfileImage] = useState(
     currentUser?.photoURL || "/profile_icon.jpg",
   );
   const [email, setEmail] = useState(
     location.state?.email || currentUser?.email || "",
   );
-
   const handleEditProfile = () => {
     navigate("/user/edit-profile", {
       state: {
@@ -43,6 +43,15 @@ function UserPage() {
     });
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Błąd podczas wylogowywania:", error);
+    }
+  };
+
   if (!currentUser) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
@@ -51,18 +60,17 @@ function UserPage() {
             <div className="bg-surface mx-auto mb-6 h-20 w-20 rounded-full"></div>
             <div className="bg-surface mx-auto mb-3 h-4 w-32 rounded"></div>
             <div className="bg-surface mx-auto h-3 w-24 rounded"></div>
-          </div>
+          </div>{" "}
           <p className="font-quicksand text-text-muted mt-6 text-xl font-medium">
-            Loading your profile...
+            Ładowanie profilu...
           </p>
         </div>
       </div>
     );
   }
-
   const lastLogin = currentUser.lastLogin
     ? new Date(currentUser.lastLogin).toLocaleString()
-    : "Unknown";
+    : "Nieznana";
 
   return (
     <div className="bg-background min-h-screen">
@@ -70,12 +78,12 @@ function UserPage() {
       <div className="from-primary/5 via-background to-accent/5 bg-gradient-to-br pt-16 pb-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
+            {" "}
             <h1 className="font-montserrat text-text mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              Your Profile
+              Twój Profil
             </h1>
             <p className="font-quicksand text-text-muted mx-auto max-w-2xl text-xl">
-              Manage your account, track your progress, and discover your
-              achievements
+              Zarządzaj swoim kontem, śledź postępy i odkrywaj swoje osiągnięcia
             </p>
           </div>
         </div>
@@ -84,17 +92,17 @@ function UserPage() {
       {/* Main Content */}
       <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
         <div className="-mt-8 space-y-8">
-          {/* Profile Header Card */}
+          {/* Profile Header Card */}{" "}
           <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg hover:shadow-xl sm:p-10">
             <ProfileImageEditor
               initialImage={profileImage}
               onEditProfile={handleEditProfile}
+              onLogout={handleLogout}
             />
             <div className="mt-8">
               <LevelBar currentUser={currentUser} />
             </div>
           </div>
-
           {/* Stats & Info Grid */}
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Achievements */}
@@ -111,11 +119,11 @@ function UserPage() {
               />
             </div>
           </div>
-
           {/* Activity Dashboard */}
           <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg hover:shadow-xl">
+            {" "}
             <h2 className="font-montserrat text-text mb-8 text-2xl font-bold">
-              Activity Dashboard
+              Panel Aktywności
             </h2>
             <div className="grid gap-8 xl:grid-cols-2">
               <div className="bg-surface border-border rounded-2xl border p-6 hover:shadow-md">
@@ -126,7 +134,6 @@ function UserPage() {
               </div>
             </div>
           </div>
-
           {/* Created Content */}
           <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg hover:shadow-xl sm:p-10">
             <CreatedQuizzes />

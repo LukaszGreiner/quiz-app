@@ -67,11 +67,10 @@ function ForgotPassword() {
               />
             </div>
 
-            <div className="pt-2">
-              <Btn
+            <div className="pt-2">              <Btn
                 type="submit"
                 variant="primary"
-                size="large"
+                size="lg"
                 className="w-full"
               >
                 Zresetuj Hasło

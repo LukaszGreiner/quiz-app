@@ -5,18 +5,28 @@ const QuizHeader = ({
   progress,
 }) => {
   return (
-    <div className="mb-6">
-      <h1 className="mb-4 text-3xl font-bold text-gray-800">{title}</h1>
-      <div className="h-2.5 w-full rounded-full bg-gray-200">
+    <header className="bg-surface border-border mb-6 flex flex-col gap-2 rounded-xl border p-4 shadow-sm">
+      <h1 className="text-primary mb-2 text-2xl font-bold sm:text-3xl">
+        {title}
+      </h1>
+      <div className="bg-surface-elevated border-border h-2.5 w-full rounded-full border">
         <div
-          className="h-2.5 rounded-full bg-blue-600 transition-all duration-300"
+          className="bg-primary h-2.5 rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          role="progressbar"
         ></div>
       </div>
-      <p className="mt-1 text-sm text-gray-600">
-        Pytanie {currentQuestionIndex + 1} z {totalQuestions}
+      <p className="text-text-muted mt-1 text-sm">
+        Pytanie{" "}
+        <span className="text-primary font-semibold">
+          {currentQuestionIndex + 1}
+        </span>{" "}
+        z {totalQuestions}
       </p>
-    </div>
+    </header>
   );
 };
 

@@ -1,4 +1,4 @@
-import ThemeToggle from "../common/ThemeToggle";
+import Btn from "../common/Btn";
 
 const NavigationButtons = ({
   currentQuestionIndex,
@@ -10,32 +10,41 @@ const NavigationButtons = ({
   isSubmitDisabled,
 }) => {
   return (
-    <div className="mt-6 flex justify-between">
-      <button
+    <nav
+      className="mt-6 flex flex-col justify-between gap-3 sm:flex-row"
+      aria-label="Nawigacja pytań"
+    >      <Btn
         onClick={onPrevious}
         disabled={currentQuestionIndex === 0}
-        className="rounded-md bg-gray-600 px-4 py-2 text-white transition duration-300 hover:bg-gray-700 disabled:bg-gray-400"
+        variant="secondary"
+        size="lg"
+        className="w-full sm:w-auto"
+        aria-label="Poprzednie pytanie"
       >
         Poprzednie
-      </button>
-      {currentQuestionIndex < totalQuestions - 1 ? (
-        <button
+      </Btn>
+      {currentQuestionIndex < totalQuestions - 1 ? (        <Btn
           onClick={onNext}
           disabled={isNextDisabled}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white transition duration-300 hover:bg-blue-700 disabled:bg-gray-400"
+          variant="primary"
+          size="lg"
+          className="w-full sm:w-auto"
+          aria-label="Następne pytanie"
         >
           Następne
-        </button>
-      ) : (
-        <button
+        </Btn>
+      ) : (        <Btn
           onClick={onSubmit}
           disabled={isSubmitDisabled}
-          className="rounded-md bg-green-600 px-4 py-2 text-white transition duration-300 hover:bg-green-700 disabled:bg-gray-400"
+          variant="correct"
+          size="lg"
+          className="w-full sm:w-auto"
+          aria-label="Zakończ quiz"
         >
           Zakończ
-        </button>
+        </Btn>
       )}
-    </div>
+    </nav>
   );
 };
 

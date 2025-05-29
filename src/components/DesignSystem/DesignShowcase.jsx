@@ -290,10 +290,9 @@ const DesignShowcase = () => {
                   <h3 className="text-primary mb-4 text-xl font-semibold">
                     Button Sizes
                   </h3>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Btn size="small">Small</Btn>
-                    <Btn size="medium">Medium</Btn>
-                    <Btn size="large">Large</Btn>
+                  <div className="flex flex-wrap items-center gap-3">                    <Btn size="sm">Small</Btn>
+                    <Btn size="md">Medium</Btn>
+                    <Btn size="lg">Large</Btn>
                     <Btn size="xl">Extra Large</Btn>
                   </div>
                 </div>
