@@ -128,7 +128,6 @@ export function AuthProvider({ children }) {
       throw new Error("Logowanie się nie powiodło!");
     }
   };
-
   const value = {
     isAuthenticated,
     currentUser,
@@ -136,6 +135,7 @@ export function AuthProvider({ children }) {
     signup,
     logout,
     changeUsername,
+    handleGoogleAuth,
     loading,
   };
 

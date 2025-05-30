@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { signInWithPopup } from "firebase/auth";
 import { Eye, EyeOff } from "lucide-react";
-import { auth, googleProvider, db } from "../firebase"; // Added db
-import { doc, setDoc } from "firebase/firestore"; // Added doc, setDoc
 import Btn from "../components/common/Btn";
 import Logo from "../components/common/Logo";
 
@@ -15,7 +12,7 @@ function Signup() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signup } = useAuth();
+  const { signup, handleGoogleAuth } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -32,27 +29,21 @@ function Signup() {
       setError(err.message);
     }
   };
-
   const handleGoogleSignup = async () => {
     setError("");
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      // Generate a username based on user UUID (user.uid)
-      const username = `user_${user.uid}`;
-
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        username: username,
-        createdAt: new Date().toISOString(),
-        isAdmin: false, // Default to false
-      });
-
+      await handleGoogleAuth();
       navigate("/user/details");
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      console.error("Google signup error:", error);
+      // Sprawdź czy popup został zablokowany
+      if (error.code === "auth/popup-blocked") {
+        setError("Popup został zablokowany. Sprawdź ustawienia przeglądarki.");
+      } else if (error.code === "auth/popup-closed-by-user") {
+        setError("Rejestracja została anulowana.");
+      } else {
+        setError(error.message || "Rejestracja się nie powiodła!");
+      }
     }
   };
   return (

@@ -37,8 +37,16 @@ function Login() {
     try {
       await handleGoogleAuth();
       navigate("/user/details");
-    } catch {
-      setError("Logowanie się nie powiodło!");
+    } catch (error) {
+      console.error("Google login error:", error);
+      // Sprawdź czy popup został zablokowany
+      if (error.code === "auth/popup-blocked") {
+        setError("Popup został zablokowany. Sprawdź ustawienia przeglądarki.");
+      } else if (error.code === "auth/popup-closed-by-user") {
+        setError("Logowanie zostało anulowane.");
+      } else {
+        setError("Logowanie się nie powiodło!");
+      }
     }
   };
   return (
