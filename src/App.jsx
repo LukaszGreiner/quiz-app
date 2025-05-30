@@ -18,16 +18,25 @@ import OtherUserPage from "./pages/OtherUserPage";
 import QuizEdit from "./pages/QuizEdit";
 import LandingPage from "./pages/LandingPage";
 import DesignSystemPage from "./pages/DesignSystemPage";
+import ProfileSetup from "./pages/ProfileSetup";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {" "}
           <Route path="/" element={<LandingPage />} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
           <Route path="reset-password" element={<ForgotPassword />} />
+          <Route
+            element={
+              <ProtectedRoute info="Zaloguj się aby ukończyć konfigurację profilu" />
+            }
+          >
+            <Route path="profile-setup" element={<ProfileSetup />} />
+          </Route>
           <Route path="/" element={<Layout />}>
             <Route path="/app" element={<Home />} />{" "}
             {/* Design System Showcase */}

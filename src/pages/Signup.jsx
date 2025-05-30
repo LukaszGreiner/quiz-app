@@ -24,7 +24,7 @@ function Signup() {
     }
     try {
       await signup(email, password);
-      navigate("/user/details");
+      navigate("/profile-setup");
     } catch (err) {
       setError(err.message);
     }
@@ -32,8 +32,15 @@ function Signup() {
   const handleGoogleSignup = async () => {
     setError("");
     try {
-      await handleGoogleAuth();
-      navigate("/user/details");
+      const result = await handleGoogleAuth();
+
+      // Jeśli użytkownik już istniał (nie jest nowy) i ma ukończony profil, przekieruj na /app
+      if (!result.isNewUser && result.userData?.profileCompleted) {
+        navigate("/app");
+      } else {
+        // Nowy użytkownik lub użytkownik bez ukończonego profilu - idź do setup
+        navigate("/profile-setup");
+      }
     } catch (error) {
       console.error("Google signup error:", error);
       // Sprawdź czy popup został zablokowany

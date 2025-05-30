@@ -5,6 +5,9 @@ export const quizFormConfig = {
   MAX_DESCRIPTION_LENGTH: 300,
   MAX_QUESTION_TEXT_LENGTH: 300,
   MAX_ANSWER_LENGTH: 300,
+  // Username validation limits
+  MIN_USERNAME_LENGTH: 3,
+  MAX_USERNAME_LENGTH: 25,
   MAX_IMAGE_SIZE: 2 * 1024 * 1024,
   ALLOWED_IMG_TYPES: {
     "image/jpeg": ".jpg",

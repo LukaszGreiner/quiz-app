@@ -1,22 +1,34 @@
 import { useState } from "react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { useUsernameValidation } from "../../hooks/useUsernameValidation";
 
 function ProfileSettings({
   initialUsername,
-  initialEmail,
   initialUserType,
   initialGoal,
   initialDescription,
   onSave,
 }) {
   const [username, setUsername] = useState(initialUsername);
-  const [email, setEmail] = useState(initialEmail);
   const [userType, setUserType] = useState(initialUserType);
   const [goal, setGoal] = useState(initialGoal);
-  const [description, setDescription] = useState(initialDescription);
-
+  const [description, setDescription] = useState(initialDescription); // Use username validation hook
+  const {
+    validationState: { isValid: isUsernameValid, error: usernameMessage },
+    isChecking: isCheckingUsername,
+    validateUsername: checkUsername,
+  } = useUsernameValidation(initialUsername);
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    checkUsername(value);
+  };
   const handleSave = async () => {
     try {
-      await onSave({ username, email, userType, goal, description });
+      if (!isUsernameValid && username !== initialUsername) {
+        throw new Error("Nazwa użytkownika nie jest prawidłowa");
+      }
+      await onSave({ username, userType, goal, description });
     } catch (err) {
       console.error("Failed to save profile:", err);
     }
@@ -48,34 +60,54 @@ function ProfileSettings({
       </div>
 
       <div className="space-y-6">
+        {" "}
         {/* Username */}
         <div>
           <label className="font-quicksand text-text-muted mb-2 block text-sm font-medium">
             Display Name
           </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your display name"
-            className="border-border bg-surface text-text font-quicksand focus:border-border-focus focus:ring-primary/20 w-full rounded-xl border p-3 transition-all duration-200 focus:ring-2 focus:outline-none"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={username}
+              onChange={handleUsernameChange}
+              placeholder="Enter your display name"
+              className={`border-border bg-surface text-text font-quicksand focus:border-border-focus focus:ring-primary/20 w-full rounded-xl border p-3 pr-10 transition-all duration-200 focus:ring-2 focus:outline-none ${
+                username.trim() &&
+                username !== initialUsername &&
+                isUsernameValid
+                  ? "border-correct ring-correct/20"
+                  : username.trim() &&
+                      username !== initialUsername &&
+                      !isUsernameValid
+                    ? "border-incorrect ring-incorrect/20"
+                    : ""
+              }`}
+            />
+            {username.trim() && username !== initialUsername && (
+              <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                {isCheckingUsername ? (
+                  <Loader2 className="text-text-muted h-5 w-5 animate-spin" />
+                ) : isUsernameValid ? (
+                  <CheckCircle className="text-correct h-5 w-5" />
+                ) : (
+                  <XCircle className="text-incorrect h-5 w-5" />
+                )}
+              </div>
+            )}
+          </div>
+          {username.trim() &&
+            username !== initialUsername &&
+            usernameMessage && (
+              <p
+                className={`font-quicksand mt-2 text-sm ${
+                  isUsernameValid ? "text-correct" : "text-incorrect"
+                }`}
+              >
+                {usernameMessage}
+              </p>
+            )}
         </div>
-
-        {/* Email */}
-        <div>
-          <label className="font-quicksand text-text-muted mb-2 block text-sm font-medium">
-            Email Address
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email address"
-            className="border-border bg-surface text-text font-quicksand focus:border-border-focus focus:ring-primary/20 w-full rounded-xl border p-3 transition-all duration-200 focus:ring-2 focus:outline-none"
-          />
-        </div>
-
         {/* User Type */}
         <div>
           <label className="font-quicksand text-text-muted mb-2 block text-sm font-medium">
@@ -95,7 +127,6 @@ function ProfileSettings({
             <option value="Inne">Inne</option>
           </select>
         </div>
-
         {/* Goal */}
         <div>
           <label className="font-quicksand text-text-muted mb-2 block text-sm font-medium">
@@ -112,7 +143,6 @@ function ProfileSettings({
             <option value="Rozrywka">Entertainment</option>
           </select>
         </div>
-
         {/* Description */}
         <div>
           <label className="font-quicksand text-text-muted mb-2 block text-sm font-medium">

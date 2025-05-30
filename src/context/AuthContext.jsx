@@ -63,15 +63,25 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     return signOut(auth);
-  };
-  // Function to change username
+  }; // Function to change username
   const changeUsername = async (newUsername) => {
     if (!currentUser) throw new Error("Użytkownik nie jest zalogowany");
 
+    // Import validation constants
+    const { MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH } = await import(
+      "../config/quizFormConfig.js"
+    );
+
     // Validate new username
-    if (!newUsername || newUsername.trim().length < 3) {
+    if (!newUsername || newUsername.trim().length < MIN_USERNAME_LENGTH) {
       throw new Error(
-        "Nazwa użytkownika musi składać się z co najmniej 3 liter",
+        `Nazwa użytkownika musi składać się z co najmniej ${MIN_USERNAME_LENGTH} znaków`,
+      );
+    }
+
+    if (newUsername.trim().length > MAX_USERNAME_LENGTH) {
+      throw new Error(
+        `Nazwa użytkownika może mieć maksymalnie ${MAX_USERNAME_LENGTH} znaków`,
       );
     }
 
@@ -93,7 +103,6 @@ export function AuthProvider({ children }) {
     );
     return newUsername;
   };
-
   // Function to handle Google authentication
   const handleGoogleAuth = async () => {
     try {
@@ -103,6 +112,8 @@ export function AuthProvider({ children }) {
       // Check if user document already exists
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
+
+      let isNewUser = false;
 
       if (!userDoc.exists()) {
         // Set username to user_UUID
@@ -116,6 +127,8 @@ export function AuthProvider({ children }) {
           isAdmin: false,
           lastLogin: new Date().toISOString(),
         });
+
+        isNewUser = true;
       } else {
         // Update lastLogin property
         await updateDoc(userDocRef, {
@@ -123,7 +136,11 @@ export function AuthProvider({ children }) {
         });
       }
 
-      return user;
+      return {
+        user,
+        isNewUser,
+        userData: userDoc.exists() ? userDoc.data() : null,
+      };
     } catch {
       throw new Error("Logowanie się nie powiodło!");
     }

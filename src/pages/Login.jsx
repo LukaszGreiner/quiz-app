@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 import { db } from "../firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import Btn from "../components/common/Btn";
 import Logo from "../components/common/Logo";
 
@@ -14,7 +14,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login, handleGoogleAuth } = useAuth();
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -27,7 +26,16 @@ function Login() {
       await updateDoc(userDocRef, {
         lastLogin: new Date().toISOString(),
       });
-      navigate("/user/details");
+
+      // Check if user has completed profile setup
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.data();
+
+      if (userData?.profileCompleted) {
+        navigate("/user/details");
+      } else {
+        navigate("/profile-setup");
+      }
     } catch {
       setError("Nieprawidłowa dane logowania");
     }
@@ -35,8 +43,15 @@ function Login() {
   const handleGoogleLogin = async () => {
     setError("");
     try {
-      await handleGoogleAuth();
-      navigate("/user/details");
+      const result = await handleGoogleAuth();
+      const userData = result.userData;
+
+      // Check if user has completed profile setup
+      if (userData?.profileCompleted) {
+        navigate("/user/details");
+      } else {
+        navigate("/profile-setup");
+      }
     } catch (error) {
       console.error("Google login error:", error);
       // Sprawdź czy popup został zablokowany
