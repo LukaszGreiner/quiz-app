@@ -19,13 +19,13 @@ import QuizEdit from "./pages/QuizEdit";
 import LandingPage from "./pages/LandingPage";
 import DesignSystemPage from "./pages/DesignSystemPage";
 import ProfileSetup from "./pages/ProfileSetup";
+import StatisticsPage from "./pages/Statisticspage";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {" "}
           <Route path="/" element={<LandingPage />} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
@@ -41,6 +41,7 @@ function App() {
             <Route path="/app" element={<Home />} />{" "}
             {/* Design System Showcase */}
             <Route path="design-system" element={<DesignSystemPage />} />
+            <Route path="statistics" element={<StatisticsPage />} />
             <Route
               path=":category"
               element={

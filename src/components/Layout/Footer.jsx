@@ -1,12 +1,5 @@
-import { Home, User, PlusCircle, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-
-const navLinks = [
-  { path: "/", icon: Home },
-  { path: "/newquiz", icon: PlusCircle },
-  { path: "/design-system", icon: LayoutDashboard },
-  { path: "/user/details", icon: User },
-];
+import { navigationConfig } from "../../config/navigationConfig";
 
 function Footer() {
   const location = useLocation?.() || { pathname: "/" };
@@ -22,24 +15,26 @@ function Footer() {
         role="navigation"
         aria-label="Mobilna nawigacja"
       >
-        {navLinks.map(({ path, label, icon }) => {
-          const Icon = icon;
-          return (
-            <Link
-              key={path}
-              to={path}
-              aria-label={label}
-              className={`focus-visible:ring-primary/20 flex flex-col items-center justify-center gap-1 px-2 py-1 transition-colors duration-200 focus:outline-none focus-visible:ring-2 ${
-                location.pathname === path
-                  ? "text-primary"
-                  : "text-text/85 hover:text-primary"
-              }`}
-              tabIndex={0}
-            >
-              <Icon className="h-6 w-6" aria-hidden="true" />
-            </Link>
-          );
-        })}
+        {navigationConfig
+          .filter((item) => item.showInMobile)
+          .map(({ path, label, icon: Icon }) => {
+            const IconComponent = Icon;
+            return (
+              <Link
+                key={path}
+                to={path}
+                aria-label={label}
+                className={`focus-visible:ring-primary/20 flex flex-col items-center justify-center gap-1 px-2 py-1 transition-colors duration-200 focus:outline-none focus-visible:ring-2 ${
+                  location.pathname === path
+                    ? "text-primary"
+                    : "text-text/85 hover:text-primary"
+                }`}
+                tabIndex={0}
+              >
+                <IconComponent className="h-6 w-6" aria-hidden="true" />
+              </Link>
+            );
+          })}
       </nav>
     </footer>
   );

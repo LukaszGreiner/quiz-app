@@ -1,15 +1,9 @@
-import { Home, User, PlusCircle, LayoutDashboard } from "lucide-react";
+import { navigationConfig } from "../../config/navigationConfig";
 import ThemeToggle from "../common/ThemeToggle";
 import Logo from "../common/Logo";
 import Btn from "../common/Btn";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import ProfileAvatar from "../Header/ProfileAvatar";
-
-const navLinks = [
-  { path: "/", label: "Strona główna", icon: Home },
-  { path: "/newquiz", label: "Stwórz Quiz", icon: PlusCircle },
-  { path: "design-system", label: "Design System", icon: LayoutDashboard },
-];
 
 function Header() {
   const location = useLocation?.() || { pathname: "/" };
@@ -23,16 +17,19 @@ function Header() {
             <Logo />
           </div>
           <nav className="flex items-center space-x-4">
-            {navLinks.map(({ path, label }) => (              <Btn
-                key={path}
-                to={path}
-                variant={location.pathname === path ? "primary" : "ghost"}
-                size="sm"
-                aria-label={label}
-              >
-                {label}
-              </Btn>
-            ))}
+            {navigationConfig
+              .filter((item) => item.showInDesktop)
+              .map(({ path, label }) => (
+                <Btn
+                  key={path}
+                  to={path}
+                  variant={location.pathname === path ? "primary" : "ghost"}
+                  size="sm"
+                  aria-label={label}
+                >
+                  {label}
+                </Btn>
+              ))}
             <ProfileAvatar />
             <ThemeToggle />
           </nav>
