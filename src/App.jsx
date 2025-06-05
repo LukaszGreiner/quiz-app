@@ -19,7 +19,7 @@ import QuizEdit from "./pages/QuizEdit";
 import LandingPage from "./pages/LandingPage";
 import DesignSystemPage from "./pages/DesignSystemPage";
 import ProfileSetup from "./pages/ProfileSetup";
-import StatisticsPage from "./pages/Statisticspage";
+import StatisticsPage from "./pages/Statistics";
 
 function App() {
   return (
