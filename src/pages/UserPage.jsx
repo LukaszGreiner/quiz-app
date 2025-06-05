@@ -14,22 +14,21 @@ import LevelBar from "../components/UserPage/LevelBar";
 function UserPage() {
   const { currentUser, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
-  const [username, setUsername] = useState(
-    location.state?.username || currentUser?.displayName || "Użytkownik",
+  const navigate = useNavigate();  const [username] = useState(
+    location.state?.username || "Nie określono",
   );
-  const [description, setDescription] = useState(
-    location.state?.description || "Brak opisu.",
+  const [description] = useState(
+    location.state?.description || "Nie określono",
   );
-  const [userType, setUserType] = useState(
+  const [userType] = useState(
     location.state?.userType || "Nie określono",
   );
-  const [goal, setGoal] = useState(location.state?.goal || "Nie określono");
-  const [profileImage, setProfileImage] = useState(
-    currentUser?.photoURL || "/profile_icon.jpg",
+  const [goal] = useState(location.state?.goal || "Nie określono");
+  const [profileImage] = useState(
+    location.state?.profileImage || currentUser?.photoURL || "/profile_icon.jpg",
   );
-  const [email, setEmail] = useState(
-    location.state?.email || currentUser?.email || "",
+  const [email] = useState(
+    location.state?.email || currentUser?.email || "Nie określono",
   );
   const handleEditProfile = () => {
     navigate("/user/edit-profile", {
@@ -110,10 +109,10 @@ function UserPage() {
               <Achievements />
             </div>
 
-            {/* Profile Info */}
-            <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg hover:shadow-xl">
+            {/* Profile Info */}            <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg hover:shadow-xl">
               <ProfileInfo
                 displayName={username}
+                userId={currentUser.uid}
                 creationTime={currentUser.metadata.creationTime}
                 lastLogin={lastLogin}
               />
@@ -136,7 +135,7 @@ function UserPage() {
           </div>
           {/* Created Content */}
           <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg hover:shadow-xl sm:p-10">
-            <CreatedQuizzes />
+            <CreatedQuizzes authorId={currentUser?.uid} />
           </div>
         </div>
       </div>

@@ -26,11 +26,14 @@ const QuizPlay = () => {
     maxScoreAchieved,
     handleAnswerSelect,
     handleNextOrSubmit,
-    handlePrevious, // Added from hook
+    handlePrevious,
     progress,
     currentQuestion,
-    score, // Get score from hook
+    score,
   } = useQuizPlay(quizId, quizData, questions, navigate);
+
+  console.log("quizData", quizData);
+  console.log("questions", questions);
 
   return (
     <div className="bg-background mx-auto min-h-screen max-w-4xl p-4 sm:p-6">
@@ -88,6 +91,17 @@ const QuizPlay = () => {
                     <h3 className="text-text mb-2 text-lg font-semibold">
                       Pytanie {index + 1}: {question.title}
                     </h3>
+                    {question.imageUrl && (
+                      <img
+                        src={question.imageUrl}
+                        alt={`Obraz dla pytania ${index + 1}`}
+                        className="border-border mb-4 h-auto max-h-64 w-full rounded-lg border object-contain"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://placehold.co/200x150.png?text=Brak%20obrazu")
+                        }
+                      />
+                    )}
                     <p className="text-text-muted text-sm">
                       <strong>Twoja odpowiedź:</strong>{" "}
                       {userAnswers[index] || "Brak odpowiedzi"}
@@ -98,7 +112,8 @@ const QuizPlay = () => {
                     </p>
                   </div>
                 ))}
-              </div>              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+              </div>{" "}
+              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
                 <Btn
                   onClick={() => navigate(`/quiz/${quizId}`)}
                   variant="primary"
@@ -106,7 +121,8 @@ const QuizPlay = () => {
                   className="w-full sm:w-auto"
                 >
                   Powrót do opisu quizu
-                </Btn>                <Btn
+                </Btn>{" "}
+                <Btn
                   onClick={() => window.location.reload()}
                   variant="secondary"
                   size="lg"

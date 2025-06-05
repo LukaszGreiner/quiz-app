@@ -10,6 +10,7 @@ const CreatedQuizzes = ({ authorId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log("Author ID:", authorId); // Debug log for authorId
     const fetchQuizzes = async () => {
       try {
         setLoading(true);
@@ -21,7 +22,7 @@ const CreatedQuizzes = ({ authorId }) => {
             authorId,
           );
           setQuizzes(quizData);
-          console.log(quizData);
+          console.log("Fetched quizzes:", quizData); // Debug log for fetched quizzes
         } else {
           setQuizzes([]);
         }

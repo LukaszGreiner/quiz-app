@@ -8,7 +8,7 @@ function ProfileImageEditor({
   onEditProfile,
   onLogout,
 }) {
-  const [image, setImage] = useState(initialImage);
+  const [image, setImage] = useState(initialImage || "/profile_icon.jpg");
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -20,11 +20,14 @@ function ProfileImageEditor({
   return (
     <div className="flex flex-col items-center space-y-6">
       {/* Profile Image Container */}
-      <div className="group relative">
-        <div className="ring-primary/20 ring-offset-surface-elevated group-hover:ring-primary/30 relative overflow-hidden rounded-full ring-4 ring-offset-4 transition-all duration-300 group-hover:ring-offset-2">
+      <div className="group relative">        <div className="ring-primary/20 ring-offset-surface-elevated group-hover:ring-primary/30 relative overflow-hidden rounded-full ring-4 ring-offset-4 transition-all duration-300 group-hover:ring-offset-2">
           <img
             src={image}
             alt="Profile"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/profile_icon.jpg";
+            }}
             className="h-32 w-32 object-cover transition-all duration-300 group-hover:scale-105 sm:h-40 sm:w-40"
             referrerPolicy="no-referrer"
           />
