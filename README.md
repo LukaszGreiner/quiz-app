@@ -22,3 +22,4 @@ VITE_FIREBASE_APP_ID = "";
 VITE_FIREBASE_MEASUREMENT_ID = "";
 
 ## Customize theme in index.css
+
