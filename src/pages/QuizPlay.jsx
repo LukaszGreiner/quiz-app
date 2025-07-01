@@ -1,15 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-// Remove useEffect, useState, useRef if no longer directly used here
 import { useQuiz } from "../hooks/useQuiz";
-// Remove auth, db, setDoc, updateDoc, increment from here
 import QuizHeader from "../components/QuizPlay/QuizHeader";
 import QuestionCard from "../components/QuizPlay/QuestionCard";
-import NavigationButtons from "../components/QuizPlay/NavigationButtons";
-// Remove showLoading, updateLoadingToSuccess, updateLoadingToError from here if handled by service/hook
-// Remove fetchUserQuizAttempts from here
 import QuizRating from "../components/QuizPlay/QuizRating";
-import { useQuizPlay } from "../hooks/useQuizPlay"; // Import the new hook
+import { useQuizPlay } from "../hooks/useQuizPlay";
 import Btn from "../components/common/Btn";
+import LoadingAnimation from "../components/common/LoadingAnimation";
 
 const QuizPlay = () => {
   const { quizId } = useParams();
@@ -30,29 +26,36 @@ const QuizPlay = () => {
     progress,
     currentQuestion,
     score,
+    answerFeedback,
   } = useQuizPlay(quizId, quizData, questions, navigate);
-
-  console.log("quizData", quizData);
-  console.log("questions", questions);
-
+  
+  // Remove debug logging for production
+  /* 
+  console.log("QuizPlay rendering with:", {
+    currentQuestionIndex,
+    totalQuestions: questions?.length,
+    hasCurrentQuestion: Boolean(currentQuestion),
+    isSubmitted,
+    answerFeedback
+  });
+  */
+  
   return (
-    <div className="bg-background mx-auto min-h-screen max-w-4xl p-4 sm:p-6">
+    <div className="bg-background mx-auto min-h-[100svh] max-w-5xl px-3 sm:px-4 py-3 flex flex-col justify-start md:justify-center items-center overflow-auto pt-12 md:pt-16 pb-12">
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <span className="text-primary animate-pulse text-lg">
-            Ładowanie...
-          </span>
+        <div className="flex items-center justify-center py-8 flex-grow w-full">
+          <LoadingAnimation />
         </div>
       )}
       {error && (
-        <div className="flex items-center justify-center py-16">
+        <div className="flex items-center justify-center py-16 flex-grow w-full">
           <span className="text-incorrect text-lg">Błąd: {error}</span>
         </div>
       )}
       {!loading &&
         !error &&
         (!quizData || !questions || questions.length === 0) && (
-          <div className="flex items-center justify-center py-16">
+          <div className="flex items-center justify-center py-16 flex-grow w-full">
             <span className="text-text-muted text-lg">
               Brak danych do wyświetlenia lub quiz jest pusty.
             </span>
@@ -60,9 +63,10 @@ const QuizPlay = () => {
         )}
       {!loading && !error && quizData && questions && questions.length > 0 && (
         <>
+          {/* Force re-render when isSubmitted changes */}
           {isSubmitted ? (
-            <div className="bg-surface-elevated mx-auto max-w-2xl rounded-2xl p-6 shadow-lg">
-              <h1 className="text-primary mb-4 text-3xl font-bold">
+            <div className="bg-surface-elevated mx-auto max-w-3xl rounded-2xl p-5 sm:p-6 md:p-7 shadow-lg my-2 sm:my-4 flex flex-col justify-start w-full overflow-auto">
+              <h1 className="text-primary mb-6 text-2xl md:text-3xl font-bold text-center">
                 Wynik Quizu: {quizData.title}
               </h1>
               <p className="text-text mb-2 text-lg">
@@ -86,21 +90,24 @@ const QuizPlay = () => {
                 {questions.map((question, index) => (
                   <div
                     key={index}
-                    className={`border-border rounded-xl border p-4 shadow-md ${userAnswers[index] === question.correctAnswer ? "bg-correct/10 border-correct/20" : "bg-incorrect/10 border-incorrect/20"}`}
+                    className={`border-border rounded-xl border p-3 sm:p-4 shadow-md ${userAnswers[index] === question.correctAnswer ? "bg-correct/10 border-correct/20" : "bg-incorrect/10 border-incorrect/20"}`}
                   >
                     <h3 className="text-text mb-2 text-lg font-semibold">
                       Pytanie {index + 1}: {question.title}
                     </h3>
                     {question.imageUrl && (
-                      <img
-                        src={question.imageUrl}
-                        alt={`Obraz dla pytania ${index + 1}`}
-                        className="border-border mb-4 h-auto max-h-64 w-full rounded-lg border object-contain"
-                        onError={(e) =>
-                          (e.target.src =
-                            "https://placehold.co/200x150.png?text=Brak%20obrazu")
-                        }
-                      />
+                      <div className="mb-4 w-full flex justify-center">
+                        <img
+                          src={question.imageUrl}
+                          alt={`Obraz dla pytania ${index + 1}`}
+                          className="border-border rounded-lg border object-contain h-auto max-h-64"
+                          loading="lazy"
+                          onError={(e) =>
+                            (e.target.src =
+                              "https://placehold.co/200x150.png?text=Brak%20obrazu")
+                          }
+                        />
+                      </div>
                     )}
                     <p className="text-text-muted text-sm">
                       <strong>Twoja odpowiedź:</strong>{" "}
@@ -133,37 +140,32 @@ const QuizPlay = () => {
               </div>
             </div>
           ) : (
-            <>
-              <QuizHeader
-                title={quizData.title}
-                currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={questions.length}
-                progress={progress}
-              />
-              <QuestionCard
-                question={currentQuestion}
-                shuffledAnswers={shuffledAnswers}
-                userAnswer={userAnswers[currentQuestionIndex]}
-                onAnswerSelect={handleAnswerSelect}
-                timeLeft={timeLeft}
-                timeLimitPerQuestion={quizData.timeLimitPerQuestion}
-              />
-              <NavigationButtons
-                currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={questions.length}
-                onPrevious={handlePrevious}
-                onNext={handleNextOrSubmit}
-                onSubmit={handleNextOrSubmit}
-                isNextDisabled={
-                  !userAnswers[currentQuestionIndex] &&
-                  currentQuestionIndex < questions.length - 1
-                }
-                isSubmitDisabled={
-                  currentQuestionIndex === questions.length - 1 &&
-                  !userAnswers[currentQuestionIndex]
-                }
-              />
-            </>
+            <div className="flex flex-col w-full items-center justify-start md:justify-center mt-1 md:mt-0">
+              {currentQuestion ? (
+                <>
+                  <QuestionCard
+                    key={`question-${currentQuestionIndex}`}
+                    title={quizData.title}
+                    currentQuestionIndex={currentQuestionIndex}
+                    totalQuestions={questions.length}
+                    progress={progress}
+                    question={currentQuestion}
+                    shuffledAnswers={shuffledAnswers}
+                    userAnswer={userAnswers[currentQuestionIndex]}
+                    onAnswerSelect={handleAnswerSelect}
+                    timeLeft={timeLeft}
+                    timeLimitPerQuestion={quizData.timeLimitPerQuestion}
+                    showFeedback={answerFeedback}
+                  />
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-16 flex-grow w-full">
+                  <span className="text-text-muted text-lg">
+                    Brak pytania do wyświetlenia.
+                  </span>
+                </div>
+              )}
+            </div>
           )}
         </>
       )}

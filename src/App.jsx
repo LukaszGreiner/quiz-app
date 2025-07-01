@@ -37,9 +37,10 @@ function App() {
           >
             <Route path="profile-setup" element={<ProfileSetup />} />
           </Route>
+          {/* Pages with layout */}
           <Route path="/" element={<Layout />}>
             <Route path="/app" element={<Home />} />{" "}
-            {/* Design System Showcase */}
+            {/* Temporary Design System Showcase */}
             <Route path="design-system" element={<DesignSystemPage />} />
             <Route path="statistics" element={<StatisticsPage />} />
             <Route
@@ -57,8 +58,6 @@ function App() {
             >
               {/* Tworzenie nowego quizu */}
               <Route path="newquiz" element={<CreateQuiz />} />
-              {/* Gra w quizy */}
-              <Route path="quiz/play/:quizId" element={<QuizPlay />} />
               {/* Strony profilu użytkownika */}
               <Route path="user/details" element={<UserPage />} />
               <Route path="user/edit-profile" element={<EditProfile />} />\{" "}
@@ -68,6 +67,13 @@ function App() {
             {/* 404 */}
             <Route path="not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
+          </Route>
+          {/* QuizPlay with different layout */}
+          <Route
+            element={<ProtectedRoute info="Zaloguj się aby uzyskać dostęp" />}
+          >
+            {/* Gra w quizy */}
+            <Route path="quiz/play/:quizId" element={<QuizPlay />} />
           </Route>
         </Routes>
         <ToastContainer />

@@ -8,6 +8,133 @@
 }
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Custom animation for quiz loading */
+@keyframes loading {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  75% {
+    width: 85%;
+  }
+  90% {
+    width: 95%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+.animate-loadingProgress {
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+/* Fade in animation for question card transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Animations for answer selections */
+@keyframes correctAnswer {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes incorrectAnswer {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes selectedAnswer {
+  0% {
+    transform: scale(0.98);
+  }
+  60% {
+    transform: scale(1.01);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Feedback message animation */
+@keyframes feedbackMessage {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Progress bar pulse effect */
+@keyframes progressPulse {
+  0% {
+    opacity: 0.3;
+    transform: translateX(-100%);
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.animate-correctAnswer {
+  animation: correctAnswer 0.6s ease-in-out;
+}
+
+.animate-incorrectAnswer {
+  animation: incorrectAnswer 0.6s ease-in-out;
+}
+
+.animate-selectedAnswer {
+  animation: selectedAnswer 0.3s ease-out;
+}
+
+.animate-feedbackMessage {
+  animation: feedbackMessage 1.5s ease-in-out infinite;
+}
+
+.animate-progressPulse {
+  animation: progressPulse 2s ease-in-out infinite;
+}
+
 /* 
 🚀 QUICK RULES: Tylko klasy Tailwind | Bez custom CSS | Używaj zmiennych kolorów |
 ======================
@@ -130,6 +257,11 @@ focus:ring-primary/20 → focus:ring with 20% opacity primary
   --color-info: #38bdf8;
   --color-border: #475569;
   --color-border-focus: #8b5cf6;
+}
+
+body {
+  background-color: var(--color-background);
+
 }
 
 body,

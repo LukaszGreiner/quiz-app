@@ -1,4 +1,4 @@
-const QuizHeader = ({
+const   QuizHeader = ({
   title,
   currentQuestionIndex,
   totalQuestions,
@@ -6,9 +6,9 @@ const QuizHeader = ({
 }) => {
   return (
     <header className="bg-surface border-border mb-6 flex flex-col gap-2 rounded-xl border p-4 shadow-sm">
-      <h1 className="text-primary mb-2 text-2xl font-bold sm:text-3xl">
+      {/* <h1 className="text-primary mb-2 text-2xl font-bold sm:text-3xl">
         {title}
-      </h1>
+      </h1> */}
       <div className="bg-surface-elevated border-border h-2.5 w-full rounded-full border">
         <div
           className="bg-primary h-2.5 rounded-full transition-all duration-300"
