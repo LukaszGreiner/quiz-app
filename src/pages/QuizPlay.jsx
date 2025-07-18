@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuiz } from "../hooks/useQuiz";
 import QuizHeader from "../components/QuizPlay/QuizHeader";
 import QuestionCard from "../components/QuizPlay/QuestionCard";
@@ -7,11 +7,13 @@ import QuizRating from "../components/QuizPlay/QuizRating";
 import { useQuizPlay } from "../hooks/useQuizPlay";
 import Btn from "../components/common/Btn";
 import LoadingAnimation from "../components/common/LoadingAnimation";
+import StreakNotification from "../components/UserPage/StreakNotification";
 
 const QuizPlay = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const { quizData, questions, loading, error } = useQuiz(quizId);
+  const [showStreakNotification, setShowStreakNotification] = useState(false);
 
   const {
     currentQuestionIndex,
@@ -29,6 +31,17 @@ const QuizPlay = () => {
     score,
     answerFeedback,
   } = useQuizPlay(quizId, quizData, questions, navigate);
+
+  // Show streak notification when quiz is completed
+  useEffect(() => {
+    if (isSubmitted && !showStreakNotification) {
+      // Delay showing streak notification slightly to let quiz results load
+      const timer = setTimeout(() => {
+        setShowStreakNotification(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSubmitted, showStreakNotification]);
   
   // Handle keyboard input for answer selection
   useEffect(() => {
@@ -200,6 +213,14 @@ const QuizPlay = () => {
             </div>
           )}
         </>
+      )}
+      
+      {/* Streak Notification */}
+      {showStreakNotification && (
+        <StreakNotification 
+          onClose={() => setShowStreakNotification(false)}
+          autoClose={8000}
+        />
       )}
     </div>
   );

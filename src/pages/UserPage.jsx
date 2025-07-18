@@ -10,6 +10,7 @@ import CreatedQuizzes from "../components/UserPage/CreatedQuizzes";
 import Achievements from "../components/UserPage/Achievements";
 import ProfileInfo from "../components/UserPage/ProfileInfo";
 import LevelBar from "../components/UserPage/LevelBar";
+import StreakCard from "../components/UserPage/StreakCard";
 
 function UserPage() {
   const { currentUser, logout } = useAuth();
@@ -100,6 +101,9 @@ function UserPage() {
             />
             <div className="mt-8">
               <LevelBar currentUser={currentUser} />
+            </div>
+            <div className="mt-8">
+              <StreakCard />
             </div>
           </div>
           {/* Stats & Info Grid */}

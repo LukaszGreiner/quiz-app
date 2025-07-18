@@ -22,6 +22,7 @@ import {
   PieChart,
   Calendar,
 } from "lucide-react";
+import StreakLeaderboard from "../components/UserPage/StreakLeaderboard";
 import {
   AreaChart,
   Area,
@@ -294,6 +295,11 @@ export default function StatisticsPage() {
                   </ResponsiveContainer>
                 </div>
               </div>
+            </div>
+
+            {/* Streak Leaderboard */}
+            <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg">
+              <StreakLeaderboard limit={10} />
             </div>
           </div>
         )}

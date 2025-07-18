@@ -48,6 +48,7 @@ import {
   updateLoadingToSuccess,
   withToastHandling,
 } from "../utils/toastUtils";
+import { streakService } from "./streakService";
 
 const { ALLOWED_IMG_TYPES, MAX_IMG_SIZE } = quizFormConfig;
 
@@ -415,6 +416,15 @@ const saveQuizResult = async (
     });
 
     await batch.commit();
+    
+    // Update user's daily streak
+    try {
+      await streakService.updateStreakOnQuizCompletion(userId, new Date(completedAt).toISOString());
+    } catch (streakError) {
+      console.error("Error updating streak:", streakError);
+      // Don't fail the quiz result save if streak update fails
+    }
+    
     updateLoadingToSuccess(toastId, "Wynik zapisany!");
   } catch (err) {
     updateLoadingToError(toastId, `Błąd zapisu wyniku: ${err.message}`);

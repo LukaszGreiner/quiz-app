@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User ratings for quizzes
+    match /quizRatings/{ratingId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Quizzes collection - public quizzes can be read by anyone, private quizzes only by owner
+    match /quizzes/{quizID} {
+      allow read: if true; // Anyone can read public quizzes
+      allow write: if request.auth != null;
+      allow update: if request.auth != null;
+      allow create: if request.auth != null;
+      
+      // Quiz stats subcollection
+      match /stats/{statId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+    
+    // Quiz results collection - users can read/write their own results
+    match /quizResults/{resultId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+    
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // User streaks collection - users can read/write their own streak data
+    // Also allow authenticated users to read streak data for leaderboards
+    match /userStreaks/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User profiles collection - users can read/write their own profile
+    match /userProfiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}    

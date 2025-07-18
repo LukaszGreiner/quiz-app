@@ -4,9 +4,12 @@ import Logo from "../common/Logo";
 import Btn from "../common/Btn";
 import { useLocation } from "react-router-dom";
 import ProfileAvatar from "../Header/ProfileAvatar";
+import StreakCard from "../UserPage/StreakCard";
+import { useAuth } from "../../context/AuthContext";
 
 function Header() {
   const location = useLocation?.() || { pathname: "/" };
+  const { currentUser } = useAuth();
 
   return (
     <header className="bg-surface-elevated sticky top-0 z-50 border-b backdrop-blur-md">
@@ -30,6 +33,11 @@ function Header() {
                   {label}
                 </Btn>
               ))}
+            {currentUser && (
+              <div className="hidden lg:block">
+                <StreakCard compact={true} showActions={false} />
+              </div>
+            )}
             <ProfileAvatar />
             <ThemeToggle />
           </nav>
