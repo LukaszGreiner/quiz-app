@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useQuiz } from "../hooks/useQuiz";
 import QuizHeader from "../components/QuizPlay/QuizHeader";
 import QuestionCard from "../components/QuizPlay/QuestionCard";
@@ -28,6 +29,37 @@ const QuizPlay = () => {
     score,
     answerFeedback,
   } = useQuizPlay(quizId, quizData, questions, navigate);
+  
+  // Handle keyboard input for answer selection
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Only handle keyboard input if we're in an active quiz (not submitted) and have feedback disabled
+      if (isSubmitted || answerFeedback || !currentQuestion || !shuffledAnswers || shuffledAnswers.length === 0) {
+        return;
+      }
+
+      // Handle number keys 1-4 for answer selection
+      const keyNumber = event.key;
+      const answerIndex = parseInt(keyNumber) - 1; // Convert to 0-based index
+
+      // Check if the key is a valid answer option (1-4) and within available answers
+      if (keyNumber >= '1' && keyNumber <= '4' && answerIndex < shuffledAnswers.length) {
+        event.preventDefault(); // Prevent any default behavior
+        const selectedAnswer = shuffledAnswers[answerIndex];
+        handleAnswerSelect(selectedAnswer);
+      }
+    };
+
+    // Add the event listener when quiz is active
+    if (!isSubmitted && !answerFeedback && currentQuestion && shuffledAnswers && shuffledAnswers.length > 0) {
+      document.addEventListener('keydown', handleKeyPress);
+    }
+
+    // Cleanup function to remove event listener
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [isSubmitted, answerFeedback, currentQuestion, shuffledAnswers, handleAnswerSelect]);
   
   // Remove debug logging for production
   /* 

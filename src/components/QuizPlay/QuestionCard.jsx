@@ -71,18 +71,30 @@ const QuestionCard = ({
               key={index}
               onClick={() => onAnswerSelect(answer)}
               disabled={showFeedback}
-              className={`text-text border-border focus:ring-primary/20 focus:border-border-focus active:bg-primary/95 min-h-[40px] md:min-h-[44px] w-full rounded-lg border px-3 py-2 text-left font-medium transition-all duration-300 focus:ring-1 focus:outline-none disabled:cursor-not-allowed ${
+              className={`text-text border-border focus:ring-primary/20 focus:border-border-focus active:bg-primary/95 min-h-[40px] md:min-h-[44px] w-full rounded-lg border px-3 py-2 text-left font-medium transition-all duration-300 focus:ring-2 focus:outline-none disabled:cursor-not-allowed relative ${
                 showFeedback && answer === question.correctAnswer
                   ? "bg-correct/20 text-correct border-correct animate-correctAnswer"
                   : showFeedback && userAnswer === answer && answer !== question.correctAnswer
                   ? "bg-incorrect/20 text-incorrect border-incorrect animate-incorrectAnswer"
                   : userAnswer === answer
                   ? "bg-selected text-text-inverse border-selected animate-selectedAnswer"
-                  : "bg-surface-elevated hover:bg-primary/10 hover:border-primary"
+                  : "bg-surface-elevated hover:bg-primary/10 hover:border-primary focus:bg-primary/15"
               } ${showFeedback && userAnswer !== answer ? "opacity-50" : ""}`}
               aria-pressed={userAnswer === answer}
               tabIndex={0}
             >
+              {/* Number indicator */}
+              <span className={`inline-flex items-center justify-center min-w-[24px] h-6 px-2 text-sm font-bold rounded-md mr-3 transition-colors duration-300 ${
+                showFeedback && answer === question.correctAnswer
+                  ? "bg-correct text-white"
+                  : showFeedback && userAnswer === answer && answer !== question.correctAnswer
+                  ? "bg-incorrect text-white"
+                  : userAnswer === answer
+                  ? "bg-selected text-text-inverse"
+                  : "bg-primary text-white"
+              }`}>
+                {index + 1}
+              </span>
               {answer}
               {showFeedback && answer === question.correctAnswer && (
                 <span className="ml-2 text-correct">✓</span>
