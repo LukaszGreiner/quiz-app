@@ -305,3 +305,42 @@ button:not([class*="mobile"]),
     border-color 0.3s ease,
     box-shadow 0.3s ease;
 }
+
+/* Protect against browser translation interference */
+* {
+  -webkit-translate: none;
+  translate: none;
+}
+
+/* Prevent translation of interactive elements */
+button,
+input,
+select,
+textarea,
+[role="button"],
+[role="textbox"],
+[role="combobox"] {
+  translate: no !important;
+}
+
+/* Protect React root and critical containers */
+#root,
+[data-reactroot] {
+  translate: no !important;
+}
+
+/* Protect elements with React event handlers */
+[onclick],
+[onchange],
+[onsubmit],
+[onkeydown],
+[onkeyup] {
+  translate: no !important;
+}
+
+/* Additional protection for your specific classes */
+.quiz-container,
+.profile-settings,
+.navigation {
+  translate: no !important;
+}

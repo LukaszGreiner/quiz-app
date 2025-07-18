@@ -1,5 +1,6 @@
 import { navigationConfig } from "../../config/navigationConfig";
 import ThemeToggle from "../common/ThemeToggle";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 import Logo from "../common/Logo";
 import Btn from "../common/Btn";
 import { useLocation } from "react-router-dom";
@@ -39,13 +40,17 @@ function Header() {
               </div>
             )}
             <ProfileAvatar />
+            <LanguageSwitcher />
             <ThemeToggle />
           </nav>
         </div>
         {/* Mobile: logo + theme toggle */}
         <div className="flex h-16 items-center justify-between gap-2 sm:hidden">
           <Logo />
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>
