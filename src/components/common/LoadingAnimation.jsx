@@ -1,9 +1,6 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 const LoadingAnimation = () => {
-  const { t } = useTranslation();
-  
   return (
     <div className="flex flex-col items-center justify-center w-full py-6">
       <div className="relative">
@@ -31,7 +28,7 @@ const LoadingAnimation = () => {
         
         {/* Animated dots */}
         <div className="flex justify-center items-center space-x-2 mt-2">
-          <span className="text-primary font-semibold" translate="no">{t('common.loading')}</span>
+          <span className="text-primary font-semibold" translate="no">Ładowanie...</span>
           <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
           <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: '250ms'}}></span>
           <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" style={{animationDelay: '500ms'}}></span>

@@ -1,6 +1,5 @@
 import { navigationConfig } from "../../config/navigationConfig";
 import ThemeToggle from "../common/ThemeToggle";
-import LanguageSwitcher from "../common/LanguageSwitcher";
 import Logo from "../common/Logo";
 import Btn from "../common/Btn";
 import { useLocation } from "react-router-dom";
@@ -9,7 +8,7 @@ import StreakCard from "../UserPage/StreakCard";
 import { useAuth } from "../../context/AuthContext";
 
 function Header() {
-  const location = useLocation?.() || { pathname: "/" };
+  const location = useLocation();
   const { currentUser } = useAuth();
 
   return (
@@ -40,7 +39,6 @@ function Header() {
               </div>
             )}
             <ProfileAvatar />
-            <LanguageSwitcher />
             <ThemeToggle />
           </nav>
         </div>
@@ -48,7 +46,7 @@ function Header() {
         <div className="flex h-16 items-center justify-between gap-2 sm:hidden">
           <Logo />
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+
             <ThemeToggle />
           </div>
         </div>
