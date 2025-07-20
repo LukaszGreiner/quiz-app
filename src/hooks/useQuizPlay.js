@@ -202,7 +202,6 @@ export const useQuizPlay = (quizId, quizData, questions) => {
   }, [questions, userAnswers]);
 
   const submitQuiz = useCallback(async () => {
-    console.log('submitQuiz called - ending the quiz');
     clearInterval(timerRef.current);
     clearTimeout(feedbackTimeoutRef.current);
     

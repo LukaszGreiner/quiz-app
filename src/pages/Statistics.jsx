@@ -176,6 +176,7 @@ export default function StatisticsPage() {
       requiresAuth: true,
     },
     { id: "categories", label: "Kategorie", icon: PieChart },
+    { id: "leaderboards", label: "Rankingi", icon: Trophy },
     { id: "activity", label: "Aktywność", icon: Calendar },
   ];
 
@@ -295,11 +296,6 @@ export default function StatisticsPage() {
                   </ResponsiveContainer>
                 </div>
               </div>
-            </div>
-
-            {/* Streak Leaderboard */}
-            <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg">
-              <StreakLeaderboard limit={10} />
             </div>
           </div>
         )}
@@ -604,6 +600,39 @@ export default function StatisticsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Leaderboards Tab */}
+        {activeTab === "leaderboards" && (
+          <div className="space-y-8">
+            {/* Page Header */}
+            <div className="text-center">
+              <h2 className="text-text mb-4 text-3xl font-bold">
+                🏆 Rankingi Platformy
+              </h2>
+              <p className="text-text-muted text-lg">
+                Poznaj najlepszych użytkowników i ich osiągnięcia
+              </p>
+            </div>
+
+            {/* Leaderboards Grid */}
+            <div className="grid gap-8 lg:grid-cols-1">
+              {/* Streak Leaderboard */}
+              <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg">
+                <StreakLeaderboard limit={20} />
+              </div>
+              
+              {/* Future leaderboards can be added here */}
+              {/* 
+              <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg">
+                <QuizCreatorLeaderboard limit={20} />
+              </div>
+              <div className="bg-surface-elevated border-border rounded-3xl border p-8 shadow-lg">
+                <TopScorersLeaderboard limit={20} />
+              </div>
+              */}
             </div>
           </div>
         )}

@@ -10,16 +10,16 @@ function StreakCard({ compact = false, showActions = true }) {
 
   const handleStreakFreeze = async () => {
     if (!streakData?.canUseFreeze) return;
-
+    
     try {
-      setUsingFreeze(true);
-      await useStreakFreeze();
-      showSuccess("Streak freeze used! Your streak is protected for today.");
-    } catch (err) {
-      showError(err.message || "Failed to use streak freeze");
-    } finally {
-      setUsingFreeze(false);
-    }
+        setUsingFreeze(true);
+        await useStreakFreeze();
+        showSuccess("Użyto zamrożenia passy! Twoja passa jest chroniona na dziś.");
+      } catch (err) {
+        showError(err.message || "Nie udało się użyć zamrożenia passy");
+      } finally {
+        setUsingFreeze(false);
+      }
   };
 
   if (loading) {
@@ -38,7 +38,7 @@ function StreakCard({ compact = false, showActions = true }) {
       <div className="from-accent/5 to-primary/5 border-border rounded-xl border bg-gradient-to-r p-4">
         <div className="text-center">
           <Flame className="text-accent mx-auto mb-2 h-8 w-8" />
-          <p className="text-text-muted text-sm">Start your streak today!</p>
+          <p className="text-text-muted text-sm">Rozpocznij swoją passę już dziś!</p>
         </div>
       </div>
     );
@@ -69,10 +69,10 @@ function StreakCard({ compact = false, showActions = true }) {
           </div>
           <div>
             <p className="text-text font-semibold">
-              {streakData.currentStreak} Day Streak
+              Passa {streakData.currentStreak} dni
             </p>
             <p className="text-text-muted text-xs">
-              Longest: {streakData.longestStreak}
+              Najdłuższa: {streakData.longestStreak}
             </p>
           </div>
         </div>
@@ -91,7 +91,7 @@ function StreakCard({ compact = false, showActions = true }) {
           </div>
           <div>
             <p className="font-heading text-text text-lg font-semibold">
-              {streakData.currentStreak} Day Streak
+              Passa {streakData.currentStreak} dni
             </p>
             <p className="text-text-muted text-sm">
               {getStreakMessage()}
@@ -102,7 +102,7 @@ function StreakCard({ compact = false, showActions = true }) {
         {showActions && (
           <div className="flex flex-col items-end gap-2">
             <div className="text-text-muted text-xs">
-              Longest: {streakData.longestStreak} days
+              Najdłuższa: {streakData.longestStreak} dni
             </div>
             {streakData.canUseFreeze && streakData.freezesRemaining > 0 && (
               <Btn
@@ -113,7 +113,7 @@ function StreakCard({ compact = false, showActions = true }) {
                 className="text-xs"
               >
                 <Shield className="mr-1 h-3 w-3" />
-                {usingFreeze ? "Using..." : `Freeze (${streakData.freezesRemaining})`}
+                {usingFreeze ? "Używanie..." : `Zamroź (${streakData.freezesRemaining})`}
               </Btn>
             )}
           </div>
@@ -123,7 +123,7 @@ function StreakCard({ compact = false, showActions = true }) {
       {/* Monthly Progress */}
       <div className="mt-4">
         <div className="text-text-muted mb-2 flex justify-between text-xs">
-          <span>This Month: {streakData.monthlyCompletionDates?.length || 0} days</span>
+          <span>W tym miesiącu: {streakData.monthlyCompletionDates?.length || 0} dni</span>
           <span>{streakData.monthlyPercentage || 0}%</span>
         </div>
         <div className="bg-surface-elevated border-border h-2 w-full rounded-full border">
@@ -140,19 +140,19 @@ function StreakCard({ compact = false, showActions = true }) {
           <div className="text-text text-sm font-bold">
             {streakData.currentStreak}
           </div>
-          <div className="text-text-muted text-xs">Current</div>
+          <div className="text-text-muted text-xs">Obecna</div>
         </div>
         <div className="text-center">
           <div className="text-text text-sm font-bold">
             {streakData.longestStreak}
           </div>
-          <div className="text-text-muted text-xs">Best</div>
+          <div className="text-text-muted text-xs">Najlepsza</div>
         </div>
         <div className="text-center">
           <div className="text-text text-sm font-bold">
             {streakData.totalQuizDays}
           </div>
-          <div className="text-text-muted text-xs">Total</div>
+          <div className="text-text-muted text-xs">Łącznie</div>
         </div>
       </div>
     </div>

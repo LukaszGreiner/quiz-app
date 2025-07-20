@@ -17,7 +17,8 @@ function StreakNotification({ onClose, autoClose = 5000 }) {
     }
   }, [autoClose, onClose]);
 
-  if (!streakData || !visible) return null;
+  // Don't show notification if no streak data or currentStreak is 0
+  if (!streakData || !visible || streakData.currentStreak === 0) return null;
 
   const getStreakIcon = () => {
     const { currentStreak } = streakData;
@@ -37,12 +38,12 @@ function StreakNotification({ onClose, autoClose = 5000 }) {
 
   const getStreakAchievement = () => {
     const { currentStreak } = streakData;
-    if (currentStreak === 1) return "Quiz Streak Started! 🎯";
-    if (currentStreak === 3) return "3-Day Streak! 🔥";
-    if (currentStreak === 7) return "Week Warrior! 💪";
-    if (currentStreak === 30) return "Month Master! 🏆";
-    if (currentStreak === 100) return "Century Streak! 👑";
-    return "Streak Updated! 📈";
+    if (currentStreak === 1) return "Passa rozpoczęta! 🎯";
+    if (currentStreak === 3) return "Passa 3 dni! 🔥";
+    if (currentStreak === 7) return "Wojownik tygodnia! 💪";
+    if (currentStreak === 30) return "Mistrz miesiąca! 🏆";
+    if (currentStreak === 100) return "Passa stulecia! 👑";
+    return "Passa zaktualizowana! 📈";
   };
 
   return (
@@ -59,7 +60,7 @@ function StreakNotification({ onClose, autoClose = 5000 }) {
               {getStreakAchievement()}
             </p>
             <p className="text-text-muted text-xs">
-              {streakData.currentStreak} Day Streak
+              Passa {streakData.currentStreak} dni
             </p>
           </div>
           <button

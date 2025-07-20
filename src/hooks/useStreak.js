@@ -119,15 +119,29 @@ export const useStreak = () => {
     const { currentStreak } = streakData;
     
     if (currentStreak === 0) {
-      return "Start your quiz journey today! 🚀";
+      return "Rozpocznij swoją przygodę z quizami już dziś! 🚀";
     } else if (currentStreak === 1) {
-      return "Great start! Keep the momentum going! 💪";
+      return "Świetny początek! Kontynuuj dalej! 💪";
     } else if (currentStreak < 7) {
-      return `${currentStreak} days strong! You're building a great habit! 🔥`;
+      return `${currentStreak} dni z rzędu! Budujesz świetny nawyk! 🔥`;
     } else if (currentStreak < 30) {
-      return `Amazing ${currentStreak}-day streak! You're on fire! 🔥💯`;
+      return `Niesamowita passa ${currentStreak} dni! Jesteś w ogniu! 🔥💯`;
     } else {
-      return `Incredible ${currentStreak}-day streak! You're a quiz legend! 🏆👑`;
+      return `Niewiarygodna passa ${currentStreak} dni! Jesteś legendą quizów! 🏆👑`;
+    }
+  };
+
+  // Check if user has completed a quiz today
+  const hasCompletedQuizToday = async () => {
+    if (!currentUser) return false;
+
+    try {
+      const today = new Date();
+      const todayString = today.toISOString().split('T')[0];
+      return await streakService.hasCompletedQuizToday(currentUser.uid, todayString);
+    } catch (err) {
+      console.error("Error checking if quiz completed today:", err);
+      return false;
     }
   };
 
@@ -141,5 +155,6 @@ export const useStreak = () => {
     needsQuizToday,
     isStreakInDanger,
     getStreakMessage,
+    hasCompletedQuizToday,
   };
 };

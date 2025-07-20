@@ -16,7 +16,9 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
         setLeaderboard(data);
       } catch (err) {
         console.error("Error fetching streak leaderboard:", err);
-        setError("Failed to load streak leaderboard");
+        setError("Nie udało się załadować rankingu pass");
+        // Set empty leaderboard on error to allow graceful fallback
+        setLeaderboard([]);
       } finally {
         setLoading(false);
       }
@@ -57,7 +59,7 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
         {showTitle && (
           <div className="mb-4 flex items-center gap-2">
             <Flame className="text-accent h-5 w-5" />
-            <h3 className="text-text font-semibold">Streak Leaderboard</h3>
+            <h3 className="text-text font-semibold">Ranking Pass</h3>
           </div>
         )}
         <div className="space-y-3">
@@ -77,11 +79,11 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
         {showTitle && (
           <div className="mb-4 flex items-center gap-2">
             <Flame className="text-accent h-5 w-5" />
-            <h3 className="text-text font-semibold">Streak Leaderboard</h3>
+            <h3 className="text-text font-semibold">Ranking Pass</h3>
           </div>
         )}
         <div className="text-center">
-          <p className="text-text-muted">Failed to load leaderboard</p>
+          <p className="text-text-muted">Nie udało się załadować rankingu</p>
         </div>
       </div>
     );
@@ -93,14 +95,14 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
         {showTitle && (
           <div className="mb-4 flex items-center gap-2">
             <Flame className="text-accent h-5 w-5" />
-            <h3 className="text-text font-semibold">Streak Leaderboard</h3>
+            <h3 className="text-text font-semibold">Ranking Pass</h3>
           </div>
         )}
         <div className="text-center">
           <Flame className="text-text-muted mx-auto mb-2 h-8 w-8" />
-          <p className="text-text-muted">No active streaks yet</p>
+          <p className="text-text-muted">Brak aktywnych pass</p>
           <p className="text-text-muted mt-1 text-sm">
-            Complete quizzes daily to appear here!
+            Ukończ quizy codziennie, aby się tu pojawić!
           </p>
         </div>
       </div>
@@ -112,7 +114,7 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
       {showTitle && (
         <div className="mb-4 flex items-center gap-2">
           <Flame className="text-accent h-5 w-5" />
-          <h3 className="text-text font-semibold">Streak Leaderboard</h3>
+          <h3 className="text-text font-semibold">Ranking Pass</h3>
         </div>
       )}
       
@@ -137,7 +139,7 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
                       {user.username}
                     </p>
                     <p className="text-text-muted text-xs">
-                      {user.totalQuizDays} quiz days total
+                      {user.totalQuizDays} dni quizów łącznie
                     </p>
                   </div>
                 </div>
@@ -147,14 +149,14 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
                     {user.currentStreak}
                   </p>
                   <p className="text-text-muted text-xs">
-                    days
+                    dni
                   </p>
                 </div>
               </div>
               
               {user.longestStreak > user.currentStreak && (
                 <div className="mt-2 text-text-muted text-xs">
-                  Best streak: {user.longestStreak} days
+                  Najlepsza passa: {user.longestStreak} dni
                 </div>
               )}
             </div>
@@ -165,7 +167,7 @@ function StreakLeaderboard({ limit = 10, showTitle = true }) {
       {leaderboard.length < limit && (
         <div className="mt-4 text-center">
           <p className="text-text-muted text-sm">
-            Start your streak to join the leaderboard!
+            Rozpocznij swoją passę, aby dołączyć do rankingu!
           </p>
         </div>
       )}

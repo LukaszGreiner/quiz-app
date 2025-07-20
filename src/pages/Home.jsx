@@ -2,9 +2,11 @@
 import QuizCard from "../components/QuizCard/QuizCard";
 import { useQuizzes } from "../hooks/useQuizzes";
 import { useCategory } from "../hooks/useCategory";
+import { useAuth } from "../context/AuthContext";
 
 const Home = () => {
   const { quizzes, loading } = useQuizzes();
+  const { currentUser } = useAuth();
   const {
     categoryNames,
     normalizedCategory,

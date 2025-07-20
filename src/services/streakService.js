@@ -57,7 +57,6 @@ export const streakService = {
       const streakData = await this.getUserStreak(userId);
       
       const completedDate = new Date(completedAt);
-      const today = new Date();
       const completedDateString = completedDate.toISOString().split('T')[0];
       
       const lastActivityDate = streakData.lastActivityDate ? new Date(streakData.lastActivityDate) : null;
@@ -65,7 +64,6 @@ export const streakService = {
 
       // Check if this is the same day as last activity - if so, don't update streak
       if (lastActivityDateString === completedDateString) {
-        // User already completed a quiz today, no streak update needed
         return streakData;
       }
 
@@ -96,11 +94,10 @@ export const streakService = {
           newStreakData.streakStartDate = completedAt;
           newStreakData.totalQuizDays += 1;
         }
-        // If daysDiff === 0, it's the same day (already handled above)
         
         newStreakData.lastActivityDate = completedAt;
       }
-
+      
       // Update Firestore
       await updateDoc(streakRef, newStreakData);
       return newStreakData;
@@ -130,10 +127,7 @@ export const streakService = {
         where("completedAt", "<=", endOfDay.toISOString())
       );
       
-      console.log("Checking quiz completion for user:", userId, "on date:", dateString)
-      
       const querySnapshot = await getDocs(q);
-      console.log("Query snapshot size:", querySnapshot.size);
       return querySnapshot.size > 0;
     } catch (error) {
       console.error("Error checking daily quiz completion:", error);
@@ -151,23 +145,22 @@ export const streakService = {
       const streaksRef = collection(db, "userStreaks");
       const q = query(
         streaksRef,
-        orderBy("currentStreak", "desc"),
-        orderBy("longestStreak", "desc")
+        orderBy("currentStreak", "desc")
       );
       
       const querySnapshot = await getDocs(q);
       const streaks = [];
       
-      for (const doc of querySnapshot.docs) {
-        const streakData = doc.data();
+      for (const docSnapshot of querySnapshot.docs) {
+        const streakData = docSnapshot.data();
         if (streakData.currentStreak > 0) {
           // Get username for this user
-          const userRef = doc(db, "users", doc.id);
+          const userRef = doc(db, "users", docSnapshot.id);
           const userDoc = await getDoc(userRef);
           const username = userDoc.exists() ? userDoc.data().username : "Unknown User";
           
           streaks.push({
-            userId: doc.id,
+            userId: docSnapshot.id,
             username,
             currentStreak: streakData.currentStreak,
             longestStreak: streakData.longestStreak,
@@ -175,6 +168,14 @@ export const streakService = {
           });
         }
       }
+      
+      // Sort by currentStreak desc, then by longestStreak desc as tiebreaker
+      streaks.sort((a, b) => {
+        if (b.currentStreak !== a.currentStreak) {
+          return b.currentStreak - a.currentStreak;
+        }
+        return b.longestStreak - a.longestStreak;
+      });
       
       return streaks.slice(0, limit);
     } catch (error) {
@@ -194,7 +195,7 @@ export const streakService = {
       
       // Check if user has freezes available
       if (streakData.freezesUsed >= streakData.maxFreezes) {
-        throw new Error("No streak freezes available");
+        throw new Error("Brak dostępnych zamrożeń passy");
       }
       
       // Reset freezes if it's been a month since last reset
@@ -246,8 +247,8 @@ export const streakService = {
       const querySnapshot = await getDocs(q);
       const completionDates = new Set();
       
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      querySnapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
         const date = new Date(data.completedAt);
         const dateString = date.toISOString().split('T')[0];
         completionDates.add(dateString);
@@ -300,24 +301,29 @@ export const streakService = {
       const today = new Date();
       const todayString = today.toISOString().split('T')[0];
       
-      // Get recent quiz results
+      // Get recent quiz results - remove orderBy to avoid index requirement
       const resultsRef = collection(db, "quizResults");
       const q = query(
         resultsRef,
-        where("userId", "==", userId),
-        orderBy("completedAt", "desc")
+        where("userId", "==", userId)
       );
       
       const querySnapshot = await getDocs(q);
       const recentResults = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      querySnapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
         recentResults.push({
+          id: docSnapshot.id,
+          quizTitle: data.quizTitle,
           completedAt: data.completedAt,
+          score: data.score,
+          totalQuestions: data.totalQuestions,
           dateString: new Date(data.completedAt).toISOString().split('T')[0],
-          quizTitle: data.quizTitle
         });
       });
+      
+      // Sort by completedAt in JavaScript
+      recentResults.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
       
       return {
         streakData,

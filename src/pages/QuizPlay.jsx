@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuiz } from "../hooks/useQuiz";
 import QuizHeader from "../components/QuizPlay/QuizHeader";
 import QuestionCard from "../components/QuizPlay/QuestionCard";
@@ -8,12 +8,16 @@ import { useQuizPlay } from "../hooks/useQuizPlay";
 import Btn from "../components/common/Btn";
 import LoadingAnimation from "../components/common/LoadingAnimation";
 import StreakNotification from "../components/UserPage/StreakNotification";
+import { useStreak } from "../hooks/useStreak";
 
 const QuizPlay = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const { quizData, questions, loading, error } = useQuiz(quizId);
+  const { streakData, refreshStreakData } = useStreak();
   const [showStreakNotification, setShowStreakNotification] = useState(false);
+  const prevStreakRef = useRef(null);
+  const notificationShownRef = useRef(false);
 
   const {
     currentQuestionIndex,
@@ -32,16 +36,45 @@ const QuizPlay = () => {
     answerFeedback,
   } = useQuizPlay(quizId, quizData, questions, navigate);
 
-  // Show streak notification when quiz is completed
+  // Initialize previous streak reference when streak data is loaded
   useEffect(() => {
-    if (isSubmitted && !showStreakNotification) {
-      // Delay showing streak notification slightly to let quiz results load
+    if (streakData && prevStreakRef.current === null) {
+      prevStreakRef.current = streakData.currentStreak;
+    }
+  }, [streakData]);
+
+  // Reset notification state when starting a new quiz
+  useEffect(() => {
+    if (!isSubmitted) {
+      setShowStreakNotification(false);
+      notificationShownRef.current = false;
+    }
+  }, [isSubmitted]);
+
+  // Refresh streak data when quiz is completed
+  useEffect(() => {
+    if (isSubmitted) {
+      // Wait a bit for the streak to be updated in the backend
       const timer = setTimeout(() => {
-        setShowStreakNotification(true);
-      }, 1000);
+        refreshStreakData();
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isSubmitted, showStreakNotification]);
+  }, [isSubmitted, refreshStreakData]);
+
+  // Show notification when quiz is completed and streak increases
+  useEffect(() => {
+    if (isSubmitted && streakData && prevStreakRef.current !== null && !notificationShownRef.current) {
+      // Only show notification if streak actually increased
+      if (streakData.currentStreak > prevStreakRef.current) {
+        notificationShownRef.current = true; // Prevent showing again
+        const timer = setTimeout(() => {
+          setShowStreakNotification(true);
+        }, 3000); // Show notification after data refresh
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isSubmitted, streakData?.currentStreak]);
   
   // Handle keyboard input for answer selection
   useEffect(() => {

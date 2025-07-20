@@ -1,6 +1,32 @@
-import { useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 
-function useLocalStorage() {
+// Standard useLocalStorage hook that accepts key and defaultValue
+export function useLocalStorage(key, defaultValue) {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.error(`Error reading localStorage key "${key}":`, error);
+      return defaultValue;
+    }
+  });
+
+  const setValue = useCallback((value) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(`Error setting localStorage key "${key}":`, error);
+    }
+  }, [key, storedValue]);
+
+  return [storedValue, setValue];
+}
+
+// Legacy useLocalStorage hook for backward compatibility
+function useLocalStorageService() {
   const cache = useRef(new Map());
 
   const setItem = useCallback((key, value) => {
@@ -42,4 +68,4 @@ function useLocalStorage() {
   };
 }
 
-export default useLocalStorage;
+export default useLocalStorageService;

@@ -386,7 +386,7 @@ const saveQuizResult = async (
       "quizResults",
       `${userId}_${quizId}_${Date.now()}`,
     );
-    batch.set(resultDocRef, {
+    const resultData = {
       userId,
       quizId,
       quizTitle,
@@ -394,7 +394,8 @@ const saveQuizResult = async (
       totalQuestions,
       completedAt: new Date(completedAt).toISOString(),
       completionTimeinMs,
-    });
+    };
+    batch.set(resultDocRef, resultData);
 
     // 2. Update overall quiz stats (playsCount, scoreSum, completionTimeSum)
     const quizRef = doc(db, "quizzes", quizId);

@@ -20,8 +20,8 @@ function Achievements() {
     if (currentStreak >= 3) {
       generatedAchievements.push({
         id: "streak-3",
-        name: "Streak Starter",
-        description: "Complete quizzes for 3 consecutive days",
+        name: "Początek Passy",
+        description: "Ukończ quizy przez 3 kolejne dni",
         icon: <Flame className="h-5 w-5" />,
         achieved: true,
         category: "streak"
@@ -31,8 +31,8 @@ function Achievements() {
     if (currentStreak >= 7) {
       generatedAchievements.push({
         id: "streak-7",
-        name: "Week Warrior",
-        description: "Complete quizzes for 7 consecutive days",
+        name: "Wojownik Tygodnia",
+        description: "Ukończ quizy przez 7 kolejnych dni",
         icon: <Target className="h-5 w-5" />,
         achieved: true,
         category: "streak"
@@ -42,8 +42,8 @@ function Achievements() {
     if (currentStreak >= 30) {
       generatedAchievements.push({
         id: "streak-30",
-        name: "Month Master",
-        description: "Complete quizzes for 30 consecutive days",
+        name: "Mistrz Miesiąca",
+        description: "Ukończ quizy przez 30 kolejnych dni",
         icon: <Trophy className="h-5 w-5" />,
         achieved: true,
         category: "streak"
@@ -53,8 +53,8 @@ function Achievements() {
     if (longestStreak >= 100) {
       generatedAchievements.push({
         id: "streak-100",
-        name: "Century Streak",
-        description: "Achieve a 100-day streak",
+        name: "Passa Stulecia",
+        description: "Osiągnij passę 100 dni",
         icon: <Zap className="h-5 w-5" />,
         achieved: true,
         category: "streak"
@@ -65,8 +65,8 @@ function Achievements() {
     if (totalQuizDays >= 10) {
       generatedAchievements.push({
         id: "total-10",
-        name: "Quiz Enthusiast",
-        description: "Complete quizzes on 10 different days",
+        name: "Entuzjasta Quizów",
+        description: "Ukończ quizy w 10 różnych dniach",
         icon: <Medal className="h-5 w-5" />,
         achieved: true,
         category: "total"
@@ -76,8 +76,8 @@ function Achievements() {
     if (totalQuizDays >= 50) {
       generatedAchievements.push({
         id: "total-50",
-        name: "Quiz Master",
-        description: "Complete quizzes on 50 different days",
+        name: "Mistrz Quizów",
+        description: "Ukończ quizy w 50 różnych dniach",
         icon: <Award className="h-5 w-5" />,
         achieved: true,
         category: "total"
@@ -87,8 +87,8 @@ function Achievements() {
     if (totalQuizDays >= 100) {
       generatedAchievements.push({
         id: "total-100",
-        name: "Quiz Legend",
-        description: "Complete quizzes on 100 different days",
+        name: "Legenda Quizów",
+        description: "Ukończ quizy w 100 różnych dniach",
         icon: <Trophy className="h-5 w-5" />,
         achieved: true,
         category: "total"
@@ -99,17 +99,15 @@ function Achievements() {
   }, [streakData]);
 
   const handleStreakFreeze = async () => {
-    if (!streakData?.canUseFreeze) return;
-
-    try {
-      setUsingFreeze(true);
-      await useStreakFreeze();
-      showSuccess("Streak freeze used! Your streak is protected for today.");
-    } catch (err) {
-      showError(err.message || "Failed to use streak freeze");
-    } finally {
-      setUsingFreeze(false);
-    }
+    if (!streakData?.canUseFreeze) return;      try {
+        setUsingFreeze(true);
+        await useStreakFreeze();
+        showSuccess("Użyto zamrożenia passy! Twoja passa jest chroniona na dziś.");
+      } catch (err) {
+        showError(err.message || "Nie udało się użyć zamrożenia passy");
+      } finally {
+        setUsingFreeze(false);
+      }
   };
 
   if (loading) {
@@ -117,7 +115,7 @@ function Achievements() {
       <div className="py-8 text-center">
         <div className="animate-pulse">
           <div className="bg-surface mx-auto mb-4 h-16 w-16 rounded-full"></div>
-          <p className="text-text-muted">Loading achievements...</p>
+          <p className="text-text-muted">Ładowanie osiągnięć...</p>
         </div>
       </div>
     );
@@ -129,7 +127,7 @@ function Achievements() {
         <div className="bg-incorrect/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
           <Award className="text-incorrect h-8 w-8" />
         </div>
-        <p className="text-incorrect">Error loading achievements</p>
+        <p className="text-incorrect">Błąd podczas ładowania osiągnięć</p>
       </div>
     );
   }
@@ -142,9 +140,9 @@ function Achievements() {
         </div>
         <div>
           <h3 className="font-heading text-text text-lg font-semibold">
-            Achievements
+            Osiągnięcia
           </h3>
-          <p className="text-text-muted text-sm">Your progress milestones</p>
+          <p className="text-text-muted text-sm">Twoje kamienie milowe</p>
         </div>
       </div>
 
@@ -158,7 +156,7 @@ function Achievements() {
               </div>
               <div>
                 <p className="font-heading text-text text-lg font-semibold">
-                  {streakData.currentStreak} Day Streak
+                  Passa {streakData.currentStreak} dni
                 </p>
                 <p className="text-text-muted text-sm">
                   {getStreakMessage()}
@@ -169,7 +167,7 @@ function Achievements() {
             {/* Streak Actions */}
             <div className="flex flex-col items-end gap-2">
               <div className="text-text-muted text-xs">
-                Longest: {streakData.longestStreak} days
+                Najdłuższa: {streakData.longestStreak} dni
               </div>
               {streakData.canUseFreeze && streakData.freezesRemaining > 0 && (
                 <Btn
@@ -179,7 +177,7 @@ function Achievements() {
                   disabled={usingFreeze}
                   className="text-xs"
                 >
-                  {usingFreeze ? "Using..." : `Use Freeze (${streakData.freezesRemaining})`}
+                  {usingFreeze ? "Używanie..." : `Użyj Zamrożenia (${streakData.freezesRemaining})`}
                 </Btn>
               )}
             </div>
@@ -188,7 +186,7 @@ function Achievements() {
           {/* Streak Progress */}
           <div className="mt-4">
             <div className="text-text-muted mb-2 flex justify-between text-xs">
-              <span>This Month: {streakData.monthlyCompletionDates?.length || 0} days</span>
+              <span>W tym miesiącu: {streakData.monthlyCompletionDates?.length || 0} dni</span>
               <span>{streakData.monthlyPercentage || 0}%</span>
             </div>
             <div className="bg-surface-elevated border-border h-2 w-full rounded-full border">
@@ -207,9 +205,9 @@ function Achievements() {
           <div className="bg-surface mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
             <Plus className="text-text-muted h-8 w-8" />
           </div>
-          <p className="text-text-muted">No achievements yet</p>
+          <p className="text-text-muted">Brak osiągnięć</p>
           <p className="text-text-muted mt-1 text-sm">
-            Complete quizzes to unlock achievements
+            Ukończ quizy, aby odblokować osiągnięcia
           </p>
         </div>
       ) : (
@@ -230,7 +228,7 @@ function Achievements() {
                     </h4>
                     {achievement.achieved && (
                       <div className="bg-correct/10 text-correct rounded-full px-2 py-1 text-xs font-medium">
-                        Unlocked
+                        Odblokowane
                       </div>
                     )}
                   </div>
@@ -251,19 +249,19 @@ function Achievements() {
             <div className="text-text text-lg font-bold">
               {streakData.currentStreak}
             </div>
-            <div className="text-text-muted text-xs">Current Streak</div>
+            <div className="text-text-muted text-xs">Obecna Passa</div>
           </div>
           <div className="text-center">
             <div className="text-text text-lg font-bold">
               {streakData.longestStreak}
             </div>
-            <div className="text-text-muted text-xs">Longest Streak</div>
+            <div className="text-text-muted text-xs">Najdłuższa Passa</div>
           </div>
           <div className="text-center">
             <div className="text-text text-lg font-bold">
               {streakData.totalQuizDays}
             </div>
-            <div className="text-text-muted text-xs">Total Quiz Days</div>
+            <div className="text-text-muted text-xs">Łączne Dni Quizów</div>
           </div>
         </div>
       )}
