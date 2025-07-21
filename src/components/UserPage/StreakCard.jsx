@@ -24,10 +24,10 @@ function StreakCard({ compact = false, showActions = true }) {
 
   if (loading) {
     return (
-      <div className="from-accent/5 to-primary/5 border-border rounded-xl border bg-gradient-to-r p-4">
+      <div className="from-accent/5 to-primary/5 border-border rounded-lg border bg-gradient-to-r p-3 sm:rounded-xl sm:p-4">
         <div className="animate-pulse">
-          <div className="bg-surface mx-auto mb-2 h-8 w-8 rounded-full"></div>
-          <div className="bg-surface mx-auto h-4 w-24 rounded"></div>
+          <div className="bg-surface mx-auto mb-2 h-8 w-8 rounded-full sm:h-10 sm:w-10"></div>
+          <div className="bg-surface mx-auto h-3 w-20 rounded sm:h-4 sm:w-24"></div>
         </div>
       </div>
     );
@@ -35,10 +35,10 @@ function StreakCard({ compact = false, showActions = true }) {
 
   if (error || !streakData) {
     return (
-      <div className="from-accent/5 to-primary/5 border-border rounded-xl border bg-gradient-to-r p-4">
+      <div className="from-accent/5 to-primary/5 border-border rounded-lg border bg-gradient-to-r p-3 sm:rounded-xl sm:p-4">
         <div className="text-center">
-          <Flame className="text-accent mx-auto mb-2 h-8 w-8" />
-          <p className="text-text-muted text-sm">Rozpocznij swoją passę już dziś!</p>
+          <Flame className="text-accent mx-auto mb-2 h-6 w-6 sm:h-8 sm:w-8" />
+          <p className="text-text-muted text-xs sm:text-sm">Rozpocznij swoją passę już dziś!</p>
         </div>
       </div>
     );
@@ -62,13 +62,15 @@ function StreakCard({ compact = false, showActions = true }) {
 
   if (compact) {
     return (
-      <div className={`rounded-lg border bg-gradient-to-r p-3 ${getStreakColor()}`}>
-        <div className="flex items-center gap-2">
-          <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-full">
-            {getStreakIcon()}
+      <div className={`rounded-lg border bg-gradient-to-r p-3 sm:rounded-xl sm:p-4 ${getStreakColor()}`}>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-full sm:h-10 sm:w-10">
+            <div className="text-text-inverse [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
+              {getStreakIcon()}
+            </div>
           </div>
-          <div>
-            <p className="text-text font-semibold">
+          <div className="min-w-0 flex-1">
+            <p className="text-text text-sm font-semibold sm:text-base">
               Passa {streakData.currentStreak} dni
             </p>
             <p className="text-text-muted text-xs">
@@ -81,16 +83,16 @@ function StreakCard({ compact = false, showActions = true }) {
   }
 
   return (
-    <div className={`rounded-xl border bg-gradient-to-r p-4 ${getStreakColor()}`}>
-      <div className="flex items-center justify-between">
+    <div className={`rounded-lg border bg-gradient-to-r p-4 sm:rounded-xl sm:p-6 ${getStreakColor()}`}>
+      <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-accent flex h-12 w-12 items-center justify-center rounded-full">
-            <div className="text-text-inverse">
+          <div className="bg-accent flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+            <div className="text-text-inverse [&>svg]:h-5 [&>svg]:w-5 sm:[&>svg]:h-6 sm:[&>svg]:w-6">
               {getStreakIcon()}
             </div>
           </div>
-          <div>
-            <p className="font-heading text-text text-lg font-semibold">
+          <div className="min-w-0 flex-1">
+            <p className="font-heading text-text text-base font-semibold sm:text-lg">
               Passa {streakData.currentStreak} dni
             </p>
             <p className="text-text-muted text-sm">
@@ -113,7 +115,8 @@ function StreakCard({ compact = false, showActions = true }) {
                 className="text-xs"
               >
                 <Shield className="mr-1 h-3 w-3" />
-                {usingFreeze ? "Używanie..." : `Zamroź (${streakData.freezesRemaining})`}
+                <span className="hidden sm:inline">{usingFreeze ? "Używanie..." : `Zamroź (${streakData.freezesRemaining})`}</span>
+                <span className="sm:hidden">{streakData.freezesRemaining}</span>
               </Btn>
             )}
           </div>
@@ -135,21 +138,21 @@ function StreakCard({ compact = false, showActions = true }) {
       </div>
 
       {/* Quick Stats */}
-      <div className="mt-4 grid grid-cols-3 gap-4">
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
         <div className="text-center">
-          <div className="text-text text-sm font-bold">
+          <div className="text-text text-sm font-bold sm:text-base">
             {streakData.currentStreak}
           </div>
           <div className="text-text-muted text-xs">Obecna</div>
         </div>
         <div className="text-center">
-          <div className="text-text text-sm font-bold">
+          <div className="text-text text-sm font-bold sm:text-base">
             {streakData.longestStreak}
           </div>
           <div className="text-text-muted text-xs">Najlepsza</div>
         </div>
         <div className="text-center">
-          <div className="text-text text-sm font-bold">
+          <div className="text-text text-sm font-bold sm:text-base">
             {streakData.totalQuizDays}
           </div>
           <div className="text-text-muted text-xs">Łącznie</div>

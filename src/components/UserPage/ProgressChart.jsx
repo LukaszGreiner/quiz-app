@@ -43,10 +43,10 @@ const ProgressChart = memo(function ProgressChart({ compact = false }) {
 
   if (loading) {
     return (
-      <div className="bg-surface-elevated border-border rounded-xl border p-6">
+      <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
         <div className="animate-pulse">
-          <div className="bg-surface mb-4 h-4 w-32 rounded"></div>
-          <div className="bg-surface h-32 w-full rounded"></div>
+          <div className="bg-surface mb-3 h-3 w-24 rounded sm:mb-4 sm:h-4 sm:w-32"></div>
+          <div className="bg-surface h-24 w-full rounded sm:h-32"></div>
         </div>
       </div>
     );
@@ -56,18 +56,18 @@ const ProgressChart = memo(function ProgressChart({ compact = false }) {
   const DataComponent = chartType === "area" ? Area : Line;
 
   return (
-    <div className="bg-surface-elevated border-border rounded-xl border p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
+      <div className="mb-3 flex items-center justify-between sm:mb-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="text-primary h-5 w-5" />
-          <h3 className="text-text text-lg font-semibold">Postępy (7 dni)</h3>
+          <TrendingUp className="text-primary h-4 w-4 sm:h-5 sm:w-5" />
+          <h3 className="text-text text-base font-semibold sm:text-lg">Postępy (7 dni)</h3>
         </div>
         
         {!compact && (
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             <button
               onClick={() => setChartType("area")}
-              className={`rounded-lg px-3 py-1 text-sm transition-all ${
+              className={`rounded-md px-2 py-1 text-xs transition-all sm:rounded-lg sm:px-3 sm:text-sm ${
                 chartType === "area"
                   ? "bg-primary text-text-inverse"
                   : "bg-surface text-text hover:bg-surface-elevated"
@@ -77,7 +77,7 @@ const ProgressChart = memo(function ProgressChart({ compact = false }) {
             </button>
             <button
               onClick={() => setChartType("line")}
-              className={`rounded-lg px-3 py-1 text-sm transition-all ${
+              className={`rounded-md px-2 py-1 text-xs transition-all sm:rounded-lg sm:px-3 sm:text-sm ${
                 chartType === "line"
                   ? "bg-primary text-text-inverse"
                   : "bg-surface text-text hover:bg-surface-elevated"
@@ -89,7 +89,7 @@ const ProgressChart = memo(function ProgressChart({ compact = false }) {
         )}
       </div>
 
-      <div className={compact ? "h-32" : "h-48"}>
+      <div className={compact ? "h-24 sm:h-32" : "h-32 sm:h-48"}>
         <ResponsiveContainer width="100%" height="100%">
           <ChartComponent data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--border-rgb), 0.1)" />
@@ -97,19 +97,21 @@ const ProgressChart = memo(function ProgressChart({ compact = false }) {
               dataKey="date" 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "rgba(var(--text-muted-rgb), 1)" }}
+              tick={{ fontSize: 10, fill: "rgba(var(--text-muted-rgb), 1)" }}
+              className="sm:text-xs"
             />
             <YAxis 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "rgba(var(--text-muted-rgb), 1)" }}
+              tick={{ fontSize: 10, fill: "rgba(var(--text-muted-rgb), 1)" }}
+              className="sm:text-xs"
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: "rgba(var(--surface-elevated-rgb), 1)",
                 border: "1px solid rgba(var(--border-rgb), 1)",
                 borderRadius: "8px",
-                fontSize: "14px"
+                fontSize: "12px"
               }}
               labelStyle={{ color: "rgba(var(--text-rgb), 1)" }}
             />
@@ -119,17 +121,17 @@ const ProgressChart = memo(function ProgressChart({ compact = false }) {
               stroke="#3b82f6"
               strokeWidth={2}
               fill={chartType === "area" ? "rgba(59, 130, 246, 0.1)" : undefined}
-              dot={{ r: 4, fill: "#3b82f6" }}
-              activeDot={{ r: 6, fill: "#3b82f6" }}
+              dot={{ r: 3, fill: "#3b82f6" }}
+              activeDot={{ r: 4, fill: "#3b82f6" }}
             />
           </ChartComponent>
         </ResponsiveContainer>
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex justify-center">
-        <div className="flex items-center gap-2 text-sm">
-          <div className="bg-blue-500 h-3 w-3 rounded-full"></div>
+      <div className="mt-3 flex justify-center sm:mt-4">
+        <div className="flex items-center gap-2 text-xs sm:text-sm">
+          <div className="bg-blue-500 h-2 w-2 rounded-full sm:h-3 sm:w-3"></div>
           <span className="text-text-muted">Średni wynik (%)</span>
         </div>
       </div>

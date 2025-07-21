@@ -344,3 +344,79 @@ textarea,
 .navigation {
   translate: no !important;
 }
+
+/* Mobile-first responsive utilities for UserPage */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
+}
+
+/* Mobile touch improvements */
+@media (max-width: 640px) {
+  /* Improve touch targets for mobile */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better mobile spacing */
+  .mobile-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Mobile-optimized cards */
+  .mobile-card {
+    border-radius: 0.75rem;
+    padding: 1rem;
+  }
+  
+  /* Improved mobile typography */
+  .mobile-text-responsive {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Enhanced focus states for keyboard navigation */
+.focus-enhanced:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for better UX */
+.transition-enhanced {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile-first grid improvements */
+.grid-mobile-first {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-mobile-first {
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-mobile-first {
+    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

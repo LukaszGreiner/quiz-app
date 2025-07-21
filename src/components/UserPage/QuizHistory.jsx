@@ -1,39 +1,116 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Clock, ChevronRight, CheckCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { fetchUserQuizHistory } from "../../services/statisticsService";
 
 function QuizHistory() {
-  // Przykładowe dane lokalne
-  const [history] = useState([
-    { id: "1", title: "Quiz 1: Matematyka", date: "2023-10-01", score: 85 },
-    { id: "2", title: "Quiz 2: Historia", date: "2023-10-02", score: 92 },
-  ]);
+  const { currentUser } = useAuth();
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!currentUser) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        const historyData = await fetchUserQuizHistory(currentUser.uid);
+        setHistory(historyData);
+      } catch (err) {
+        console.error("Error loading quiz history:", err);
+        setError("Nie udało się załadować historii quizów");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
+  }, [currentUser]);
+
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-4 flex items-center gap-3 sm:mb-6">
+          <div className="bg-secondary/10 flex h-6 w-6 items-center justify-center rounded-full sm:h-8 sm:w-8">
+            <Clock className="text-secondary h-3 w-3 sm:h-4 sm:w-4" />
+          </div>
+          <div>
+            <h3 className="font-montserrat text-text text-sm font-semibold sm:text-base">
+              Historia Quizów
+            </h3>
+            <p className="font-quicksand text-text-muted text-xs sm:text-sm">
+              Ładowanie...
+            </p>
+          </div>
+        </div>
+        <div className="animate-pulse space-y-2">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-surface-elevated rounded-lg border p-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-surface h-6 w-6 rounded-lg sm:h-8 sm:w-8"></div>
+                <div className="flex-1 space-y-1">
+                  <div className="bg-surface h-3 w-32 rounded sm:h-4"></div>
+                  <div className="bg-surface h-2 w-20 rounded"></div>
+                </div>
+                <div className="bg-surface h-6 w-12 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div className="mb-4 flex items-center gap-3 sm:mb-6">
+          <div className="bg-secondary/10 flex h-6 w-6 items-center justify-center rounded-full sm:h-8 sm:w-8">
+            <Clock className="text-secondary h-3 w-3 sm:h-4 sm:w-4" />
+          </div>
+          <div>
+            <h3 className="font-montserrat text-text text-sm font-semibold sm:text-base">
+              Historia Quizów
+            </h3>
+            <p className="font-quicksand text-text-muted text-xs sm:text-sm">
+              Błąd ładowania
+            </p>
+          </div>
+        </div>
+        <div className="py-4 text-center sm:py-6">
+          <p className="text-incorrect text-xs sm:text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {" "}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="bg-secondary/10 flex h-8 w-8 items-center justify-center rounded-full">
-          <Clock className="text-secondary h-4 w-4" />
+      <div className="mb-4 flex items-center gap-3 sm:mb-6">
+        <div className="bg-secondary/10 flex h-6 w-6 items-center justify-center rounded-full sm:h-8 sm:w-8">
+          <Clock className="text-secondary h-3 w-3 sm:h-4 sm:w-4" />
         </div>
         <div>
-          <h3 className="font-montserrat text-text font-semibold">
-            Quiz History
+          <h3 className="font-montserrat text-text text-sm font-semibold sm:text-base">
+            Historia Quizów
           </h3>
-          <p className="font-quicksand text-text-muted text-sm">
-            {history.length} completed
+          <p className="font-quicksand text-text-muted text-xs sm:text-sm">
+            {history.length} ukończonych
           </p>
         </div>
       </div>
       {history.length === 0 ? (
-        <div className="py-6 text-center">
-          <div className="bg-surface mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <Clock className="text-text-muted h-6 w-6" />
+        <div className="py-4 text-center sm:py-6">
+          <div className="bg-surface mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+            <Clock className="text-text-muted h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <p className="font-quicksand text-text-muted text-sm">
-            No quiz history yet
+          <p className="font-quicksand text-text-muted text-xs sm:text-sm">
+            Brak historii quizów
           </p>
           <p className="font-quicksand text-text-muted mt-1 text-xs">
-            Complete some quizzes to see your history
+            Ukończ kilka quizów, aby zobaczyć historię
           </p>
         </div>
       ) : (
@@ -45,37 +122,38 @@ function QuizHistory() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {" "}
-                  <div className="bg-secondary/10 group-hover:bg-secondary/20 flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200">
-                    <CheckCircle className="text-secondary h-4 w-4" />
+                  <div className="bg-secondary/10 group-hover:bg-secondary/20 flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200 sm:h-8 sm:w-8">
+                    <CheckCircle className="text-secondary h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-quicksand text-text group-hover:text-primary truncate font-medium transition-colors duration-200">
-                      {entry.title}
+                    <p className="font-quicksand text-text group-hover:text-primary truncate text-sm font-medium transition-colors duration-200 sm:text-base">
+                      {entry.quizTitle || `Quiz ${entry.quizId}`}
                     </p>
                     <p className="font-quicksand text-text-muted text-xs">
-                      {new Date(entry.date).toLocaleDateString("en-US", {
+                      {new Date(entry.completedAt).toLocaleDateString("pl-PL", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {entry.score && (
+                <div className="flex items-center gap-1 sm:gap-2">
+                  {entry.percentage && (
                     <div
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        entry.score >= 90
+                      className={`rounded-full px-1.5 py-0.5 text-xs font-medium sm:px-2 sm:py-1 ${
+                        entry.percentage >= 90
                           ? "bg-correct/10 text-correct"
-                          : entry.score >= 70
+                          : entry.percentage >= 70
                             ? "bg-accent/10 text-accent"
                             : "bg-incorrect/10 text-incorrect"
                       }`}
                     >
-                      {entry.score}%
+                      {entry.percentage}%
                     </div>
-                  )}{" "}
+                  )}
                   <ChevronRight className="text-text-muted group-hover:text-primary h-4 w-4 transition-colors duration-200" />
                 </div>
               </div>

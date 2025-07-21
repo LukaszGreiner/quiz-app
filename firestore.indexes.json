@@ -11,34 +11,28 @@
         {
           "fieldPath": "completedAt",
           "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
         }
       ]
     },
     {
-      "collectionGroup": "quizResults",
+      "collectionGroup": "quizzes",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "userId",
+          "fieldPath": "authorId",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "completedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "userStreaks",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "currentStreak",
+          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {
-          "fieldPath": "longestStreak",
-          "order": "DESCENDING"
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
         }
       ]
     }

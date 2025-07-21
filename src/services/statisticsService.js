@@ -214,7 +214,23 @@ export const fetchUserStatistics = async (userId) => {
           100
         ).toFixed(1),
       }))
-      .sort((a, b) => b.averagePercentage - a.averagePercentage);
+      .sort((a, b) => b.attempts - a.attempts); // Sort by attempts count to find favorite
+
+    // Find favorite category (most attempted)
+    const favoriteCategory = categoryStats.length > 0 ? categoryStats[0].category : "Brak danych";
+
+    // Get current streak data (not longest, but current)
+    let currentStreak = 0;
+    try {
+      const streakRef = doc(db, "userStreaks", userId);
+      const streakDoc = await getDoc(streakRef);
+      if (streakDoc.exists()) {
+        const streakData = streakDoc.data();
+        currentStreak = streakData.currentStreak || 0;
+      }
+    } catch (error) {
+      console.error("Error fetching user streak data:", error);
+    }
 
     return {
       totalQuizzesCreated,
@@ -224,6 +240,8 @@ export const fetchUserStatistics = async (userId) => {
       averageCompletionTime,
       recentActivity,
       categoryStats,
+      favoriteCategory,
+      currentStreak, // Changed from longestStreak to currentStreak
     };
   } catch (error) {
     console.error("Error fetching user statistics:", error);
@@ -321,5 +339,54 @@ export const fetchRecentActivity = async (limitCount = 20) => {
   } catch (error) {
     console.error("Error fetching recent activity:", error);
     return []; // Return empty array instead of throwing
+  }
+};
+
+// Fetch user quiz history with quiz titles
+export const fetchUserQuizHistory = async (userId, limitCount = 10) => {
+  try {
+    // Get user's quiz results
+    const resultsRef = collection(db, "quizResults");
+    const resultsQuery = query(resultsRef, where("userId", "==", userId));
+    const resultsSnapshot = await getDocs(resultsQuery);
+    const userResults = resultsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Sort by completion date (newest first)
+    const sortedResults = userResults
+      .filter((result) => result.completedAt) // Only include results with completedAt
+      .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
+      .slice(0, limitCount);
+
+    // Enrich with quiz titles
+    const enrichedHistory = await Promise.all(
+      sortedResults.map(async (result) => {
+        try {
+          // Try to get quiz title
+          const quizDoc = await getDoc(doc(db, "quizzes", result.quizId));
+          const quizTitle = quizDoc.exists() ? quizDoc.data().title : null;
+
+          return {
+            ...result,
+            quizTitle,
+            percentage: ((result.score / result.totalQuestions) * 100).toFixed(0),
+          };
+        } catch (error) {
+          console.error(`Error fetching quiz title for ${result.quizId}:`, error);
+          return {
+            ...result,
+            quizTitle: null,
+            percentage: ((result.score / result.totalQuestions) * 100).toFixed(0),
+          };
+        }
+      })
+    );
+
+    return enrichedHistory;
+  } catch (error) {
+    console.error("Error fetching user quiz history:", error);
+    throw error;
   }
 };

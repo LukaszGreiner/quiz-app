@@ -1,5 +1,6 @@
 import { collection, doc, getDoc, setDoc, updateDoc, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
+import { getLocalDateFromTimestamp, areConsecutiveDays, getUserLocalDate } from "../utils/dateUtils";
 
 /**
  * Streak Service
@@ -56,21 +57,23 @@ export const streakService = {
       const streakRef = doc(db, "userStreaks", userId);
       const streakData = await this.getUserStreak(userId);
       
-      const completedDate = new Date(completedAt);
-      const completedDateString = completedDate.toISOString().split('T')[0];
-      
-      const lastActivityDate = streakData.lastActivityDate ? new Date(streakData.lastActivityDate) : null;
-      const lastActivityDateString = lastActivityDate ? lastActivityDate.toISOString().split('T')[0] : null;
+      // Convert timestamps to user's local dates
+      const completedDateString = getLocalDateFromTimestamp(completedAt);
+      const lastActivityDateString = streakData.lastActivityDate ? getLocalDateFromTimestamp(streakData.lastActivityDate) : null;
 
-      // Check if this is the same day as last activity - if so, don't update streak
+      // Check if this is the same day as last activity
       if (lastActivityDateString === completedDateString) {
-        return streakData;
+        // Update to latest time of day, but don't change streak count
+        await updateDoc(streakRef, {
+          lastActivityDate: completedAt
+        });
+        return { ...streakData, lastActivityDate: completedAt };
       }
 
       let newStreakData = { ...streakData };
       
       // If this is the first quiz ever
-      if (!lastActivityDate) {
+      if (!lastActivityDateString) {
         newStreakData = {
           ...newStreakData,
           currentStreak: 1,
@@ -80,15 +83,15 @@ export const streakService = {
           totalQuizDays: 1,
         };
       } else {
-        // Calculate days between last activity and completion date
-        const daysDiff = Math.floor((completedDate - lastActivityDate) / (1000 * 60 * 60 * 24));
+        // Check if dates are consecutive using local timezone
+        const isConsecutive = areConsecutiveDays(lastActivityDateString, completedDateString);
         
-        if (daysDiff === 1) {
+        if (isConsecutive) {
           // Consecutive day - extend streak
           newStreakData.currentStreak += 1;
           newStreakData.longestStreak = Math.max(newStreakData.longestStreak, newStreakData.currentStreak);
           newStreakData.totalQuizDays += 1;
-        } else if (daysDiff > 1) {
+        } else {
           // Streak broken - reset
           newStreakData.currentStreak = 1;
           newStreakData.streakStartDate = completedAt;
@@ -334,6 +337,140 @@ export const streakService = {
     } catch (error) {
       console.error("Error in debug streak status:", error);
       return { error: error.message };
+    }
+  },
+
+  /**
+   * Recalculate user streak based on quiz history (using local timezone)
+   * Use this to fix timezone-related streak issues
+   * @param {string} userId - User ID
+   * @returns {Object} Updated streak data
+   */
+  async recalculateStreakFromHistory(userId) {
+    try {
+      console.log("Recalculating streak for user:", userId);
+      
+      // Get all quiz results for user, ordered by completion date
+      const resultsRef = collection(db, "quizResults");
+      const q = query(
+        resultsRef,
+        where("userId", "==", userId),
+        orderBy("completedAt", "asc")
+      );
+      
+      const snapshot = await getDocs(q);
+      const quizResults = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      if (quizResults.length === 0) {
+        return { currentStreak: 0, longestStreak: 0 };
+      }
+      
+      // Group quizzes by local date
+      const quizzesByDate = {};
+      quizResults.forEach(quiz => {
+        const localDate = getLocalDateFromTimestamp(quiz.completedAt);
+        if (!quizzesByDate[localDate]) {
+          quizzesByDate[localDate] = [];
+        }
+        quizzesByDate[localDate].push(quiz);
+      });
+      
+      // Get sorted unique dates
+      const uniqueDates = Object.keys(quizzesByDate).sort();
+      console.log("Quiz dates found:", uniqueDates);
+      
+      // Calculate streaks
+      let currentStreak = 0;
+      let longestStreak = 0;
+      let tempStreak = 1; // Start with 1 for first date
+      
+      // Start from the most recent date and work backwards for current streak
+      const today = getUserLocalDate();
+      const mostRecentDate = uniqueDates[uniqueDates.length - 1];
+      
+      console.log("Today:", today, "Most recent date:", mostRecentDate);
+      
+      // Check if user played today (current streak continues)
+      if (mostRecentDate === today) {
+        console.log("User played today - calculating current streak");
+        currentStreak = 1;
+        
+        // Count backwards from most recent date
+        for (let i = uniqueDates.length - 2; i >= 0; i--) {
+          const nextDate = uniqueDates[i + 1];  // More recent date
+          const currentDate = uniqueDates[i];   // Earlier date
+          
+          console.log(`Checking: ${currentDate} → ${nextDate}`);
+          
+          if (areConsecutiveDays(currentDate, nextDate)) {
+            currentStreak++;
+            console.log(`Consecutive! Current streak: ${currentStreak}`);
+          } else {
+            console.log("Streak broken");
+            break; // Streak broken
+          }
+        }
+      } else {
+        // User didn't play today - check if they played yesterday
+        if (areConsecutiveDays(mostRecentDate, today)) {
+          console.log("User played yesterday - streak still valid");
+          currentStreak = 1;
+          
+          // Count backwards from most recent date
+          for (let i = uniqueDates.length - 2; i >= 0; i--) {
+            const nextDate = uniqueDates[i + 1];
+            const currentDate = uniqueDates[i];
+            
+            if (areConsecutiveDays(currentDate, nextDate)) {
+              currentStreak++;
+            } else {
+              break;
+            }
+          }
+        } else {
+          console.log("Streak is broken - user didn't play today or yesterday");
+          currentStreak = 0;
+        }
+      }
+      
+      // Calculate longest streak
+      tempStreak = 1;
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const prevDate = uniqueDates[i - 1];
+        const currDate = uniqueDates[i];
+        
+        if (areConsecutiveDays(prevDate, currDate)) {
+          tempStreak++;
+        } else {
+          longestStreak = Math.max(longestStreak, tempStreak);
+          tempStreak = 1;
+        }
+      }
+      longestStreak = Math.max(longestStreak, tempStreak);
+      
+      console.log(`Recalculated streak - Current: ${currentStreak}, Longest: ${longestStreak}`);
+      
+      // Update streak data
+      const streakRef = doc(db, "userStreaks", userId);
+      const updatedData = {
+        currentStreak,
+        longestStreak,
+        lastActivityDate: quizResults[quizResults.length - 1].completedAt,
+        totalQuizDays: uniqueDates.length,
+        streakStartDate: currentStreak > 0 ? quizResults[quizResults.length - currentStreak].completedAt : null,
+        updatedAt: new Date().toISOString()
+      };
+      
+      await updateDoc(streakRef, updatedData);
+      console.log("Streak updated successfully");
+      
+      return updatedData;
+    } catch (error) {
+      console.error("Error recalculating streak:", error);
+      throw error;
     }
   },
 };
