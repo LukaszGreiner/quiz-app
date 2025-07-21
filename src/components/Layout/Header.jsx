@@ -4,7 +4,6 @@ import Logo from "../common/Logo";
 import Btn from "../common/Btn";
 import { useLocation } from "react-router-dom";
 import ProfileAvatar from "../Header/ProfileAvatar";
-import StreakCard from "../UserPage/StreakCard";
 import { useAuth } from "../../context/AuthContext";
 
 function Header() {
@@ -33,11 +32,6 @@ function Header() {
                   {label}
                 </Btn>
               ))}
-            {currentUser && (
-              <div className="hidden lg:block">
-                <StreakCard compact={true} showActions={false} />
-              </div>
-            )}
             <ProfileAvatar />
             <ThemeToggle />
           </nav>

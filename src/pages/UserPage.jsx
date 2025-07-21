@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LogOut, User, Activity, Trophy, Settings, BarChart3 } from "lucide-react";
+import { LogOut, User, Activity, Trophy, Settings, BarChart3, Calendar, Flame } from "lucide-react";
+import { useCurrentUserProfile } from "../hooks/useCurrentUserProfile";
+import { useStreak } from "../hooks/useStreak";
 import Btn from "../components/common/Btn";
 import ProfileImageEditor from "../components/UserPage/ProfileImageEditor";
 import SavedQuizzes from "../components/UserPage/SavedQuizzes";
@@ -23,26 +25,54 @@ import { streakService } from "../services/streakService";
 
 function UserPage() {
   const { currentUser, logout } = useAuth();
+  const { userData, loading: profileLoading } = useCurrentUserProfile();
+  const { streakData, loading: streakLoading } = useStreak();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
-  
-  const [username] = useState(
-    location.state?.username || "Nie określono",
-  );
-  const [description] = useState(
-    location.state?.description || "Nie określono",
-  );
-  const [userType] = useState(
-    location.state?.userType || "Nie określono",
-  );
-  const [goal] = useState(location.state?.goal || "Nie określono");
-  const [profileImage] = useState(
-    location.state?.profileImage || currentUser?.photoURL || "/profile_icon.jpg",
-  );
-  const [email] = useState(
-    location.state?.email || currentUser?.email || "Nie określono",
-  );
+
+  // Helper function to format date in Polish
+  const formatJoinedDate = (createdAt) => {
+    if (!createdAt) return "Nieznana data";
+    
+    try {
+      const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+      return date.toLocaleDateString('pl-PL', { 
+        month: 'long', 
+        year: 'numeric' 
+      });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Nieznana data";
+    }
+  };
+
+  // Get user data with fallbacks
+  const getDisplayName = () => {
+    return userData?.username || 
+           userData?.displayName || 
+           currentUser?.displayName || 
+           "Użytkownik";
+  };
+
+  const getProfileImage = () => {
+    return userData?.profileImage || 
+           currentUser?.photoURL || 
+           "/profile_icon.jpg";
+  };
+
+  const getJoinedDate = () => {
+    const createdAt = userData?.createdAt || currentUser?.metadata?.creationTime;
+    return formatJoinedDate(createdAt);
+  };
+
+  const getUserGoal = () => {
+    return userData?.goal || "Nie określono celu";
+  };
+
+  const getUserType = () => {
+    return userData?.userType || "Nie określono";
+  };
 
   // Development helper function
   const handleFixStreak = async () => {
@@ -60,15 +90,7 @@ function UserPage() {
   };
 
   const handleEditProfile = () => {
-    navigate("/user/edit-profile", {
-      state: {
-        username,
-        email,
-        userType,
-        goal,
-        description,
-      },
-    });
+    navigate("/user/edit-profile");
   };
 
   const handleLogout = async () => {
@@ -80,7 +102,7 @@ function UserPage() {
     }
   };
 
-  if (!currentUser) {
+  if (!currentUser || profileLoading) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -88,7 +110,7 @@ function UserPage() {
             <div className="bg-surface mx-auto mb-6 h-20 w-20 rounded-full"></div>
             <div className="bg-surface mx-auto mb-3 h-4 w-32 rounded"></div>
             <div className="bg-surface mx-auto h-3 w-24 rounded"></div>
-          </div>{" "}
+          </div>
           <p className="font-quicksand text-text-muted mt-6 text-xl font-medium">
             Ładowanie profilu...
           </p>
@@ -128,64 +150,83 @@ function UserPage() {
         </div>
       </div>
 
-      {/* Mobile-First Profile Card */}
+      {/* Modern Profile Summary Card */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="-mt-2 mb-6 sm:-mt-4 sm:mb-8">
-          <div className="bg-surface-elevated border-border rounded-xl border p-4 shadow-lg sm:rounded-2xl sm:p-6">
+          <div className="bg-surface-elevated border-border rounded-xl border p-4 shadow-lg sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-              {/* Profile Image */}
+              {/* Profile Image Section */}
               <div className="flex justify-center sm:justify-start">
                 <div className="relative">
                   <img
-                    src={profileImage}
-                    alt="Profile"
+                    src={getProfileImage()}
+                    alt="Zdjęcie profilowe"
                     className="border-border h-16 w-16 rounded-full border-2 object-cover sm:h-20 sm:w-20"
                   />
-                  <div className="bg-success absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white"></div>
+                  {/* Daily Streak Badge - Overlay */}
+                  {!streakLoading && streakData && (
+                    <div className="absolute -bottom-1 -right-1 flex items-center gap-[2px] bg-gradient-to-r from-accent to-yellow-600 rounded-full px-1.5 py-0.5 shadow-sm">
+                      <Flame className="size-3 text-white" />
+                      <span className="text-white text-xs font-bold">
+                        {/* {streakData.currentStreak || 0} */}
+                        999
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               
-              {/* Profile Info */}
+              {/* Profile Information */}
               <div className="flex-1 text-center sm:text-left">
-                <h2 className="text-text text-lg font-bold sm:text-xl">{username}</h2>
-                <p className="text-text-muted mb-2 text-sm">{email}</p>
+                <div className="mb-3">
+                  <h2 className="text-text text-xl font-bold sm:text-2xl">
+                    {getDisplayName()}
+                  </h2>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+                    <Calendar className="h-3 w-3 text-text-muted" />
+                    <p className="text-text-muted text-xs">
+                      Dołączył {getJoinedDate()}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* XP Progress Bar */}
                 <div className="w-full">
                   <LevelBar currentUser={currentUser} compact={true} />
                 </div>
               </div>
               
-              {/* Actions - Mobile Stack */}
-              <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+              {/* Action Buttons */}
+              <div className="flex flex-row gap-2 sm:flex-col sm:gap-2">
                 <Btn
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
                   onClick={handleEditProfile}
-                  className="w-full sm:w-auto"
+                  className="flex-1 sm:w-auto"
                 >
-                  Edytuj profil
+                  <Settings className="mr-1 h-3 w-3" />
+                  <span className="text-xs">Edytuj</span>
                 </Btn>
                 <Btn
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="w-full sm:w-auto"
+                  className="flex-1 sm:w-auto"
                 >
-                  <LogOut className="mr-2 h-4 w-4 sm:mr-0" />
-                  <span className="sm:hidden">Wyloguj</span>
+                  <LogOut className="mr-1 h-3 w-3" />
+                  <span className="text-xs">Wyloguj</span>
                 </Btn>
-                {/* Development only - Fix Streak button */}
-                {process.env.NODE_ENV === 'development' && (
-                  <Btn
-                    variant="danger"
-                    size="sm"
-                    onClick={handleFixStreak}
-                    className="w-full sm:w-auto"
-                  >
-                    🔧 Napraw Streak
-                  </Btn>
-                )}
               </div>
             </div>
+            
+            {/* Last Login - Compact */}
+            {lastLogin !== "Nieznana" && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-text-muted text-xs text-center sm:text-left">
+                  Ostatnie logowanie: <span className="text-text">{lastLogin}</span>
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -291,10 +332,11 @@ function UserPage() {
             <div className="space-y-4 sm:space-y-6">
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <ProfileInfo
-                  displayName={username}
+                  displayName={getDisplayName()}
                   userId={currentUser.uid}
                   creationTime={currentUser.metadata.creationTime}
                   lastLogin={lastLogin}
+                  userData={userData}
                 />
               </div>
               

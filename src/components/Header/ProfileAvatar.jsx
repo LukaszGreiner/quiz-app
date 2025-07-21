@@ -4,8 +4,9 @@ import { useAuth } from "../../context/AuthContext";
 export default function ProfileAvatar({ avatar }) {
   const { currentUser } = useAuth();
   const profileURL = currentUser?.photoURL;
+
   return (
-    <Link to="/user/details" className="flex items-center gap-2">
+    <Link to="/user/details" className="flex items-center">
       <img
         src={profileURL || avatar || "../profile_icon.jpg"}
         alt="Profil"
