@@ -14,10 +14,9 @@ import Achievements from "../components/UserPage/Achievements";
 import ProfileInfo from "../components/UserPage/ProfileInfo";
 import LevelBar from "../components/UserPage/LevelBar";
 import StreakCard from "../components/UserPage/StreakCard";
-import StreakDashboard from "../components/UserPage/StreakDashboard";
+import ActivityCalendar from "../components/UserPage/ActivityCalendar";
 import StreakDebugger from "../components/UserPage/StreakDebugger";
 import QuickStatsCard from "../components/UserPage/QuickStatsCard";
-import ProgressChart from "../components/UserPage/ProgressChart";
 import PerformanceMetrics from "../components/UserPage/PerformanceMetrics";
 import MobileOverview from "../components/UserPage/MobileOverview";
 import TodayMotivation from "../components/UserPage/TodayMotivation";
@@ -29,7 +28,12 @@ function UserPage() {
   const { streakData, loading: streakLoading } = useStreak();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => {
+    // If user was on stats tab, redirect to activity
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    return tab === 'stats' ? 'activity' : tab || 'overview';
+  });
 
   // Helper function to format date in Polish
   const formatJoinedDate = (createdAt) => {
@@ -126,7 +130,6 @@ function UserPage() {
   const tabs = [
     { id: "overview", label: "Przegląd", icon: User },
     { id: "activity", label: "Aktywność", icon: Activity },
-    { id: "stats", label: "Statystyki", icon: BarChart3 },
     { id: "achievements", label: "Osiągnięcia", icon: Trophy },
     { id: "settings", label: "Ustawienia", icon: Settings },
   ];
@@ -294,28 +297,62 @@ function UserPage() {
           {/* Activity Tab */}
           {activeTab === "activity" && (
             <div className="space-y-4 sm:space-y-6">
+              {/* Streak Statistics */}
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="bg-surface-elevated border-border rounded-xl border p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-accent/10 flex h-10 w-10 items-center justify-center rounded-full">
+                      <Trophy className="text-accent h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-text text-2xl font-bold">
+                        {streakData?.longestStreak || 0}
+                      </p>
+                      <p className="text-text-muted text-sm">Najdłuższa passa</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-surface-elevated border-border rounded-xl border p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-correct/10 flex h-10 w-10 items-center justify-center rounded-full">
+                      <Calendar className="text-correct h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-text text-2xl font-bold">
+                        {streakData?.totalQuizDays || 0}
+                      </p>
+                      <p className="text-text-muted text-sm">Łączne dni</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-surface-elevated border-border rounded-xl border p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-yellow-500/10 flex h-10 w-10 items-center justify-center rounded-full">
+                      <BarChart3 className="text-yellow-500 h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-text text-2xl font-bold">
+                        {streakData?.monthlyPercentage || 0}%
+                      </p>
+                      <p className="text-text-muted text-sm">W tym miesiącu</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calendar */}
+              <div className="bg-surface-elevated border-border rounded-xl border p-3 sm:p-6">
+                <ActivityCalendar />
+              </div>
+              
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <QuizHistory />
               </div>
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <CreatedQuizzes authorId={currentUser?.uid} />
               </div>
-            </div>
-          )}
-
-          {/* Stats Tab */}
-          {activeTab === "stats" && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-                <StreakDashboard />
-                <ProgressChart />
-              </div>
-              
-              {isDebugMode && (
-                <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
-                  <StreakDebugger />
-                </div>
-              )}
             </div>
           )}
 
