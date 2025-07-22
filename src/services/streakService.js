@@ -274,6 +274,7 @@ export const streakService = {
       const streakData = await this.getUserStreak(userId);
       const currentMonth = new Date();
       const calendarDates = await this.getUserQuizCalendar(userId, currentMonth);
+      const today = new Date().toISOString().split('T')[0];
       
       // Calculate streak percentage for current month
       const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
@@ -286,6 +287,7 @@ export const streakService = {
         monthlyPercentage: Math.round(monthlyPercentage),
         canUseFreeze: streakData.freezesUsed < streakData.maxFreezes,
         freezesRemaining: streakData.maxFreezes - streakData.freezesUsed,
+        hasCompletedToday: await this.hasCompletedQuizToday(userId, today),
       };
     } catch (error) {
       console.error("Error fetching streak stats:", error);

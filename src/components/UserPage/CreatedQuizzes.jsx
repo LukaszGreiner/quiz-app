@@ -118,18 +118,6 @@ const CreatedQuizzes = ({ authorId, isOverview = false }) => {
         </Btn>
       </div>
       
-      {/* Fallback mode notification */}
-      {isUsingFallback && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
-          <div className="flex items-center gap-2">
-            <Loader className="h-4 w-4 animate-spin text-amber-600 dark:text-amber-400" />
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              Baza danych się aktualizuje. Quizy są ładowane w trybie rezerwowym.
-            </p>
-          </div>
-        </div>
-      )}
-      
       {quizzes.length === 0 ? (
         <div className="py-12 text-center">
           <div className="bg-surface mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full">

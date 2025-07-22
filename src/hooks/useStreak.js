@@ -9,26 +9,65 @@ import { streakService } from "../services/streakService";
 export const useStreak = () => {
   const { currentUser } = useAuth();
   const [streakData, setStreakData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch streak data when component mounts or user changes
-  useEffect(() => {
-    const fetchStreakData = async () => {
-      if (!currentUser) {
-        setStreakData(null);
-        setLoading(false);
-        return;
+  // Simple localStorage cache for daily data
+  const getCachedStreakData = (userId) => {
+    try {
+      const cached = localStorage.getItem(`streak_${userId}`);
+      if (!cached) return null;
+      
+      const data = JSON.parse(cached);
+      const today = new Date().toDateString();
+      
+      // Cache is valid if it's from today (streak only changes once per day)
+      if (data.cacheDate === today) {
+        return data.streakData;
       }
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
+  const cacheStreakData = (userId, data) => {
+    try {
+      localStorage.setItem(`streak_${userId}`, JSON.stringify({
+        streakData: data,
+        cacheDate: new Date().toDateString()
+      }));
+    } catch {
+      // Ignore cache errors
+    }
+  };
+
+  useEffect(() => {
+    if (!currentUser) {
+      setStreakData(null);
+      return;
+    }
+
+    // Show cached data immediately if available from today
+    const cachedData = getCachedStreakData(currentUser.uid);
+    if (cachedData) {
+      setStreakData(cachedData);
+      return; // Don't fetch again, cache is valid for the whole day
+    }
+
+    // Fetch fresh data only if no valid cache
+    const fetchStreakData = async () => {
       try {
         setLoading(true);
         setError(null);
         const stats = await streakService.getStreakStats(currentUser.uid);
         setStreakData(stats);
+        cacheStreakData(currentUser.uid, stats);
       } catch (err) {
         console.error("Error fetching streak data:", err);
         setError("Failed to load streak data");
+        // Show 0 streak on error
+        setStreakData({ currentStreak: 0, longestStreak: 0 });
       } finally {
         setLoading(false);
       }
@@ -37,7 +76,7 @@ export const useStreak = () => {
     fetchStreakData();
   }, [currentUser]);
 
-  // Function to manually refresh streak data
+  // Function to manually refresh streak data (called after quiz completion)
   const refreshStreakData = async () => {
     if (!currentUser) return;
 
@@ -46,6 +85,7 @@ export const useStreak = () => {
       setError(null);
       const stats = await streakService.getStreakStats(currentUser.uid);
       setStreakData(stats);
+      cacheStreakData(currentUser.uid, stats); // Update cache with new data
     } catch (err) {
       console.error("Error refreshing streak data:", err);
       setError("Failed to refresh streak data");
