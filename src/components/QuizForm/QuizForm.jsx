@@ -60,7 +60,7 @@ function QuizForm({ defaultValues, onSubmit, onReset }) {
             >
               Zresetuj formularz
             </button>
-            <button
+            {/* <button
               className="bg-primary text-text-inverse hover:bg-primary/85 focus:ring-primary/20 active:bg-primary/95 cursor-pointer rounded-md p-2 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={handleSaveToStorage}
               type="button"
@@ -73,7 +73,7 @@ function QuizForm({ defaultValues, onSubmit, onReset }) {
               type="button"
             >
               Przywróć z localstorage
-            </button>
+            </button> */}
             <QuizFromFileBtn onImportQuestions={handleImportQuestions} />
           </div>{" "}
           <div className="flex items-center justify-between">

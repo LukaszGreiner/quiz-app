@@ -4,13 +4,21 @@ import {
   PlusCircle,
   LayoutDashboard,
   ChartColumnIncreasing,
+  Settings,
 } from "lucide-react";
 
 export const navigationConfig = [
   {
     path: "/",
-    label: "Strona główna",
+    label: "Nauka",
     icon: Home,
+    showInMobile: true,
+    showInDesktop: true,
+  },
+  {
+    path: "/statistics",
+    label: "Statystyki",
+    icon: ChartColumnIncreasing,
     showInMobile: true,
     showInDesktop: true,
   },
@@ -22,24 +30,24 @@ export const navigationConfig = [
     showInDesktop: true,
   },
   {
+    path: "/user/details",
+    label: "Profil",
+    icon: User,
+    showInMobile: true,
+    showInDesktop: true,
+  },
+  {
+    path: "/settings",
+    label: "Ustawienia",
+    icon: Settings,
+    showInMobile: false,
+    showInDesktop: true,
+  },
+  {
     path: "/design-system",
     label: "Design System",
     icon: LayoutDashboard,
     showInMobile: false,
     showInDesktop: true,
-  },
-  {
-    path: "/statistics",
-    label: "Statystyki",
-    icon: ChartColumnIncreasing,
-    showInMobile: true,
-    showInDesktop: true,
-  },
-  {
-    path: "/user/details",
-    label: "Profil",
-    icon: User,
-    showInMobile: true,
-    showInDesktop: false,
   },
 ];

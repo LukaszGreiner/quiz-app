@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 import {
   fetchGlobalStatistics,
   fetchTopQuizzes,
@@ -135,18 +136,7 @@ export default function StatisticsPage() {
   }, [currentUser]);
 
   if (loading) {
-    return (
-      <div className="bg-background min-h-screen">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="border-primary/20 border-t-primary h-12 w-12 animate-spin rounded-full border-4"></div>
-              <p className="text-text-muted text-lg">Ładowanie statystyk...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Ładowanie statystyk..." />;
   }
 
   if (error) {

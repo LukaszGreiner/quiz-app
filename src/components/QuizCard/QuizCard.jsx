@@ -36,13 +36,7 @@ const QuizCard = ({ quiz }) => {
     if (e.target.closest(".quiz-actions")) return;
     navigate(`/quiz/${quiz.quizId}`);
   };
-  if (userLoading) {
-    return (
-      <div className="bg-surface border-border w-full max-w-sm rounded-lg border p-4 text-center">
-        <p className="text-text-muted">Ładowanie danych użytkownika...</p>
-      </div>
-    );
-  }
+  
   return (
     <div
       className={`group bg-surface border-border hover:bg-surface-elevated hover:border-border-focus active:bg-surface-elevated/95 focus:border-border-focus focus:ring-primary/20 relative h-80 cursor-pointer overflow-hidden rounded-xl border transition-all duration-300 hover:shadow-lg focus:ring-2 focus:outline-none ${
@@ -80,8 +74,8 @@ const QuizCard = ({ quiz }) => {
           <QuizActions
             quizId={quiz.quizId}
             quiz={quiz}
-            isOwner={isOwner}
-            isAdmin={isAdmin}
+            isOwner={isOwner || false}
+            isAdmin={isAdmin || false}
             visibility={visibility}
             setVisibility={setVisibility}
             setIsActionsOpen={setIsActionsOpen}
@@ -109,7 +103,7 @@ const QuizCard = ({ quiz }) => {
           {quiz.title || "Bez nazwy"}
         </h3>
         <div className="text-text-muted flex items-center justify-between text-sm">
-          <span>{creatorName || "Nieznany autor"}</span>
+          {/* <span>{creatorName || "Nieznany autor"}</span> */}
           <span className="font-medium">
             {quiz.questions?.length || 0} pytań
           </span>

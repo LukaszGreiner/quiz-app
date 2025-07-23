@@ -17,6 +17,10 @@ export default function Btn({
       "bg-secondary text-text-inverse hover:bg-secondary/85 focus:ring-secondary/20",
     tertiary:
       "bg-accent text-text-inverse hover:bg-secondary/85 focus:ring-secondary/20",
+    surface:
+      "bg-surface text-text hover:bg-surface/85 focus:ring-surface/20",
+    elevated:
+      "bg-surface-elevated text-text hover:bg-surface-elevated/85 focus:ring-surface-elevated/20",
     danger: "bg-danger text-white hover:bg-danger/85 focus:ring-danger/20",
     correct:
       "bg-correct text-text-inverse hover:bg-correct/85 focus:ring-correct/20",

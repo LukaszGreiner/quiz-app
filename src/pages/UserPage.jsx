@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LogOut, User, Activity, Trophy, Settings, BarChart3, Calendar, Flame } from "lucide-react";
+import { LogOut, User, Activity, Trophy, Settings, BarChart3, Calendar, Flame, ArrowLeft } from "lucide-react";
 import { useCurrentUserProfile } from "../hooks/useCurrentUserProfile";
 import { useStreak } from "../hooks/useStreak";
 import Btn from "../components/common/Btn";
@@ -139,19 +139,23 @@ function UserPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Mobile-First Header */}
-      <div className="from-primary/5 via-background to-accent/5 bg-gradient-to-br pt-16 pb-4 sm:pb-8">
+      {/* Back Button */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-text mb-1 text-2xl font-bold tracking-tight sm:mb-2 sm:text-3xl lg:text-4xl">
-              Twój Profil
-            </h1>
-            <p className="text-text-muted text-base sm:text-lg">
-              Zarządzaj swoim kontem i śledź postępy
-            </p>
+          <div className="py-4">
+            <Btn
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Wróć</span>
+            </Btn>
           </div>
         </div>
       </div>
+      
 
       {/* Modern Profile Summary Card */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

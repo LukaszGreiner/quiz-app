@@ -1,5 +1,7 @@
 // src/components/Home/Home.js
 import QuizCard from "../components/QuizCard/QuizCard";
+import QuizCardSkeleton from "../components/QuizCard/QuizCardSkeleton";
+import Btn from "../components/common/Btn";
 import { useQuizzes } from "../hooks/useQuizzes";
 import { useCategory } from "../hooks/useCategory";
 import { useAuth } from "../context/AuthContext";
@@ -25,19 +27,8 @@ const Home = () => {
       ? quizzes
       : quizzes.filter((quiz) => quiz.category === normalizedCategory);
 
-  if (loading) {
-    return (
-      <div className="bg-background flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          {/* Spinning loader */}
-          <div className="border-primary/20 border-t-primary h-12 w-12 animate-spin rounded-full border-4"></div>
-          <p className="text-text-muted text-lg">Ładowanie quizów...</p>
-        </div>
-      </div>
-    );
-  }
   return (
-    <div className="bg-background min-h-screen p-6">
+    <div>
       {/* Category Filter */}
       <div className="mb-8">
         {/* Mobile: Dropdown */}
@@ -58,23 +49,32 @@ const Home = () => {
         {/* Desktop: Tabs */}
         <div className="hidden flex-wrap gap-3 sm:flex">
           {categoryNames.map((category) => (
-            <button
+            <Btn
               key={category}
+              variant={normalizedCategory === category ? "primary" : "outline"}
+              size="md"
               onClick={() => navigateToCategory(category)}
-              className={`rounded-lg px-6 py-3 font-medium transition-all duration-200 ${
+              className={
                 normalizedCategory === category
-                  ? "bg-primary text-text-inverse shadow-md"
-                  : "bg-surface border-border text-text hover:bg-surface-elevated hover:border-border-focus active:bg-surface-elevated/95 focus:border-border-focus focus:ring-primary/20 border hover:shadow-sm focus:ring-2 focus:outline-none"
-              }`}
+                  ? "shadow-md"
+                  : "bg-surface hover:bg-surface-elevated active:bg-surface-elevated/95"
+              }
             >
               {category}
-            </button>
+            </Btn>
           ))}
         </div>
       </div>{" "}
       {/* Quiz Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredQuizzes.length === 0 ? (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {loading ? (
+          // Show multiple skeleton cards while loading
+          <>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <QuizCardSkeleton key={`skeleton-${index}`} />
+            ))}
+          </>
+        ) : filteredQuizzes.length === 0 ? (
           <div className="col-span-full py-12 text-center">
             <p className="text-text-muted mb-4 text-lg">
               {normalizedCategory === "Wszystkie"
@@ -83,8 +83,17 @@ const Home = () => {
             </p>
           </div>
         ) : (
-          filteredQuizzes.map((quiz) => (
-            <QuizCard key={quiz.quizId} quiz={quiz} />
+          filteredQuizzes.map((quiz, index) => (
+            <div 
+              key={quiz.quizId} 
+              className="animate-fadeIn"
+              style={{ 
+                animationDelay: `${index * 100}ms`,
+                animationFillMode: 'both'
+              }}
+            >
+              <QuizCard quiz={quiz} />
+            </div>
           ))
         )}
       </div>
