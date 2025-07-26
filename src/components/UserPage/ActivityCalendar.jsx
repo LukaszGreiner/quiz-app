@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Calendar } from "lucide-react";
 import { useStreak } from "../../hooks/useStreak";
+import { formatDateToString } from "../../utils/dateUtils";
 
 function ActivityCalendar() {
   const { streakData, loading, getQuizCalendar } = useStreak();
@@ -36,8 +37,9 @@ function ActivityCalendar() {
   };
 
   const isDateCompleted = (day) => {
-    const dateString = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day)
-      .toISOString().split('T')[0];
+    const dateString = formatDateToString(
+      new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day)
+    );
     return calendarData.includes(dateString);
   };
 
@@ -68,7 +70,7 @@ function ActivityCalendar() {
           key={day}
           className={`
             h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 rounded-lg flex items-center justify-center 
-            text-xs sm:text-sm font-medium transition-all duration-200 border
+            text-xs sm:text-sm font-medium transition-all duration-200 border mx-auto
             ${isCompleted 
               ? 'bg-correct/20 border-correct text-correct' 
               : isPast 
@@ -84,9 +86,9 @@ function ActivityCalendar() {
     }
 
     return (
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3 text-center">
         {['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie'].map(day => (
-          <div key={day} className="text-text-muted text-center text-xs font-medium p-1 sm:p-2">
+          <div key={day} className="text-text-muted text-center text-xs font-medium p-1 sm:p-2 mx-auto">
             {day}
           </div>
         ))}

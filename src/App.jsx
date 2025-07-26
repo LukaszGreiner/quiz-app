@@ -69,13 +69,12 @@ function App() {
             {/* 404 */}
             <Route path="not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
-          </Route>
-          {/* UserPage without layout */}
           <Route
             element={<ProtectedRoute info="Zaloguj się aby uzyskać dostęp" />}
-          >
+            >
             <Route path="user/details" element={<UserPage />} />
           </Route>
+            </Route>
           {/* QuizPlay with different layout */}
           <Route
             element={<ProtectedRoute info="Zaloguj się aby uzyskać dostęp" />}

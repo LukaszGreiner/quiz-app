@@ -34,13 +34,54 @@ export const streakService = {
           freezesUsed: 0,
           maxFreezes: 3, // Allow 3 streak freezes per month
           lastFreezeReset: new Date().toISOString(),
+          
+          // Streak Revive System
+          lastStreakLoss: null,              // When the streak was lost
+          lostStreakLength: 0,               // How long the lost streak was
+          revivesUsed: 0,                    // Number of revives used this month
+          maxRevives: 1,                     // Allow 1 revive per month
+          lastReviveReset: new Date().toISOString(),
+          canRevive: false,                  // Can user revive right now?
+          reviveExpiresAt: null,             // When revive opportunity expires
+          
+          // Recalculation tracking
+          lastRecalculated: null,            // When streak was last recalculated from history
         };
         
         await setDoc(streakRef, initialStreak);
         return initialStreak;
       }
 
-      return streakDoc.data();
+      const existingData = streakDoc.data();
+      
+      // Migration: Add missing revive fields if they don't exist
+      const hasReviveFields = existingData.hasOwnProperty('canRevive');
+      const hasRecalculatedField = existingData.hasOwnProperty('lastRecalculated');
+      
+      if (!hasReviveFields || !hasRecalculatedField) {
+        const migratedData = {
+          ...existingData,
+          // Add revive fields if missing
+          ...(hasReviveFields ? {} : {
+            lastStreakLoss: null,
+            lostStreakLength: 0,
+            revivesUsed: 0,
+            maxRevives: 1,
+            lastReviveReset: new Date().toISOString(),
+            canRevive: false,
+            reviveExpiresAt: null,
+          }),
+          // Add recalculated field if missing
+          ...(hasRecalculatedField ? {} : {
+            lastRecalculated: null,
+          }),
+        };
+        
+        await updateDoc(streakRef, migratedData);
+        return migratedData;
+      }
+
+      return existingData;
     } catch (error) {
       console.error("Error fetching user streak:", error);
       throw error;
@@ -92,7 +133,40 @@ export const streakService = {
           newStreakData.longestStreak = Math.max(newStreakData.longestStreak, newStreakData.currentStreak);
           newStreakData.totalQuizDays += 1;
         } else {
-          // Streak broken - reset
+          // Streak broken - reset but check if we should enable revive
+          const daysBetween = Math.abs(new Date(completedDateString) - new Date(lastActivityDateString)) / (1000 * 60 * 60 * 24);
+          
+          // Enable revive if:
+          // 1. Streak was lost exactly 1 day ago
+          // 2. User has revives available  
+          // 3. Lost streak was at least 3 days long
+          if (daysBetween === 1 && 
+              newStreakData.currentStreak >= 3 && 
+              newStreakData.revivesUsed < newStreakData.maxRevives) {
+            
+            // Check if revives need to be reset (monthly)
+            const lastReset = new Date(newStreakData.lastReviveReset);
+            const now = new Date();
+            const monthsDiff = (now.getFullYear() - lastReset.getFullYear()) * 12 + 
+                              (now.getMonth() - lastReset.getMonth());
+            
+            if (monthsDiff >= 1) {
+              newStreakData.revivesUsed = 0;
+              newStreakData.lastReviveReset = now.toISOString();
+            }
+            
+            // Enable revive opportunity
+            newStreakData.lastStreakLoss = completedAt;
+            newStreakData.lostStreakLength = newStreakData.currentStreak;
+            newStreakData.canRevive = newStreakData.revivesUsed < newStreakData.maxRevives;
+            
+            // Revive expires at end of today (only can revive yesterday's gap)
+            const reviveExpiry = new Date(completedAt);
+            reviveExpiry.setHours(23, 59, 59, 999); // End of today
+            newStreakData.reviveExpiresAt = reviveExpiry.toISOString();
+          }
+          
+          // Reset streak
           newStreakData.currentStreak = 1;
           newStreakData.streakStartDate = completedAt;
           newStreakData.totalQuizDays += 1;
@@ -118,9 +192,9 @@ export const streakService = {
    */
   async hasCompletedQuizToday(userId, dateString) {
     try {
-      // Create date range for the entire day in user's timezone
-      const startOfDay = new Date(dateString + 'T00:00:00.000Z');
-      const endOfDay = new Date(dateString + 'T23:59:59.999Z');
+      // Create date range for the entire day in user's local timezone
+      const startOfDay = new Date(dateString + 'T00:00:00');
+      const endOfDay = new Date(dateString + 'T23:59:59');
       
       const resultsRef = collection(db, "quizResults");
       const q = query(
@@ -229,49 +303,162 @@ export const streakService = {
   },
 
   /**
-   * Get user's quiz completion calendar for the current month
+   * Revive a lost streak if user is eligible
    * @param {string} userId - User ID
-   * @param {Date} month - Month to get data for (defaults to current month)
-   * @returns {Array} Array of dates when user completed quizzes
+   * @returns {Object} Updated streak data
    */
-  async getUserQuizCalendar(userId, month = new Date()) {
+  async reviveStreak(userId) {
     try {
-      const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
-      const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+      const streakData = await this.getUserStreak(userId);
       
-      const resultsRef = collection(db, "quizResults");
-      const q = query(
-        resultsRef,
-        where("userId", "==", userId),
-        where("completedAt", ">=", startOfMonth.toISOString()),
-        where("completedAt", "<=", endOfMonth.toISOString())
-      );
+      // Check if user can revive
+      if (!streakData.canRevive) {
+        throw new Error("Nie możesz teraz przywrócić passy");
+      }
       
-      const querySnapshot = await getDocs(q);
-      const completionDates = new Set();
+      // Check if revive has expired (check if it's past end of today)
+      const now = new Date();
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
       
-      querySnapshot.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        const date = new Date(data.completedAt);
-        const dateString = date.toISOString().split('T')[0];
-        completionDates.add(dateString);
-      });
+      if (streakData.canRevive && now > endOfDay) {
+        throw new Error("Czas na przywrócenie passy już minął");
+      }
       
-      return Array.from(completionDates);
+      // Revive the streak
+      const updatedData = {
+        ...streakData,
+        currentStreak: streakData.lostStreakLength,
+        canRevive: false,
+        reviveExpiresAt: null,
+        revivesUsed: streakData.revivesUsed + 1,
+        lastActivityDate: new Date().toISOString(), // Set today as last activity
+      };
+      
+      const streakRef = doc(db, "userStreaks", userId);
+      await updateDoc(streakRef, updatedData);
+      
+      return updatedData;
     } catch (error) {
-      console.error("Error fetching quiz calendar:", error);
-      return [];
+      console.error("Error reviving streak:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cleanup expired revive opportunities
+   * @param {string} userId - User ID
+   * @returns {Object} Updated streak data if changes were made
+   */
+  async cleanupExpiredRevives(userId) {
+    try {
+      const streakData = await this.getUserStreak(userId);
+      
+      // Check if revive has expired (check if we're past end of day when streak was lost)
+      if (streakData.canRevive) {
+        const now = new Date();
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        // If we're past end of today, the revive opportunity has expired
+        if (now > endOfDay) {
+          const updatedData = {
+            ...streakData,
+            canRevive: false,
+            reviveExpiresAt: null,
+            lastStreakLoss: null,
+            lostStreakLength: 0,
+          };
+          
+          const streakRef = doc(db, "userStreaks", userId);
+          await updateDoc(streakRef, updatedData);
+          
+          return updatedData;
+        }
+      }
+      
+      return streakData;
+    } catch (error) {
+      console.error("Error cleaning up expired revives:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reset monthly revive count (called automatically on streak checks)
+   * @param {string} userId - User ID
+   * @returns {Object} Updated streak data if reset occurred
+   */
+  async resetMonthlyRevives(userId) {
+    try {
+      const streakData = await this.getUserStreak(userId);
+      const lastReset = new Date(streakData.lastReviveReset);
+      const now = new Date();
+      
+      const monthsDiff = (now.getFullYear() - lastReset.getFullYear()) * 12 + 
+                        (now.getMonth() - lastReset.getMonth());
+      
+      if (monthsDiff >= 1) {
+        const updatedData = {
+          ...streakData,
+          revivesUsed: 0,
+          lastReviveReset: now.toISOString(),
+        };
+        
+        const streakRef = doc(db, "userStreaks", userId);
+        await updateDoc(streakRef, updatedData);
+        
+        return updatedData;
+      }
+      
+      return streakData;
+    } catch (error) {
+      console.error("Error resetting monthly revives:", error);
+      throw error;
     }
   },
 
   /**
    * Get streak statistics for a user
    * @param {string} userId - User ID
+   * @param {boolean} forceRecalculate - Whether to force recalculation from quiz history
    * @returns {Object} Comprehensive streak statistics
    */
-  async getStreakStats(userId) {
+  async getStreakStats(userId, forceRecalculate = false) {
     try {
-      const streakData = await this.getUserStreak(userId);
+      // First cleanup any expired revives
+      let streakData = await this.cleanupExpiredRevives(userId);
+      
+      // Recalculate streak if forced or if streak seems potentially outdated
+      const needsRecalculation = forceRecalculate || 
+        !streakData.lastRecalculated || 
+        (new Date() - new Date(streakData.lastRecalculated)) > (24 * 60 * 60 * 1000); // 24 hours
+      
+      if (needsRecalculation) {
+        try {
+          const recalculatedStreak = await this.recalculateStreakFromHistory(userId);
+          console.log("Streak recalculated:", recalculatedStreak);
+          
+          // Update streakData with recalculated values
+          streakData = {
+            ...streakData,
+            currentStreak: recalculatedStreak.currentStreak,
+            longestStreak: recalculatedStreak.longestStreak,
+            lastActivityDate: recalculatedStreak.lastActivityDate,
+            totalQuizDays: recalculatedStreak.totalQuizDays,
+            streakStartDate: recalculatedStreak.streakStartDate,
+            lastRecalculated: new Date().toISOString()
+          };
+          
+          // Update the database with the recalculated flag
+          const streakRef = doc(db, "userStreaks", userId);
+          await updateDoc(streakRef, { lastRecalculated: streakData.lastRecalculated });
+        } catch (recalcError) {
+          console.warn("Failed to recalculate streak, using database values:", recalcError);
+          // Continue with original streakData if recalculation fails
+        }
+      }
+      
       const currentMonth = new Date();
       const calendarDates = await this.getUserQuizCalendar(userId, currentMonth);
       const today = new Date().toISOString().split('T')[0];
@@ -463,6 +650,7 @@ export const streakService = {
         lastActivityDate: quizResults[quizResults.length - 1].completedAt,
         totalQuizDays: uniqueDates.length,
         streakStartDate: currentStreak > 0 ? quizResults[quizResults.length - currentStreak].completedAt : null,
+        lastRecalculated: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
@@ -473,6 +661,46 @@ export const streakService = {
     } catch (error) {
       console.error("Error recalculating streak:", error);
       throw error;
+    }
+  },
+
+  /**
+   * Get user's quiz completion dates for a specific month
+   * @param {string} userId - User ID
+   * @param {Date} month - Month to get calendar for
+   * @returns {Array} Array of date strings in YYYY-MM-DD format
+   */
+  async getUserQuizCalendar(userId, month = new Date()) {
+    try {
+      const year = month.getFullYear();
+      const monthNumber = month.getMonth();
+      
+      // Get start and end of month
+      const startOfMonth = new Date(year, monthNumber, 1);
+      const endOfMonth = new Date(year, monthNumber + 1, 0, 23, 59, 59, 999);
+      
+      // Query quiz results for the month
+      const resultsRef = collection(db, "quizResults");
+      const q = query(
+        resultsRef,
+        where("userId", "==", userId),
+        where("completedAt", ">=", startOfMonth.toISOString()),
+        where("completedAt", "<=", endOfMonth.toISOString())
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const completionDates = new Set();
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const completedDate = getLocalDateFromTimestamp(data.completedAt);
+        completionDates.add(completedDate);
+      });
+      
+      return Array.from(completionDates).sort();
+    } catch (error) {
+      console.error("Error fetching user quiz calendar:", error);
+      return [];
     }
   },
 };

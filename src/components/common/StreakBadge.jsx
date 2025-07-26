@@ -61,7 +61,7 @@ function StreakBadge({
     <div 
       className={`absolute ${positionClasses} flex items-center gap-1 rounded-full shadow-lg border-2 border-white ${sizeClasses.container} ${className} ${
         streakData?.hasCompletedToday 
-          ? 'bg-gradient-to-r from-orange-500 to-red-500' 
+          ? 'bg-gradient-to-r from-green-500 to-red-500' 
           : 'bg-gradient-to-r from-gray-400 to-gray-500'
       }`}
       title={`Aktualna passa: ${streakData?.currentStreak || 0} dni${!streakData?.hasCompletedToday ? ' (nie rozwiązano jeszcze dzisiaj)' : ''}`}

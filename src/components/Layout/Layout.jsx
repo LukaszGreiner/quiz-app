@@ -3,12 +3,10 @@ import { useAuth } from "../../context/AuthContext";
 import { navigationConfig } from "../../config/navigationConfig";
 import { useLocation } from "react-router-dom";
 import Logo from "../common/Logo";
-import ThemeToggle from "../common/ThemeToggle";
 import Btn from "../common/Btn";
 import ProfileAvatar from "../Header/ProfileAvatar";
-import StreakBadge from "../Header/StreakBadge";
+import WeeklyStreakWidget from "../Header/WeeklyStreakWidget";
 import Footer from "./Footer";
-import LevelBar from "../UserPage/LevelBar";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { useCurrentUserProfile } from "../../hooks/useCurrentUserProfile";
 import { useStreak } from "../../hooks/useStreak";
@@ -74,7 +72,7 @@ function Layout() {
 
             {/* Right Sidebar - User Profile, exp-bar,daily-streak, Daily Quest */}
             {currentUser && (
-              <div className="hidden lg:block w-80 border-l border-border bg-background">
+              <div className="hidden lg:block w-80 border-l border-border bg-background scrollbar">
                 <div className="sticky top-0 p-6 space-y-6 max-h-screen overflow-y-auto">
                   {/* User Profile */}
                   <div className="border-surface-elevated bg-background rounded-2xl border-2 p-6">
@@ -127,18 +125,42 @@ function Layout() {
                     </div>
                     
                     {/* Daily Streak */}
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg border border-orange-500/20">
-                      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-full p-2">
+                    <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
+                      streakData?.hasCompletedToday 
+                        ? 'bg-gradient-to-r from-accent/10 to-yellow-600/10 border-accent/20' 
+                        : 'bg-gradient-to-r from-gray-400/10 to-gray-500/10 border-gray-400/20'
+                    }`}>
+                      <div className={`rounded-full p-2 ${
+                        streakData?.hasCompletedToday 
+                          ? 'bg-gradient-to-r from-accent to-yellow-600' 
+                          : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                      }`}>
                         <Flame className="h-4 w-4 text-white" />
                       </div>
                       <div className="flex-1">
                         <span className="text-sm font-medium text-text">Dzienna passa</span>
-                        <div className="text-lg font-bold text-orange-500">
+                        <div className={`text-lg font-bold ${
+                          streakData?.hasCompletedToday 
+                            ? 'text-accent' 
+                            : 'text-gray-500'
+                        }`}>
                           {streakData?.currentStreak || 0} {(streakData?.currentStreak || 0) === 1 ? 'dzień' : 'dni'}
                         </div>
                       </div>
                     </div>
+
+                    {/* Debug: Show streak comparison in development */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="text-xs text-text-muted mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded">
+                        <div>DB Streak: {streakData?.currentStreak || 0}</div>
+                        <div>Last Recalc: {streakData?.lastRecalculated ? new Date(streakData.lastRecalculated).toLocaleString() : 'Never'}</div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Weekly Streak Widget */}
+                  <WeeklyStreakWidget />
+
 
                   {/* Daily Quest */}
                   <div className="border-surface-elevated bg-background rounded-2xl border-2 p-6">

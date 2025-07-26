@@ -434,3 +434,47 @@ textarea,
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Custom scrollbar styling for theme consistency */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Firefox scrollbar styling */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-surface);
+}
+
+/* Dark mode scrollbar adjustments */
+.dark ::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+.dark html {
+  scrollbar-color: var(--color-border) var(--color-surface);
+}

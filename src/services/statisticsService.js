@@ -17,6 +17,8 @@ import {
   limit,
   doc,
   getDoc,
+  addDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { quizFormConfig } from "../config/quizFormConfig";
@@ -31,7 +33,7 @@ export const fetchGlobalStatistics = async () => {
       id: doc.id,
       ...doc.data(),
     }));
-
+w
     // Get all quiz results
     const resultsRef = collection(db, "quizResults");
     const resultsSnapshot = await getDocs(resultsRef);
@@ -387,6 +389,44 @@ export const fetchUserQuizHistory = async (userId, limitCount = 10) => {
     return enrichedHistory;
   } catch (error) {
     console.error("Error fetching user quiz history:", error);
+    throw error;
+  }
+};
+
+// Debug functions for testing and development
+export const deleteQuizResult = async (resultId) => {
+  try {
+    await deleteDoc(doc(db, "quizResults", resultId));
+    console.log("Quiz result deleted:", resultId);
+  } catch (error) {
+    console.error("Error deleting quiz result:", error);
+    throw error;
+  }
+};
+
+export const addDebugQuizResult = async (userId, quizData) => {
+  try {
+    const debugResult = {
+      userId: userId,
+      quizId: quizData.quizId || "debug-quiz",
+      score: quizData.score || 5,
+      totalQuestions: quizData.totalQuestions || 10,
+      completedAt: quizData.completedAt || new Date().toISOString(),
+      timeSpent: quizData.timeSpent || 120, // 2 minutes
+      category: quizData.category || "debug",
+      difficulty: quizData.difficulty || "medium",
+      answers: quizData.answers || [],
+      xpEarned: quizData.xpEarned || 50,
+      // Mark as debug entry
+      isDebugEntry: true,
+      createdAt: new Date().toISOString(),
+    };
+    
+    const docRef = await addDoc(collection(db, "quizResults"), debugResult);
+    console.log("Debug quiz result added:", docRef.id);
+    return { id: docRef.id, ...debugResult };
+  } catch (error) {
+    console.error("Error adding debug quiz result:", error);
     throw error;
   }
 };

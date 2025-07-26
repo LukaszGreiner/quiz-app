@@ -11,11 +11,9 @@ export default function AvatarWithBadge(Avatar, streakData, currentUser) {
                         {/* Daily Streak Badge - Always show when user is logged in */}
                         {currentUser && (
                           <div className={`absolute -bottom-1 -right-1 flex items-center gap-[2px] rounded-full px-1.5 py-0.5 shadow-sm ${
-                            streakData?.hasCompletedToday 
-                              ? 'bg-gradient-to-r from-accent to-yellow-600' 
-                              : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                            streakData?.hasCompletedToday ? "bg-blue-200" : "bg-black-100"
                           }`}>
-                            <Flame className="size-3 text-white" />
+                            {/* <Flame className="size-3 text-white" /> */}
                             <span className="text-white text-xs font-bold">
                               {streakData?.currentStreak || 0}
                             </span>

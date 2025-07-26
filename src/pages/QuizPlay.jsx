@@ -107,17 +107,6 @@ const QuizPlay = () => {
     };
   }, [isSubmitted, answerFeedback, currentQuestion, shuffledAnswers, handleAnswerSelect]);
   
-  // Remove debug logging for production
-  /* 
-  console.log("QuizPlay rendering with:", {
-    currentQuestionIndex,
-    totalQuestions: questions?.length,
-    hasCurrentQuestion: Boolean(currentQuestion),
-    isSubmitted,
-    answerFeedback
-  });
-  */
-  
   return (
     <div className="bg-background mx-auto min-h-[100svh] max-w-5xl px-3 sm:px-4 py-3 flex flex-col justify-start md:justify-center items-center overflow-auto pt-12 md:pt-16 pb-12">
       {loading && (

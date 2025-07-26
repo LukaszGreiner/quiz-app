@@ -4,22 +4,21 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LogOut, User, Activity, Trophy, Settings, BarChart3, Calendar, Flame, ArrowLeft } from "lucide-react";
 import { useCurrentUserProfile } from "../hooks/useCurrentUserProfile";
 import { useStreak } from "../hooks/useStreak";
+import { useEffect } from "react";
 import Btn from "../components/common/Btn";
-import ProfileImageEditor from "../components/UserPage/ProfileImageEditor";
-import SavedQuizzes from "../components/UserPage/SavedQuizzes";
 import QuizHistory from "../components/UserPage/QuizHistory";
 import CreatedQuizzes from "../components/UserPage/CreatedQuizzes";
 import Badges from "../components/UserPage/Badges";
 import Achievements from "../components/UserPage/Achievements";
 import ProfileInfo from "../components/UserPage/ProfileInfo";
 import LevelBar from "../components/UserPage/LevelBar";
-import StreakCard from "../components/UserPage/StreakCard";
 import ActivityCalendar from "../components/UserPage/ActivityCalendar";
-import StreakDebugger from "../components/UserPage/StreakDebugger";
 import QuickStatsCard from "../components/UserPage/QuickStatsCard";
 import PerformanceMetrics from "../components/UserPage/PerformanceMetrics";
 import MobileOverview from "../components/UserPage/MobileOverview";
 import TodayMotivation from "../components/UserPage/TodayMotivation";
+import StreakReviveModal from "../components/Header/StreakReviveModal";
+import StreakDebugInfo from "../components/UserPage/StreakDebugInfo";
 import { streakService } from "../services/streakService";
 
 function UserPage() {
@@ -28,12 +27,14 @@ function UserPage() {
   const { streakData, loading: streakLoading } = useStreak();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showReviveModal, setShowReviveModal] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     // If user was on stats tab, redirect to activity
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
     return tab === 'stats' ? 'activity' : tab || 'overview';
   });
+  
 
   // Helper function to format date in Polish
   const formatJoinedDate = (createdAt) => {
@@ -77,6 +78,25 @@ function UserPage() {
   const getUserType = () => {
     return userData?.userType || "Nie określono";
   };
+
+  // Show revive modal when streak data loads and user can revive
+  useEffect(() => {
+    if (!streakLoading && streakData?.canRevive && !showReviveModal) {
+      // Check if modal was already shown today
+      const today = new Date().toDateString();
+      const lastShown = localStorage.getItem('reviveModalShown');
+      
+      if (lastShown !== today) {
+        // Add a small delay to ensure page has loaded
+        const timer = setTimeout(() => {
+          setShowReviveModal(true);
+          localStorage.setItem('reviveModalShown', today);
+        }, 500);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [streakData, streakLoading, showReviveModal]);
 
   // Development helper function
   const handleFixStreak = async () => {
@@ -139,26 +159,15 @@ function UserPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Back Button */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="py-4">
-            <Btn
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Wróć</span>
-            </Btn>
-          </div>
+      {/* Debug info - only in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mx-auto max-w-6xl p-4">
+          <StreakDebugInfo />
         </div>
-      </div>
-      
+      )}
 
       {/* Modern Profile Summary Card */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
         <div className="-mt-2 mb-6 sm:-mt-4 sm:mb-8">
           <div className="bg-surface-elevated border-border rounded-xl border p-4 shadow-lg sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
@@ -170,7 +179,6 @@ function UserPage() {
                     alt="Zdjęcie profilowe"
                     className="border-border h-16 w-16 rounded-full border-2 object-cover sm:h-20 sm:w-20"
                   />
-                  {/* Daily Streak Badge - Always show when user is logged in */}
                   {currentUser && (
                     <div className={`absolute -bottom-1 -right-1 flex items-center gap-[2px] rounded-full px-1.5 py-0.5 shadow-sm ${
                       streakData?.hasCompletedToday 
@@ -242,7 +250,7 @@ function UserPage() {
 
         {/* Motywacja do dzisiejszych quizów - nad zakładami */}
         <div className="mb-6 sm:mb-8">
-          <TodayMotivation />
+          <TodayMotivation onOpenReviveModal={() => setShowReviveModal(true)} />
         </div>
 
         {/* Mobile-First Navigation Tabs */}
@@ -256,10 +264,10 @@ function UserPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex flex-shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 sm:flex-1 sm:justify-center ${
+                    className={`cursor-pointer flex flex-shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 sm:flex-1 sm:justify-center ${
                       activeTab === tab.id
-                        ? "bg-primary text-text-inverse shadow-sm"
-                        : "text-text hover:bg-surface-elevated"
+                        ? "bg-primary shadow-sm"
+                        : "hover:bg-surface-elevated"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -408,6 +416,12 @@ function UserPage() {
           )}
         </div>
       </div>
+
+      {/* Streak Revive Modal - Full screen overlay */}
+      <StreakReviveModal 
+        isOpen={showReviveModal} 
+        onClose={() => setShowReviveModal(false)} 
+      />
     </div>
   );
 }

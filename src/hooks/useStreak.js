@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { streakService } from "../services/streakService";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 /**
  * Custom hook for managing user streak data
@@ -38,7 +40,7 @@ export const useStreak = () => {
         cacheDate: new Date().toDateString()
       }));
     } catch {
-      // Ignore cache errors
+      console.error("Failed to cache streak data");
     }
   };
 
@@ -60,6 +62,7 @@ export const useStreak = () => {
       try {
         setLoading(true);
         setError(null);
+        
         const stats = await streakService.getStreakStats(currentUser.uid);
         setStreakData(stats);
         cacheStreakData(currentUser.uid, stats);
@@ -74,6 +77,21 @@ export const useStreak = () => {
     };
 
     fetchStreakData();
+
+    // Listen for custom events to refresh streak data across all hook instances
+    const handleStreakUpdate = (event) => {
+      if (event.detail && event.detail.userId === currentUser.uid) {
+        console.log("Received streak update event", event.detail);
+        setStreakData(event.detail.streakData);
+        cacheStreakData(currentUser.uid, event.detail.streakData);
+      }
+    };
+
+    window.addEventListener('streakDataUpdated', handleStreakUpdate);
+
+    return () => {
+      window.removeEventListener('streakDataUpdated', handleStreakUpdate);
+    };
   }, [currentUser]);
 
   // Function to manually refresh streak data (called after quiz completion)
@@ -86,6 +104,9 @@ export const useStreak = () => {
       const stats = await streakService.getStreakStats(currentUser.uid);
       setStreakData(stats);
       cacheStreakData(currentUser.uid, stats); // Update cache with new data
+      
+      // Broadcast update to all other hook instances
+      broadcastStreakUpdate(stats);
     } catch (err) {
       console.error("Error refreshing streak data:", err);
       setError("Failed to refresh streak data");
@@ -109,6 +130,77 @@ export const useStreak = () => {
       return updatedStreak;
     } catch (err) {
       console.error("Error using streak freeze:", err);
+      throw err;
+    }
+  };
+
+  // Function to revive a lost streak
+  const reviveStreak = async () => {
+    if (!currentUser) return;
+
+    try {
+      const updatedStreak = await streakService.reviveStreak(currentUser.uid);
+      
+      // Clear cache to ensure fresh data
+      localStorage.removeItem(`streak_${currentUser.uid}`);
+      
+      setStreakData(prev => ({
+        ...prev,
+        ...updatedStreak,
+      }));
+      
+      // Update cache with new data
+      cacheStreakData(currentUser.uid, updatedStreak);
+      
+      // Broadcast update to all other hook instances
+      broadcastStreakUpdate(updatedStreak);
+      
+      return updatedStreak;
+    } catch (err) {
+      console.error("Error reviving streak:", err);
+      throw err;
+    }
+  };
+
+  // Development helper function to simulate streak loss for testing
+  const simulateStreakLoss = async () => {
+    if (!currentUser || process.env.NODE_ENV !== 'development') return;
+
+    try {
+      const streakRef = doc(db, "userStreaks", currentUser.uid);
+      const streakData = await streakService.getUserStreak(currentUser.uid);
+      
+      // Simulate a lost streak
+      const now = new Date();
+      const reviveExpiry = new Date(now);
+      reviveExpiry.setHours(reviveExpiry.getHours() + 48);
+      
+      const updatedData = {
+        ...streakData,
+        currentStreak: 0,
+        lastStreakLoss: now.toISOString(),
+        lostStreakLength: Math.max(streakData.currentStreak, 5), // Ensure at least 5 day streak
+        canRevive: true,
+        reviveExpiresAt: reviveExpiry.toISOString(),
+        revivesUsed: 0, // Reset for testing
+      };
+      
+      await updateDoc(streakRef, updatedData);
+      
+      // Clear cache to ensure fresh data is loaded
+      localStorage.removeItem(`streak_${currentUser.uid}`);
+      
+      // Update local state and cache
+      setStreakData(updatedData);
+      cacheStreakData(currentUser.uid, updatedData);
+      
+      // Broadcast update to all other hook instances
+      broadcastStreakUpdate(updatedData);
+      
+      console.log("Simulated streak loss for testing", updatedData);
+      return updatedData;
+    } catch (err) {
+      console.error("Error simulating streak loss:", err);
       throw err;
     }
   };
@@ -185,16 +277,72 @@ export const useStreak = () => {
     }
   };
 
+  // Function to broadcast streak updates to all hook instances
+  const broadcastStreakUpdate = (streakData) => {
+    if (!currentUser) return;
+    
+    const event = new CustomEvent('streakDataUpdated', {
+      detail: {
+        userId: currentUser.uid,
+        streakData: streakData
+      }
+    });
+    window.dispatchEvent(event);
+  };
+
+  // Function to force recalculation of streak from quiz history
+  const recalculateStreak = async () => {
+    if (!currentUser) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Force recalculation by calling getStreakStats with forceRecalculate=true
+      const stats = await streakService.getStreakStats(currentUser.uid, true);
+      
+      // Clear cache to ensure fresh data
+      localStorage.removeItem(`streak_${currentUser.uid}`);
+      
+      setStreakData(stats);
+      cacheStreakData(currentUser.uid, stats);
+      
+      // Broadcast update to all other hook instances
+      broadcastStreakUpdate(stats);
+      
+      console.log("Streak recalculated successfully:", stats);
+      return stats;
+    } catch (err) {
+      console.error("Error recalculating streak:", err);
+      setError("Failed to recalculate streak");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Debug function to clear cache and force fresh data
+  const clearCache = () => {
+    if (!currentUser) return;
+    
+    localStorage.removeItem(`streak_${currentUser.uid}`);
+    console.log("Cache cleared for user:", currentUser.uid);
+  };
+
   return {
     streakData,
     loading,
     error,
     refreshStreakData,
     useStreakFreeze,
+    reviveStreak,
+    simulateStreakLoss,
     getQuizCalendar,
     needsQuizToday,
     isStreakInDanger,
     getStreakMessage,
     hasCompletedQuizToday,
+    recalculateStreak,
+    clearCache,
   };
 };
