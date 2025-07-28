@@ -106,6 +106,7 @@ const CreatedQuizzes = ({ authorId, isOverview = false }) => {
               {quizzes.length} quiz{quizzes.length === 1 ? '' : quizzes.length < 5 ? 'y' : 'ów'} utworzon{quizzes.length === 1 ? 'y' : 'ych'}
             </p>
           </div>
+          
         </div>
         <Btn
           variant="primary"
@@ -120,24 +121,17 @@ const CreatedQuizzes = ({ authorId, isOverview = false }) => {
       
       {quizzes.length === 0 ? (
         <div className="py-12 text-center">
-          <div className="bg-surface mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full">
-            <Plus className="text-text-muted h-10 w-10" />
-          </div>
+          
+            <Btn variant="ghost" to="/newquiz" className="bg-surface mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"> 
+              <Plus className="text-text-muted h-10 w-10" />
+            </Btn>
           <h3 className="font-montserrat text-text mb-2 text-lg font-semibold">
             Nie utworzono jeszcze żadnych quizów
           </h3>
           <p className="font-quicksand text-text-muted mx-auto mb-6 max-w-md">
             Zacznij tworzyć angażujące quizy, aby dzielić się nimi z innymi. Twoje quizy pojawią się tutaj po ich utworzeniu.
           </p>
-          <Btn
-            variant="primary"
-            size="lg"
-            className="inline-flex items-center gap-2"
-            to="/newquiz"
-          >
-            <Plus className="h-4 w-4" />
-            Stwórz pierwszy quiz
-          </Btn>
+         
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

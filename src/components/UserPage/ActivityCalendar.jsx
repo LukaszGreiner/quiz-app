@@ -56,7 +56,7 @@ function ActivityCalendar() {
     
     // Add empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-8 sm:h-10 lg:h-12"></div>);
+      days.push(<div key={`empty-${i}`} className="h-6 sm:h-8 lg:h-10"></div>);
     }
 
     // Add days of the month
@@ -69,8 +69,8 @@ function ActivityCalendar() {
         <div
           key={day}
           className={`
-            h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 rounded-lg flex items-center justify-center 
-            text-xs sm:text-sm font-medium transition-all duration-200 border mx-auto
+            h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-md sm:rounded-lg flex items-center justify-center 
+            text-xs font-medium transition-all duration-200 border mx-auto
             ${isCompleted 
               ? 'bg-correct/20 border-correct text-correct' 
               : isPast 
@@ -86,9 +86,9 @@ function ActivityCalendar() {
     }
 
     return (
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-3 text-center">
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 lg:gap-2 text-center">
         {['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie'].map(day => (
-          <div key={day} className="text-text-muted text-center text-xs font-medium p-1 sm:p-2 mx-auto">
+          <div key={day} className="text-text-muted text-center text-xs font-medium p-1 mx-auto">
             {day}
           </div>
         ))}
@@ -106,21 +106,21 @@ function ActivityCalendar() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="w-full">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-text flex items-center gap-2 text-base sm:text-lg font-semibold">
           <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
           Kalendarz aktywności
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-3 sm:gap-2">
           <button
             onClick={() => changeMonth(-1)}
-            className="text-text-muted hover:text-text rounded p-1 transition-colors touch-manipulation"
+            className="text-text-muted hover:text-text rounded-md p-2 transition-colors touch-manipulation bg-surface border border-border"
             aria-label="Poprzedni miesiąc"
           >
-            ←
+            {"<"}
           </button>
-          <span className="text-text text-xs sm:text-sm font-medium min-w-[120px] text-center">
+          <span className="text-text text-sm font-medium min-w-[100px] sm:min-w-[120px] text-center">
             {selectedMonth.toLocaleDateString('pl-PL', { 
               month: 'long', 
               year: 'numeric' 
@@ -128,12 +128,12 @@ function ActivityCalendar() {
           </span>
           <button
             onClick={() => changeMonth(1)}
-            className="text-text-muted hover:text-text rounded p-1 transition-colors touch-manipulation"
+            className="text-text-muted hover:text-text rounded-md p-2 transition-colors touch-manipulation bg-surface border border-border disabled:opacity-50"
             disabled={selectedMonth.getMonth() >= new Date().getMonth() && 
                      selectedMonth.getFullYear() >= new Date().getFullYear()}
             aria-label="Następny miesiąc"
           >
-            →
+            {">"}
           </button>
         </div>
       </div>

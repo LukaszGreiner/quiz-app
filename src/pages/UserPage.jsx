@@ -197,7 +197,7 @@ function UserPage() {
               {/* Profile Information */}
               <div className="flex-1 text-center sm:text-left">
                 <div className="mb-3">
-                  <h2 className="text-text text-xl font-bold sm:text-2xl">
+                  <h2 className="overflow-scroll scroll-hidden text-text text-xl font-bold sm:text-2xl">
                     {getDisplayName()}
                   </h2>
                   <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
@@ -284,10 +284,6 @@ function UserPage() {
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-4 sm:space-y-6">
-              {/* Mobile-First Overview - tylko na mobilnych */}
-              <div className="block sm:hidden">
-                <MobileOverview activeTab={activeTab} setActiveTab={setActiveTab} />
-              </div>
               
               {/* Statystyki - na wszystkich urządzeniach */}
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
