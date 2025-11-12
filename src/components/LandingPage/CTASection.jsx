@@ -17,7 +17,7 @@ export default function CTASection() {
           świetnie się bawią. Pierwsza gra jest za darmo!
         </p>
         <Btn
-          variant="secondary"
+          variant="primary"
           size="xl"
           to="/signup"
           className="group shadow-xl"

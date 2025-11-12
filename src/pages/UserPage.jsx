@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LogOut, User, Activity, Trophy, Settings, BarChart3, Calendar, Flame, ArrowLeft } from "lucide-react";
+import {
+  LogOut,
+  User,
+  Activity,
+  Trophy,
+  Settings,
+  BarChart3,
+  Calendar,
+  Flame,
+  ArrowLeft,
+} from "lucide-react";
 import { useCurrentUserProfile } from "../hooks/useCurrentUserProfile";
 import { useStreak } from "../hooks/useStreak";
 import { useEffect } from "react";
@@ -31,20 +41,19 @@ function UserPage() {
   const [activeTab, setActiveTab] = useState(() => {
     // If user was on stats tab, redirect to activity
     const searchParams = new URLSearchParams(location.search);
-    const tab = searchParams.get('tab');
-    return tab === 'stats' ? 'activity' : tab || 'overview';
+    const tab = searchParams.get("tab");
+    return tab === "stats" ? "activity" : tab || "overview";
   });
-  
 
   // Helper function to format date in Polish
   const formatJoinedDate = (createdAt) => {
     if (!createdAt) return "Nieznana data";
-    
+
     try {
       const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
-      return date.toLocaleDateString('pl-PL', { 
-        month: 'long', 
-        year: 'numeric' 
+      return date.toLocaleDateString("pl-PL", {
+        month: "long",
+        year: "numeric",
       });
     } catch (error) {
       console.error("Error formatting date:", error);
@@ -54,20 +63,23 @@ function UserPage() {
 
   // Get user data with fallbacks
   const getDisplayName = () => {
-    return userData?.username || 
-           userData?.displayName || 
-           currentUser?.displayName || 
-           "Użytkownik";
+    return (
+      userData?.username ||
+      userData?.displayName ||
+      currentUser?.displayName ||
+      "Użytkownik"
+    );
   };
 
   const getProfileImage = () => {
-    return userData?.profileImage || 
-           currentUser?.photoURL || 
-           "/profile_icon.jpg";
+    return (
+      userData?.profileImage || currentUser?.photoURL || "/profile_icon.jpg"
+    );
   };
 
   const getJoinedDate = () => {
-    const createdAt = userData?.createdAt || currentUser?.metadata?.creationTime;
+    const createdAt =
+      userData?.createdAt || currentUser?.metadata?.creationTime;
     return formatJoinedDate(createdAt);
   };
 
@@ -84,15 +96,15 @@ function UserPage() {
     if (!streakLoading && streakData?.canRevive && !showReviveModal) {
       // Check if modal was already shown today
       const today = new Date().toDateString();
-      const lastShown = localStorage.getItem('reviveModalShown');
-      
+      const lastShown = localStorage.getItem("reviveModalShown");
+
       if (lastShown !== today) {
         // Add a small delay to ensure page has loaded
         const timer = setTimeout(() => {
           setShowReviveModal(true);
-          localStorage.setItem('reviveModalShown', today);
+          localStorage.setItem("reviveModalShown", today);
         }, 500);
-        
+
         return () => clearTimeout(timer);
       }
     }
@@ -101,7 +113,7 @@ function UserPage() {
   // Development helper function
   const handleFixStreak = async () => {
     if (!currentUser?.uid) return;
-    
+
     try {
       console.log("Fixing streak for user:", currentUser.uid);
       await streakService.recalculateStreakFromHistory(currentUser.uid);
@@ -155,12 +167,12 @@ function UserPage() {
   ];
 
   // Show debug only in development
-  const isDebugMode = process.env.NODE_ENV === 'development';
+  const isDebugMode = process.env.NODE_ENV === "development";
 
   return (
     <div className="bg-background min-h-screen">
       {/* Debug info - only in development */}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <div className="mx-auto max-w-6xl p-4">
           <StreakDebugInfo />
         </div>
@@ -180,40 +192,42 @@ function UserPage() {
                     className="border-border h-16 w-16 rounded-full border-2 object-cover sm:h-20 sm:w-20"
                   />
                   {currentUser && (
-                    <div className={`absolute -bottom-1 -right-1 flex items-center gap-[2px] rounded-full px-1.5 py-0.5 shadow-sm ${
-                      streakData?.hasCompletedToday 
-                        ? 'bg-gradient-to-r from-accent to-yellow-600' 
-                        : 'bg-gradient-to-r from-gray-400 to-gray-500'
-                    }`}>
+                    <div
+                      className={`absolute -right-1 -bottom-1 flex items-center gap-[2px] rounded-full px-1.5 py-0.5 shadow-sm ${
+                        streakData?.hasCompletedToday
+                          ? "from-accent bg-gradient-to-r to-yellow-600"
+                          : "bg-gradient-to-r from-gray-400 to-gray-500"
+                      }`}
+                    >
                       <Flame className="size-3 text-white" />
-                      <span className="text-white text-xs font-bold">
+                      <span className="text-xs font-bold text-white">
                         {streakData?.currentStreak || 0}
                       </span>
                     </div>
                   )}
                 </div>
               </div>
-              
+
               {/* Profile Information */}
               <div className="flex-1 text-center sm:text-left">
                 <div className="mb-3">
-                  <h2 className="overflow-scroll scroll-hidden text-text text-xl font-bold sm:text-2xl">
+                  <h2 className="scroll-hidden text-text overflow-scroll text-xl font-bold sm:text-2xl">
                     {getDisplayName()}
                   </h2>
-                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
-                    <Calendar className="h-3 w-3 text-text-muted" />
+                  <div className="mt-1 flex items-center justify-center gap-2 sm:justify-start">
+                    <Calendar className="text-text-muted h-3 w-3" />
                     <p className="text-text-muted text-xs">
                       Dołączył {getJoinedDate()}
                     </p>
                   </div>
                 </div>
-                
+
                 {/* XP Progress Bar */}
                 <div className="w-full">
                   <LevelBar currentUser={currentUser} compact={true} />
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex flex-row gap-2 sm:flex-col sm:gap-2">
                 <Btn
@@ -236,12 +250,13 @@ function UserPage() {
                 </Btn>
               </div>
             </div>
-            
+
             {/* Last Login - Compact */}
             {lastLogin !== "Nieznana" && (
-              <div className="mt-3 pt-3 border-t border-border">
-                <p className="text-text-muted text-xs text-center sm:text-left">
-                  Ostatnie logowanie: <span className="text-text">{lastLogin}</span>
+              <div className="border-border mt-3 border-t pt-3">
+                <p className="text-text-muted text-center text-xs sm:text-left">
+                  Ostatnie logowanie:{" "}
+                  <span className="text-text">{lastLogin}</span>
                 </p>
               </div>
             )}
@@ -257,21 +272,23 @@ function UserPage() {
         <div className="mb-6 sm:mb-8">
           <div className="bg-surface border-border rounded-lg border p-1 shadow-sm sm:rounded-xl">
             {/* Mobile: Horizontal scroll tabs */}
-            <div className="flex gap-1 overflow-x-auto scrollbar-none sm:flex-wrap">
+            <div className="scrollbar-none flex gap-1 overflow-x-auto sm:flex-wrap">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`cursor-pointer flex flex-shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 sm:flex-1 sm:justify-center ${
+                    className={`text-text flex flex-shrink-0 cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 sm:flex-1 sm:justify-center ${
                       activeTab === tab.id
-                        ? "bg-primary shadow-sm"
+                        ? "bg-primary text-text-inverse shadow-sm"
                         : "hover:bg-surface-elevated"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="whitespace-nowrap text-xs sm:text-sm">{tab.label}</span>
+                    <span className="text-xs whitespace-nowrap sm:text-sm">
+                      {tab.label}
+                    </span>
                   </button>
                 );
               })}
@@ -284,17 +301,16 @@ function UserPage() {
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-4 sm:space-y-6">
-              
               {/* Statystyki - na wszystkich urządzeniach */}
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <QuickStatsCard />
               </div>
-              
+
               {/* Odznaki */}
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <Badges />
               </div>
-              
+
               {/* Stworzone Quizy */}
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <CreatedQuizzes authorId={currentUser?.uid} isOverview={true} />
@@ -316,7 +332,9 @@ function UserPage() {
                       <p className="text-text text-2xl font-bold">
                         {streakData?.longestStreak || 0}
                       </p>
-                      <p className="text-text-muted text-sm">Najdłuższa passa</p>
+                      <p className="text-text-muted text-sm">
+                        Najdłuższa passa
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -337,8 +355,8 @@ function UserPage() {
 
                 <div className="bg-surface-elevated border-border rounded-xl border p-6">
                   <div className="flex items-center gap-3">
-                    <div className="bg-yellow-500/10 flex h-10 w-10 items-center justify-center rounded-full">
-                      <BarChart3 className="text-yellow-500 h-5 w-5" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500/10">
+                      <BarChart3 className="h-5 w-5 text-yellow-500" />
                     </div>
                     <div>
                       <p className="text-text text-2xl font-bold">
@@ -354,7 +372,7 @@ function UserPage() {
               <div className="bg-surface-elevated border-border rounded-xl border p-3 sm:p-6">
                 <ActivityCalendar />
               </div>
-              
+
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <QuizHistory />
               </div>
@@ -370,7 +388,7 @@ function UserPage() {
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
                 <Achievements />
               </div>
-              
+
               <PerformanceMetrics />
             </div>
           )}
@@ -387,9 +405,11 @@ function UserPage() {
                   userData={userData}
                 />
               </div>
-              
+
               <div className="bg-surface-elevated border-border rounded-lg border p-4 sm:rounded-xl sm:p-6">
-                <h3 className="text-text mb-4 text-base font-semibold sm:text-lg">Zarządzanie kontem</h3>
+                <h3 className="text-text mb-4 text-base font-semibold sm:text-lg">
+                  Zarządzanie kontem
+                </h3>
                 <div className="space-y-3">
                   <Btn
                     variant="secondary"
@@ -414,9 +434,9 @@ function UserPage() {
       </div>
 
       {/* Streak Revive Modal - Full screen overlay */}
-      <StreakReviveModal 
-        isOpen={showReviveModal} 
-        onClose={() => setShowReviveModal(false)} 
+      <StreakReviveModal
+        isOpen={showReviveModal}
+        onClose={() => setShowReviveModal(false)}
       />
     </div>
   );

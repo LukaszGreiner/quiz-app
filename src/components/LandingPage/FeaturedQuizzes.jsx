@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Brain, Star, Zap, PlayCircle, ChevronRight } from "lucide-react";
 import Btn from "../common/Btn";
 
@@ -27,6 +28,8 @@ const featuredQuizzes = [
 ];
 
 export default function FeaturedQuizzes() {
+  const navigate = useNavigate();
+
   return (
     <section id="quizzes" className="bg-background py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,7 +68,7 @@ export default function FeaturedQuizzes() {
                 <Btn
                   variant="primary"
                   className="group w-full"
-                  onClick={() => console.log(`Zagraj w quiz ${quiz.id}`)}
+                  onClick={() => navigate("/login")}
                 >
                   Zagraj Teraz
                   <PlayCircle className="ml-2 h-5 w-5 transition-transform group-hover:scale-110" />
@@ -73,8 +76,9 @@ export default function FeaturedQuizzes() {
               </div>
             </div>
           ))}
-        </div>        <div className="mt-16 text-center">
-          <Btn variant="outline" size="lg">
+        </div>{" "}
+        <div className="mt-16 text-center">
+          <Btn variant="outline" size="lg" onClick={() => navigate("/login")}>
             Przeglądaj Więcej Quizów
             <ChevronRight className="ml-2 h-5 w-5" />
           </Btn>

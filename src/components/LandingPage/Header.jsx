@@ -23,7 +23,7 @@ export default function Header({ children }) {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Logo />
+            <Logo linkTo={"/landing"} />
           </div>
 
           {/* Desktop navigation */}
@@ -37,7 +37,8 @@ export default function Header({ children }) {
               />
             ) : (
               <>
-                <div className="border-surface bg-border h-4 w-px border-1"></div>                <Btn variant="ghost" size="sm" to="/login">
+                <div className="border-surface bg-border h-4 w-px border-1"></div>{" "}
+                <Btn variant="ghost" size="sm" to="/login">
                   Zaloguj się
                 </Btn>
                 <Btn variant="primary" size="sm" to="/signup">
@@ -72,7 +73,8 @@ export default function Header({ children }) {
             <div className="flex items-center justify-between">
               <span className="text-text text-sm font-medium">Motyw</span>
               <ThemeToggle />
-            </div>            <div className="border-border space-y-2 border-t pt-4">
+            </div>{" "}
+            <div className="border-border space-y-2 border-t pt-4">
               {isAuthenticated ? (
                 <Btn
                   onClick={() => logout()}
@@ -92,7 +94,8 @@ export default function Header({ children }) {
                     className="w-full"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Zaloguj się                  </Btn>
+                    Zaloguj się{" "}
+                  </Btn>
                   <Btn
                     variant="primary"
                     size="sm"

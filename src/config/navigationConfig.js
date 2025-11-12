@@ -43,11 +43,4 @@ export const navigationConfig = [
     showInMobile: false,
     showInDesktop: true,
   },
-  {
-    path: "/design-system",
-    label: "Design System",
-    icon: LayoutDashboard,
-    showInMobile: false,
-    showInDesktop: true,
-  },
 ];

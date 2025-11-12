@@ -56,7 +56,7 @@ function Signup() {
   return (
     <div className="bg-background flex min-h-screen w-screen flex-col items-center p-6">
       <div className="sm:w-sm md:w-md">
-        <Logo className="mb-12 flex" />
+        <Logo linkTo={"/landing"} className="mb-12 flex" />
         <h1 className="mb-2 text-center text-2xl">Rejestracja</h1>
         <p className="text-text-muted mb-12 text-center">
           Utwórz konto, aby korzystać z aplikacji

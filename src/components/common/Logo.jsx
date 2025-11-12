@@ -1,10 +1,14 @@
 import { Link } from "react-router";
 
-export default function Logo({ className = "", variant = "full" }) {
+export default function Logo({
+  className = "",
+  variant = "full",
+  linkTo = "/",
+}) {
   const logoText = variant === "compact" ? "Q" : "Quizowisko";
-  
+
   return (
-    <Link to="/">
+    <Link to={linkTo}>
       <span
         translate="no"
         aria-label="logo"
