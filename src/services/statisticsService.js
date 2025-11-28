@@ -33,7 +33,7 @@ export const fetchGlobalStatistics = async () => {
       id: doc.id,
       ...doc.data(),
     }));
-w
+
     // Get all quiz results
     const resultsRef = collection(db, "quizResults");
     const resultsSnapshot = await getDocs(resultsRef);
@@ -219,7 +219,8 @@ export const fetchUserStatistics = async (userId) => {
       .sort((a, b) => b.attempts - a.attempts); // Sort by attempts count to find favorite
 
     // Find favorite category (most attempted)
-    const favoriteCategory = categoryStats.length > 0 ? categoryStats[0].category : "Brak danych";
+    const favoriteCategory =
+      categoryStats.length > 0 ? categoryStats[0].category : "Brak danych";
 
     // Get current streak data (not longest, but current)
     let currentStreak = 0;
@@ -373,17 +374,24 @@ export const fetchUserQuizHistory = async (userId, limitCount = 10) => {
           return {
             ...result,
             quizTitle,
-            percentage: ((result.score / result.totalQuestions) * 100).toFixed(0),
+            percentage: ((result.score / result.totalQuestions) * 100).toFixed(
+              0,
+            ),
           };
         } catch (error) {
-          console.error(`Error fetching quiz title for ${result.quizId}:`, error);
+          console.error(
+            `Error fetching quiz title for ${result.quizId}:`,
+            error,
+          );
           return {
             ...result,
             quizTitle: null,
-            percentage: ((result.score / result.totalQuestions) * 100).toFixed(0),
+            percentage: ((result.score / result.totalQuestions) * 100).toFixed(
+              0,
+            ),
           };
         }
-      })
+      }),
     );
 
     return enrichedHistory;
@@ -421,7 +429,7 @@ export const addDebugQuizResult = async (userId, quizData) => {
       isDebugEntry: true,
       createdAt: new Date().toISOString(),
     };
-    
+
     const docRef = await addDoc(collection(db, "quizResults"), debugResult);
     console.log("Debug quiz result added:", docRef.id);
     return { id: docRef.id, ...debugResult };
